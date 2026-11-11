@@ -379,7 +379,7 @@ def test_subprocess_com_erro_marca_status_erro_em_portugues_e_apaga_marcador():
 
         final = processamento.estado_atual()
         assert final["status"] == "erro"
-        assert final["mensagem_erro"] is not None
+        assert final["erro"] == {"codigo": "processamento_falhou", "parametros": {}}
         assert not (pasta / processamento.NOME_MARCADOR).exists()
         # audio continua no disco - tentar de novo nao pede novo upload
         assert audio.exists()
@@ -655,6 +655,19 @@ def test_servidor_sobe_sem_carregar_torch_nem_pyannote():
     )
     assert r.returncode == 0, r.stderr
     assert r.stdout.strip() == "[]", r.stdout
+
+
+def test_detalhe_da_etapa_e_dado_nunca_frase():
+    """O texto que o pipeline acrescenta a uma etapa vira numeros e o nome
+    do motor; a tela monta a frase no idioma dela."""
+    d = processamento.detalhe_da_etapa
+    assert d("Diarizando (quem falou quando) - 3 falantes") == {"falantes": 3}
+    assert d("Diarizando (quem falou quando) - entre 4 e 5 falantes") == {"min": 4, "max": 5}
+    assert d("Diarizando (quem falou quando) - pelo menos 2 falantes") == {"min": 2}
+    assert d("Diarizando (quem falou quando) - até 6 falantes") == {"max": 6}
+    assert d("Transcrevendo com mlx (12 termos do dominio)") == {"asr": "mlx", "termos": 12}
+    assert d("Transcrevendo com faster") == {"asr": "faster"}
+    assert d("Convertendo audio para 16 kHz mono") == {}
 
 
 if __name__ == "__main__":

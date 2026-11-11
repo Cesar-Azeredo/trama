@@ -42,6 +42,8 @@ import threading
 import time
 from pathlib import Path
 
+from trama import erros
+
 RAIZ = Path(__file__).resolve().parents[2]
 # Modulo do pipeline rodado como subprocess (python -m, com cwd=RAIZ).
 MODULO_PROCESSAR = "trama.cli.processar"
@@ -49,6 +51,37 @@ MODULO_PROCESSAR = "trama.cli.processar"
 NOME_MARCADOR = ".processando.json"
 
 _PADRAO_ETAPA = re.compile(r"^(\d)/5\s+(.+?)\.*$")
+
+# O que o pipeline acrescenta ao texto fixo de uma etapa (pipeline.py:
+# descrever_faixa na 2, motor e termos na 5) vira DADO, nunca frase: a tela
+# monta o texto no idioma dela (i18n/*/processamento.ts). O stdout e
+# portugues de linha de comando; so os numeros e o nome do motor saem dele.
+_FALANTES = re.compile(r" - (\d+) falantes\b")
+_ENTRE = re.compile(r" - entre (\d+) e (\d+) falantes\b")
+_PELO_MENOS = re.compile(r" - pelo menos (\d+) falantes\b")
+_ATE = re.compile(r" - até (\d+) falantes\b")
+_MOTOR = re.compile(r"\bcom (\w+)")
+_TERMOS = re.compile(r"\((\d+) termos do dominio\)")
+
+
+def detalhe_da_etapa(texto):
+    """{falantes | min, max | asr, termos} do texto de uma etapa; {} quando
+    a etapa nao tem nada alem do texto fixo."""
+    detalhe = {}
+    if m := _FALANTES.search(texto):
+        detalhe["falantes"] = int(m.group(1))
+    elif m := _ENTRE.search(texto):
+        detalhe["min"], detalhe["max"] = int(m.group(1)), int(m.group(2))
+    elif m := _PELO_MENOS.search(texto):
+        detalhe["min"] = int(m.group(1))
+    elif m := _ATE.search(texto):
+        detalhe["max"] = int(m.group(1))
+    if texto.startswith("Transcrevendo") and (m := _MOTOR.search(texto)):
+        detalhe["asr"] = m.group(1)
+        if t := _TERMOS.search(texto):
+            detalhe["termos"] = int(t.group(1))
+    return detalhe
+
 
 _trava = threading.Lock()
 _estado = None  # None quando ocioso; dict enquanto ha (ou houve) trabalho
@@ -133,7 +166,7 @@ def _acompanhar(id, pasta, processo):
             with _trava:
                 if _estado is not None and _estado["reuniao_id"] == id:
                     _estado["etapa"] = int(m.group(1))
-                    _estado["rotulo"] = m.group(2).strip()
+                    _estado["detalhe"] = detalhe_da_etapa(m.group(2).strip())
 
     codigo = processo.wait()
 
@@ -147,10 +180,7 @@ def _acompanhar(id, pasta, processo):
             _estado["etapa"] = 5
         else:
             _estado["status"] = "erro"
-            _estado["mensagem_erro"] = (
-                "O processamento falhou. Verifique o log do servidor "
-                "para detalhes e tente novamente."
-            )
+            _estado["erro"] = erros.aviso("processamento_falhou")
             print(f"[processamento] {id} falhou, codigo {codigo}")
 
     _apagar_marcador(pasta)
@@ -213,9 +243,9 @@ def iniciar(id, pasta, caminho_audio, pessoas):
             "processo": processo,
             "etapa": 0,
             "total_etapas": 5,
-            "rotulo": "Iniciando...",
+            "detalhe": {},
             "status": "rodando",
-            "mensagem_erro": None,
+            "erro": None,
             "iniciado_em": time.time(),
             "device": device,
             "asr": asr,

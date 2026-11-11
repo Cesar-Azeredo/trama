@@ -1,3 +1,4 @@
+import { textoDoAviso } from "../api/cliente";
 import { useEffect, useMemo, useState } from "react";
 import {
   carregarReuniao,
@@ -533,7 +534,7 @@ export function Revisao({ id }: { id: string }) {
         <p className="tela-revisao__estado">
           {dados.estado === "nao_processada"
             ? t.naoProcessada
-            : dados.acao_processar.motivo}
+            : textoDoAviso(dados.acao_processar.motivo)}
         </p>
       )}
 

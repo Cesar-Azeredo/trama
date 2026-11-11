@@ -5,27 +5,31 @@ import {
   conectarProgresso,
   iniciarProcessamento,
   temResultadoProcessado,
+  type DetalheEtapa,
   type EstadoProcessamento,
 } from "../api/reunioes";
+import { textoDoAviso } from "../api/cliente";
 import { formatarDuracao, tituloDaReuniao } from "../util/formatarReuniao";
-import { ETAPAS } from "../util/etapasProcessamento";
 import { useTextos } from "../i18n/textos";
 import "./ProcessamentoReuniao.css";
 
 /**
- * pipeline.py imprime o mesmo texto do rotulo fixo na maioria das etapas -
- * so acrescenta algo em cima quando ha "- N falantes" (etapa 2) ou
- * "com <asr> (N termos do dominio)" (etapa 5). Mostrar o rotulo ao vivo
- * quando ele so repete o texto fixo (sem acento, identico por baixo) e
- * ruido, nao informacao - por isso so aparece quando difere de verdade.
+ * O que o pipeline acrescentou a etapa atual ("- N falantes" na 2, motor e
+ * termos do dominio na 5) chega como DADO (servidor/processamento.py:
+ * detalhe_da_etapa) e vira texto aqui, no idioma da tela. Etapa sem
+ * acrescimo: nada.
  */
-function normalizarTexto(s: string): string {
-  return s
-    .normalize("NFD")
-    .replace(/[̀-ͯ]/g, "")
-    .toLowerCase()
-    .replace(/[.…]+$/, "")
-    .trim();
+function textoDoDetalhe(
+  d: DetalheEtapa,
+  t: ReturnType<typeof useTextos>["processamento"],
+): string | null {
+  const partes: string[] = [];
+  if (d.falantes !== undefined) partes.push(t.aoVivoFalantes(d.falantes));
+  else if (d.min !== undefined && d.max !== undefined) partes.push(t.aoVivoEntre(d.min, d.max));
+  else if (d.min !== undefined) partes.push(t.aoVivoPeloMenos(d.min));
+  else if (d.max !== undefined) partes.push(t.aoVivoAte(d.max));
+  if (d.asr) partes.push(t.aoVivoMotor(d.asr) + (d.termos ? ` (${t.aoVivoTermos(d.termos)})` : ""));
+  return partes.length ? partes.join(" ") : null;
 }
 
 function IconeConcluida() {
@@ -44,24 +48,19 @@ function IconeConcluida() {
   );
 }
 
-function ListaEtapas({ etapaAtual, rotuloAoVivo }: { etapaAtual: number; rotuloAoVivo: string }) {
+function ListaEtapas({ etapaAtual, detalhe }: { etapaAtual: number; detalhe: DetalheEtapa }) {
   const t = useTextos().processamento;
+  const aoVivo = textoDoDetalhe(detalhe, t);
   return (
     <ol className="lista-etapas">
-      {/* `original` (sempre portugues) e o que se compara com o rotulo ao
-          vivo do pipeline; `texto` e o que a tela mostra, no idioma dela. */}
-      {ETAPAS.map((original, i) => {
-        const texto = t.etapas[i];
+      {/* O servidor manda o NUMERO da etapa; o texto e sempre o do catalogo. */}
+      {t.etapas.map((texto, i) => {
         const numero = i + 1;
         const concluida = numero < etapaAtual;
         const atual = numero === etapaAtual;
-        const acrescentaInfo =
-          atual &&
-          rotuloAoVivo !== "" &&
-          normalizarTexto(rotuloAoVivo) !== normalizarTexto(original);
         return (
           <li
-            key={original}
+            key={numero}
             aria-current={atual ? "step" : undefined}
             className={
               "lista-etapas__item" +
@@ -78,9 +77,7 @@ function ListaEtapas({ etapaAtual, rotuloAoVivo }: { etapaAtual: number; rotuloA
             </span>
             <span className="lista-etapas__texto">
               {texto}
-              {acrescentaInfo && (
-                <span className="lista-etapas__ao-vivo">{rotuloAoVivo}</span>
-              )}
+              {atual && aoVivo && <span className="lista-etapas__ao-vivo">{aoVivo}</span>}
             </span>
           </li>
         );
@@ -199,7 +196,7 @@ export function ProcessamentoReuniao({ id }: { id: string }) {
 
       {tela.tipo === "progresso" && tela.dados.status === "rodando" && (
         <>
-          <ListaEtapas etapaAtual={tela.dados.etapa} rotuloAoVivo={tela.dados.rotulo} />
+          <ListaEtapas etapaAtual={tela.dados.etapa} detalhe={tela.dados.detalhe} />
           <p className="tela-processamento__decorrido numeros">
             {t.decorrido(formatarDuracao(decorrido))}
           </p>
@@ -232,7 +229,7 @@ export function ProcessamentoReuniao({ id }: { id: string }) {
       {tela.tipo === "progresso" && tela.dados.status === "erro" && (
         <div className="tela-processamento__aviso tela-processamento__aviso--erro">
           <p>
-            {tela.dados.mensagem_erro ?? t.falhou}
+            {textoDoAviso(tela.dados.erro) ?? t.falhou}
           </p>
           <button
             type="button"

@@ -35,7 +35,7 @@ import re
 import subprocess
 from pathlib import Path
 
-from trama import edicao, nucleo, pipeline
+from trama import edicao, erros, nucleo, pipeline
 from trama.erros import ErroDeUsuario
 from trama.servidor import processamento
 
@@ -313,12 +313,9 @@ def _interacao_resumida(dados):
     }
 
 
-MOTIVO_JA_PROCESSANDO = "Esta reunião está sendo processada agora."
-
-MOTIVO_INTERROMPIDA = (
-    "O processamento anterior foi interrompido (o servidor foi reiniciado "
-    "no meio). O áudio continua salvo - pode tentar de novo."
-)
+# Codigo + parametros (trama/erros.py), nunca frase: a tela traduz.
+MOTIVO_JA_PROCESSANDO = erros.aviso("motivo_ja_processando")
+MOTIVO_INTERROMPIDA = erros.aviso("motivo_interrompida")
 
 
 def _estado_e_acao_sem_json(id, pasta):

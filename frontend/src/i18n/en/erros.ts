@@ -116,6 +116,12 @@ export const erros: Catalogo["erros"] = {
     glossario_longo_demais: (p: Parametros) => `The glossary is longer than ${p.maximo} lines.`,
     termo_vazio: () => "The term cannot be empty.",
     escreva_nome_do_termo: () => "Type the name of the term.",
+    motivo_ja_processando: () =>
+      "This meeting is being processed right now.",
+    motivo_interrompida: () =>
+      "The previous processing was interrupted (the server restarted midway). The audio is still saved - you can try again.",
+    processamento_falhou: () =>
+      "Processing failed. Check the server log for details and try again.",
     correcao_existente_prevalece: (p: Parametros) =>
       `In part of the text, the existing correction from "${p.errado}" to "${p.certo}" will keep applying instead of this one.`,
     edicoes_sem_fala: (p: Parametros) =>

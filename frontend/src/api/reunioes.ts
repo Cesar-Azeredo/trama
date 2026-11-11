@@ -4,7 +4,13 @@
  * ausentes (null), que nunca sao inventados como 0 ou lista vazia.
  */
 
-import { buscarJson, enviarJson, mensagemDeErro, textoDoAviso } from "./cliente";
+import {
+  buscarJson,
+  enviarJson,
+  mensagemDeErro,
+  textoDoAviso,
+  type CodigoComParametros,
+} from "./cliente";
 import { textosAtuais } from "../i18n/textos";
 
 /** "processando"/"interrompido" so existem por causa do marco 2 (upload +
@@ -30,7 +36,8 @@ export interface FalaPorPessoa {
  * para explicar (nao_processada). */
 export interface AcaoProcessar {
   disponivel: boolean;
-  motivo: string | null;
+  /** Codigo + parametros (trama/erros.py); a tela traduz no render. */
+  motivo: CodigoComParametros | null;
 }
 
 /** Dinamica em duas linhas (servidor/reunioes.py:_interacao_resumida) -
@@ -399,13 +406,24 @@ export function cancelarProcessamento(id: string): Promise<{ ok: boolean }> {
 /** Espelha servidor/processamento.py:estado_atual() - "pessoas" existe so
  * para a tela de retry reenviar a MESMA escolha apos uma falha, sem
  * perguntar de novo. */
+/** O que o pipeline acrescentou a etapa atual, como dado
+ * (servidor/processamento.py: detalhe_da_etapa) - a tela monta o texto. */
+export interface DetalheEtapa {
+  falantes?: number;
+  min?: number;
+  max?: number;
+  asr?: string;
+  termos?: number;
+}
+
 export interface EstadoProcessamento {
   reuniao_id: string;
   etapa: number;
   total_etapas: number;
-  rotulo: string;
+  detalhe: DetalheEtapa;
   status: "rodando" | "concluido" | "erro" | "cancelado";
-  mensagem_erro: string | null;
+  /** Codigo + parametros (trama/erros.py); a tela traduz. */
+  erro: CodigoComParametros | null;
   iniciado_em: number;
   device: string;
   asr: string;

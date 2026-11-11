@@ -1,3 +1,4 @@
+import { textoDoAviso } from "../api/cliente";
 import {
   Fragment,
   useEffect,
@@ -719,7 +720,7 @@ export function Detalhe({ id, em }: { id: string; em?: number }) {
           />
           {dados.estado !== "nao_processada" && (
             <p className="tela-detalhe__estado-processamento">
-              {dados.acao_processar.motivo}
+              {textoDoAviso(dados.acao_processar.motivo)}
             </p>
           )}
           <dl className="tela-detalhe__ficha">

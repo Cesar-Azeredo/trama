@@ -1,7 +1,7 @@
-/** Tela de processamento (telas/ProcessamentoReuniao.tsx, util/etapasProcessamento.ts). */
+/** Tela de processamento (telas/ProcessamentoReuniao.tsx). */
 export const processamento = {
-  /** As 5 etapas na ordem do pipeline. O português também é o texto que
-   * pipeline.py imprime - util/etapasProcessamento.ts compara com ele. */
+  /** As 5 etapas na ordem do pipeline - o servidor manda o NUMERO da etapa
+   * atual (1 a 5), nunca o texto do stdout. */
   etapas: [
     "Convertendo áudio para 16 kHz mono",
     "Diarizando (quem falou quando)",
@@ -9,6 +9,14 @@ export const processamento = {
     "Analisando sobreposição e interrupções",
     "Transcrevendo — a etapa mais demorada",
   ],
+  /** O que o pipeline acrescentou a etapa atual, vindo como dado
+   * (servidor/processamento.py: detalhe_da_etapa). */
+  aoVivoFalantes: (n: number) => `${n} falantes`,
+  aoVivoEntre: (min: number, max: number) => `entre ${min} e ${max} falantes`,
+  aoVivoPeloMenos: (min: number) => `pelo menos ${min} falantes`,
+  aoVivoAte: (max: number) => `até ${max} falantes`,
+  aoVivoMotor: (asr: string) => `com ${asr}`,
+  aoVivoTermos: (n: number) => (n === 1 ? "1 termo do domínio" : `${n} termos do domínio`),
   concluida: "concluída",
   conectando: "Conectando…",
   decorrido: (duracao: string) => `Decorrido: ${duracao}`,

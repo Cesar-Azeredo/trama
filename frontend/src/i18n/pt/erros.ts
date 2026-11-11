@@ -125,6 +125,13 @@ export const erros = {
     glossario_longo_demais: (p: Parametros) => `O glossário passa de ${p.maximo} linhas.`,
     termo_vazio: () => "O termo não pode ficar vazio.",
     escreva_nome_do_termo: () => "Escreva o nome do termo.",
+    // processamento
+    motivo_ja_processando: () =>
+      "Esta reunião está sendo processada agora.",
+    motivo_interrompida: () =>
+      "O processamento anterior foi interrompido (o servidor foi reiniciado no meio). O áudio continua salvo - pode tentar de novo.",
+    processamento_falhou: () =>
+      "O processamento falhou. Verifique o log do servidor para detalhes e tente novamente.",
     // avisos
     correcao_existente_prevalece: (p: Parametros) =>
       `Em parte do texto, a correção já existente de "${p.errado}" para "${p.certo}" vai continuar valendo no lugar desta.`,
