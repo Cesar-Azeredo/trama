@@ -3,9 +3,6 @@
 Este projeto usa modelos e bibliotecas de terceiros. As atribuicoes abaixo
 sao exigidas pelas respectivas licencas.
 
-ATENCAO: revise este arquivo com um advogado antes de distribuir
-comercialmente. Ele e um ponto de partida, nao parecer juridico.
-
 ---
 
 ## speaker-diarization-community-1
