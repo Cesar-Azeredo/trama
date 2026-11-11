@@ -57,10 +57,12 @@ raised the risk, who interrupted whom.
 
 ## Screenshots
 
-Taken from the bundled demo data (fictional company, people and
-conversations — see [Running the demo](#running-the-demo)). Each image
-follows your GitHub light/dark theme; both versions are in
-[`docs/capturas/`](docs/capturas/).
+Taken from the bundled English demo data (fictional company, people and
+conversations — see [Running the demo](#running-the-demo)), with the
+interface in English. Each image follows your GitHub light/dark theme; both
+versions are in [`docs/capturas/`](docs/capturas/). The same screens are
+also available in Portuguese, with the Portuguese demo, in
+[`docs/capturas/pt/`](docs/capturas/pt/).
 
 | Meetings | Review: who is each voice? |
 |---|---|
