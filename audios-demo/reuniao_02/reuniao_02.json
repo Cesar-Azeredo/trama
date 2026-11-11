@@ -189,12 +189,14 @@
     {
      "posicao": 108,
      "comprimento": 5,
-     "falante": "Diego"
+     "falante": "Diego",
+     "cluster": "SPEAKER_00"
     },
     {
      "posicao": 114,
      "comprimento": 8,
-     "falante": "Diego"
+     "falante": "Diego",
+     "cluster": "SPEAKER_00"
     }
    ],
    "confianca_media": 0.934,
@@ -266,27 +268,32 @@
     {
      "posicao": 92,
      "comprimento": 3,
-     "falante": "Helena"
+     "falante": "Helena",
+     "cluster": "SPEAKER_04"
     },
     {
      "posicao": 96,
      "comprimento": 4,
-     "falante": "Helena"
+     "falante": "Helena",
+     "cluster": "SPEAKER_04"
     },
     {
      "posicao": 101,
      "comprimento": 8,
-     "falante": "Helena"
+     "falante": "Helena",
+     "cluster": "SPEAKER_04"
     },
     {
      "posicao": 110,
      "comprimento": 3,
-     "falante": "Helena"
+     "falante": "Helena",
+     "cluster": "SPEAKER_04"
     },
     {
      "posicao": 114,
      "comprimento": 10,
-     "falante": "DESCONHECIDO_SPEAKER_02"
+     "falante": "Tiago",
+     "cluster": "SPEAKER_02"
     }
    ],
    "confianca_media": 0.931,
@@ -442,17 +449,20 @@
     {
      "posicao": 95,
      "comprimento": 3,
-     "falante": "DESCONHECIDO_SPEAKER_02"
+     "falante": "Tiago",
+     "cluster": "SPEAKER_02"
     },
     {
      "posicao": 99,
      "comprimento": 4,
-     "falante": "DESCONHECIDO_SPEAKER_02"
+     "falante": "Tiago",
+     "cluster": "SPEAKER_02"
     },
     {
      "posicao": 104,
      "comprimento": 6,
-     "falante": "DESCONHECIDO_SPEAKER_02"
+     "falante": "Tiago",
+     "cluster": "SPEAKER_02"
     }
    ],
    "confianca_media": 0.94,
@@ -784,7 +794,8 @@
    "posicao": 35,
    "inicio": 54.18,
    "fim": 55.52,
-   "falante": "DESCONHECIDO_SPEAKER_01"
+   "falante": "Paula",
+   "cluster": "SPEAKER_01"
   }
  ],
  "sim_min": 0.6,

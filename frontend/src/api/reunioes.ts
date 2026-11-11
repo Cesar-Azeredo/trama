@@ -92,6 +92,9 @@ export interface PalavraDivergente {
   posicao: number;
   comprimento: number;
   falante: string;
+  /** Cluster do dono da palavra - a revisao renomeia por ele. Ausente em
+   * reuniao processada antes deste campo. */
+  cluster?: string;
 }
 
 /** Palavra abaixo de run.LIMIAR_PALAVRA_BAIXA_CONFIANCA (probabilidade do
@@ -147,6 +150,8 @@ export interface LacunaSemTexto {
   inicio: number;
   fim: number;
   falante: string;
+  /** Ausente em reuniao processada antes deste campo. */
+  cluster?: string;
 }
 
 /** [inicio, fim, rotulo_do_cluster] - como o .json grava cada turno. */

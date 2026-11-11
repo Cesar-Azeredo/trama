@@ -205,12 +205,14 @@
     {
      "posicao": 99,
      "comprimento": 7,
-     "falante": "DESCONHECIDO_SPEAKER_03"
+     "falante": "DESCONHECIDO_SPEAKER_03",
+     "cluster": "SPEAKER_03"
     },
     {
      "posicao": 107,
      "comprimento": 7,
-     "falante": "DESCONHECIDO_SPEAKER_03"
+     "falante": "DESCONHECIDO_SPEAKER_03",
+     "cluster": "SPEAKER_03"
     }
    ],
    "confianca_media": 0.929,
@@ -298,22 +300,26 @@
     {
      "posicao": 115,
      "comprimento": 4,
-     "falante": "Marcos"
+     "falante": "Marcos",
+     "cluster": "SPEAKER_00"
     },
     {
      "posicao": 120,
      "comprimento": 2,
-     "falante": "Marcos"
+     "falante": "Marcos",
+     "cluster": "SPEAKER_00"
     },
     {
      "posicao": 123,
      "comprimento": 8,
-     "falante": "Marcos"
+     "falante": "Marcos",
+     "cluster": "SPEAKER_00"
     },
     {
      "posicao": 132,
      "comprimento": 9,
-     "falante": "DESCONHECIDO_SPEAKER_03"
+     "falante": "DESCONHECIDO_SPEAKER_03",
+     "cluster": "SPEAKER_03"
     }
    ],
    "confianca_media": 0.93,
@@ -403,12 +409,14 @@
     {
      "posicao": 61,
      "comprimento": 4,
-     "falante": "Paula"
+     "falante": "Paula",
+     "cluster": "SPEAKER_01"
     },
     {
      "posicao": 66,
      "comprimento": 9,
-     "falante": "Paula"
+     "falante": "Paula",
+     "cluster": "SPEAKER_01"
     }
    ],
    "confianca_media": 0.928,
@@ -626,7 +634,8 @@
    "posicao": 80,
    "inicio": 70.08,
    "fim": 71.42,
-   "falante": "Paula"
+   "falante": "Paula",
+   "cluster": "SPEAKER_01"
   }
  ],
  "sim_min": 0.6,

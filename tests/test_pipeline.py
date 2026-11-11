@@ -397,7 +397,12 @@ def test_alinhar_grava_divergencia_de_palavra_dentro_da_frase():
     assert fala["falante"] == "Celso", "o voto da frase vai para quem falou mais"
     assert fala["texto"] == "Eu acho que sim."
     assert fala["palavras_divergentes"] == [
-        {"posicao": fala["texto"].index("que"), "comprimento": 3, "falante": "Amanda"},
+        {
+            "posicao": fala["texto"].index("que"),
+            "comprimento": 3,
+            "falante": "Amanda",
+            "cluster": "S1",
+        },
     ]
 
 
@@ -442,7 +447,12 @@ def test_alinhar_token_de_duracao_zero_dentro_de_um_turno_e_divergencia_real():
     assert fala["falante"] == "Celso"
     assert fala["texto"] == "Eu acho que sim."
     assert fala["palavras_divergentes"] == [
-        {"posicao": fala["texto"].index("que"), "comprimento": 3, "falante": "Amanda"},
+        {
+            "posicao": fala["texto"].index("que"),
+            "comprimento": 3,
+            "falante": "Amanda",
+            "cluster": "S1",
+        },
     ]
 
 
@@ -543,7 +553,7 @@ def test_alinhar_grava_lacuna_dentro_do_turno():
     falas, lacunas = pipeline.alinhar(palavras, exc, {"S0": {"nome": "Celso"}})
     assert len(falas) == 1, "pausa de 1s nao abre turno novo"
     assert lacunas == [
-        {"posicao": 7, "inicio": 1.0, "fim": 2.0, "falante": "Celso"},
+        {"posicao": 7, "inicio": 1.0, "fim": 2.0, "falante": "Celso", "cluster": "S0"},
     ]
 
 
@@ -608,7 +618,9 @@ def test_alinhar_lacuna_coberta_por_um_so_turno_cru_conta():
     palavras = palavras_de([(1.0, 1.5, " Eu"), (3.0, 3.5, " acho")])
     falas, lacunas = pipeline.alinhar(palavras, exc, {"S0": {"nome": "Celso"}})
     assert len(falas) == 1
-    assert lacunas == [{"posicao": 2, "inicio": 1.5, "fim": 3.0, "falante": "Celso"}]
+    assert lacunas == [
+        {"posicao": 2, "inicio": 1.5, "fim": 3.0, "falante": "Celso", "cluster": "S0"}
+    ]
 
 
 def test_alinhar_usa_turnos_ativos_quando_fornecido():
@@ -626,7 +638,9 @@ def test_alinhar_usa_turnos_ativos_quando_fornecido():
     falas, lacunas = pipeline.alinhar(
         palavras, exc, {"S0": {"nome": "Celso"}}, turnos_ativos=[(0.0, 10.0, "S0")]
     )
-    assert lacunas == [{"posicao": 2, "inicio": 1.5, "fim": 3.0, "falante": "Celso"}]
+    assert lacunas == [
+        {"posicao": 2, "inicio": 1.5, "fim": 3.0, "falante": "Celso", "cluster": "S0"}
+    ]
 
 
 def test_alinhar_turnos_ativos_mais_fragmentado_exclui_lacuna():
@@ -659,8 +673,8 @@ def test_alinhar_varias_lacunas_no_mesmo_turno():
     falas, lacunas = pipeline.alinhar(palavras, exc, {"S0": {"nome": "Celso"}})
     assert len(falas) == 1
     assert lacunas == [
-        {"posicao": 7, "inicio": 1.0, "fim": 2.0, "falante": "Celso"},
-        {"posicao": 15, "inicio": 3.0, "fim": 4.5, "falante": "Celso"},
+        {"posicao": 7, "inicio": 1.0, "fim": 2.0, "falante": "Celso", "cluster": "S0"},
+        {"posicao": 15, "inicio": 3.0, "fim": 4.5, "falante": "Celso", "cluster": "S0"},
     ]
 
 

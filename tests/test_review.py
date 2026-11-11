@@ -322,6 +322,60 @@ def test_review_mudanca_de_pessoa_atualiza_os_dois_perfis():
         shutil.rmtree(pasta, ignore_errors=True)
 
 
+def test_review_renomeia_pista_de_divergencia_e_lacuna():
+    """REGRESSAO: a revisao trocava o falante das falas e deixava as pistas
+    de divergencia e as lacunas com o nome sugerido de antes - na tela, um
+    DESCONHECIDO_S0 em cinza onde ja havia uma pessoa confirmada."""
+    pasta = _banco_temporario()
+    try:
+        p = _reuniao_fixture(pasta)
+        dados = json.loads(p.read_text(encoding="utf-8"))
+        dados["falas"][0]["palavras_divergentes"] = [
+            {"posicao": 0, "comprimento": 3, "falante": "DESCONHECIDO_S0", "cluster": "S0"}
+        ]
+        dados["lacunas_sem_texto"] = [
+            {"posicao": 0, "inicio": 1.0, "fim": 2.0, "falante": "DESCONHECIDO_S0"}
+        ]
+        p.write_text(json.dumps(dados, ensure_ascii=False), encoding="utf-8")
+        _rodar_review(p, ["Ramiro"])
+
+        dados = json.loads(p.read_text(encoding="utf-8"))
+        assert dados["falas"][0]["palavras_divergentes"][0]["falante"] == "Ramiro"
+        # lacuna antiga (sem "cluster"): pelo nome antigo, que era de um cluster so
+        assert dados["lacunas_sem_texto"][0]["falante"] == "Ramiro"
+    finally:
+        shutil.rmtree(pasta, ignore_errors=True)
+
+
+def test_renomear_marcas_por_cluster_e_sem_chute_no_nome_ambiguo():
+    """Marca com cluster: pelo cluster, mesmo com dois clusters de mesmo
+    nome. Marca antiga sem cluster: so pelo nome que era de UM cluster."""
+    dados = {
+        "clusters": {
+            "S0": {"nome": "Diego"},
+            "S1": {"nome": "Diego"},
+            "S2": {"nome": "DESCONHECIDO_S2"},
+        },
+        "falas": [
+            {
+                "palavras_divergentes": [
+                    {"falante": "Diego", "cluster": "S1"},
+                    {"falante": "Diego"},
+                    {"falante": "DESCONHECIDO_S2"},
+                ]
+            }
+        ],
+        "lacunas_sem_texto": [
+            {"falante": "Diego", "cluster": "S0"},
+            {"falante": "Outro", "cluster": "S9"},
+        ],
+    }
+    revisao._renomear_marcas(dados, {"S0": "Diego", "S1": "Tiago", "S2": "Helena"})
+    d = dados["falas"][0]["palavras_divergentes"]
+    assert [m["falante"] for m in d] == ["Tiago", "Diego", "Helena"]
+    assert [m["falante"] for m in dados["lacunas_sem_texto"]] == ["Diego", "Outro"]
+
+
 def test_review_ignorar_depois_de_aprender_tira_a_voz_com_confirmacao():
     pasta = _banco_temporario()
     try:

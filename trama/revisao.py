@@ -246,6 +246,40 @@ def efeitos_no_ledger(reuniao_id, aprender, retirar):
     return sorted(efeitos, key=lambda e: e["cluster"])
 
 
+def _renomear_marcas(dados, renomear):
+    """
+    Pistas de divergencia (palavras_divergentes, dentro de cada fala) e
+    lacunas (lacunas_sem_texto) guardam o NOME de quem falou - sem isto,
+    depois da revisao elas continuavam com o nome sugerido de antes (um
+    DESCONHECIDO_* na tela, em cinza, onde ja havia uma pessoa confirmada).
+
+    Marca gravada por esta versao do pipeline traz o "cluster": renomeia
+    por ele. Marca antiga, sem cluster: renomeia pelo nome antigo, so
+    quando esse nome era de UM cluster - nome que estava em dois clusters
+    nao diz de qual dos dois era, e fica como esta (sem chute).
+    """
+    contagem = {}
+    for info in dados["clusters"].values():
+        contagem[info["nome"]] = contagem.get(info["nome"], 0) + 1
+    por_nome_antigo = {
+        info["nome"]: renomear[label]
+        for label, info in dados["clusters"].items()
+        if label in renomear and contagem[info["nome"]] == 1
+    }
+
+    def renomear_marca(marca):
+        if marca.get("cluster") in renomear:
+            marca["falante"] = renomear[marca["cluster"]]
+        elif "cluster" not in marca and marca.get("falante") in por_nome_antigo:
+            marca["falante"] = por_nome_antigo[marca["falante"]]
+
+    for f in dados["falas"]:
+        for marca in f.get("palavras_divergentes") or []:
+            renomear_marca(marca)
+    for marca in dados.get("lacunas_sem_texto") or []:
+        renomear_marca(marca)
+
+
 def aplicar_e_gravar(caminho, dados, reuniao_id, renomear, aprender, retirar=(), so_nomear=()):
     """
     Parte NAO interativa da revisao: aprende os perfis de voz (ledger),
@@ -288,6 +322,7 @@ def aplicar_e_gravar(caminho, dados, reuniao_id, renomear, aprender, retirar=(),
 
     for f in falas:
         f["falante"] = renomear.get(f["cluster"], f["falante"])
+    _renomear_marcas(dados, renomear)
     for label, info in clusters.items():
         novo = renomear.get(label, info["nome"])
         # Ignorar apaga o nome - guarda quem era, para a tela Pessoas ainda

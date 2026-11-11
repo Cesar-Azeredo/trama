@@ -60,6 +60,11 @@ def test_demo_detalhe_tem_o_que_a_tela_mostra():
         assert d["lacunas_sem_texto"], "a demonstracao mostra uma lacuna"
         assert any(f.get("palavras_baixa_confianca") for f in d["falas"])
         assert any(f.get("palavras_divergentes") for f in d["falas"])
+        # reuniao revisada: pista e lacuna com o nome confirmado, nunca o
+        # rotulo de maquina de antes da revisao
+        marcas = [m for f in d["falas"] for m in f.get("palavras_divergentes") or []]
+        marcas += d["lacunas_sem_texto"]
+        assert not [m for m in marcas if m["falante"].startswith("DESCONHECIDO")], marcas
         # o glossario de exemplo corrigiu o produto ficticio
         assert any("Painel Órbita" in f["texto"] for f in d["falas"])
         # reuniao 3: voz que nao esta na galeria fica a revisar

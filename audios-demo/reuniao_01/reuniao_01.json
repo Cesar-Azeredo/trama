@@ -87,12 +87,14 @@
     {
      "posicao": 111,
      "comprimento": 5,
-     "falante": "DESCONHECIDO_SPEAKER_02"
+     "falante": "Helena",
+     "cluster": "SPEAKER_02"
     },
     {
      "posicao": 117,
      "comprimento": 7,
-     "falante": "DESCONHECIDO_SPEAKER_02"
+     "falante": "Helena",
+     "cluster": "SPEAKER_02"
     }
    ],
    "confianca_media": 0.922,
@@ -166,32 +168,38 @@
     {
      "posicao": 144,
      "comprimento": 4,
-     "falante": "DESCONHECIDO_SPEAKER_00"
+     "falante": "Beatriz",
+     "cluster": "SPEAKER_00"
     },
     {
      "posicao": 149,
      "comprimento": 2,
-     "falante": "DESCONHECIDO_SPEAKER_00"
+     "falante": "Beatriz",
+     "cluster": "SPEAKER_00"
     },
     {
      "posicao": 152,
      "comprimento": 10,
-     "falante": "DESCONHECIDO_SPEAKER_00"
+     "falante": "Beatriz",
+     "cluster": "SPEAKER_00"
     },
     {
      "posicao": 163,
      "comprimento": 2,
-     "falante": "DESCONHECIDO_SPEAKER_00"
+     "falante": "Beatriz",
+     "cluster": "SPEAKER_00"
     },
     {
      "posicao": 166,
      "comprimento": 5,
-     "falante": "DESCONHECIDO_SPEAKER_00"
+     "falante": "Beatriz",
+     "cluster": "SPEAKER_00"
     },
     {
      "posicao": 172,
      "comprimento": 10,
-     "falante": "DESCONHECIDO_SPEAKER_00"
+     "falante": "Beatriz",
+     "cluster": "SPEAKER_00"
     }
    ],
    "confianca_media": 0.928,
@@ -271,12 +279,14 @@
     {
      "posicao": 135,
      "comprimento": 2,
-     "falante": "DESCONHECIDO_SPEAKER_03"
+     "falante": "Marcos",
+     "cluster": "SPEAKER_03"
     },
     {
      "posicao": 138,
      "comprimento": 10,
-     "falante": "DESCONHECIDO_SPEAKER_03"
+     "falante": "Marcos",
+     "cluster": "SPEAKER_03"
     }
    ],
    "confianca_media": 0.921,
@@ -450,12 +460,14 @@
     {
      "posicao": 111,
      "comprimento": 2,
-     "falante": "DESCONHECIDO_SPEAKER_03"
+     "falante": "Marcos",
+     "cluster": "SPEAKER_03"
     },
     {
      "posicao": 114,
      "comprimento": 13,
-     "falante": "DESCONHECIDO_SPEAKER_03"
+     "falante": "Marcos",
+     "cluster": "SPEAKER_03"
     }
    ],
    "confianca_media": 0.935,
@@ -876,7 +888,8 @@
    "posicao": 81,
    "inicio": 62.57,
    "fim": 63.91,
-   "falante": "DESCONHECIDO_SPEAKER_01"
+   "falante": "Diego",
+   "cluster": "SPEAKER_01"
   }
  ],
  "sim_min": 0.6,

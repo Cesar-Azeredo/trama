@@ -454,6 +454,7 @@ def _anotar_lacuna(turno, fim_do_anterior, p, turnos_para_lacuna):
             "inicio": round(fim_do_anterior, 2),
             "fim": round(p["start"], 2),
             "falante": turno["falante"],
+            "cluster": turno["cluster"],
         }
     )
 
@@ -486,6 +487,10 @@ def _marcar_palavra(turno, p, posicao, texto_palavra, mapa):
                 "posicao": posicao,
                 "comprimento": len(texto_palavra),
                 "falante": mapa.get(p["_dono"], {}).get("nome", "DESCONHECIDO"),
+                # O cluster, alem do nome: a revisao renomeia por ele
+                # (revisao.aplicar_e_gravar) - pelo nome so, dois clusters
+                # com o mesmo nome sugerido seriam indistinguiveis.
+                "cluster": p["_dono"],
             }
         )
 
