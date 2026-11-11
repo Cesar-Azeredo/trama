@@ -1,0 +1,16 @@
+[00:00:00] Ben: Everyone, I talked to the six customers on Chloe's list. Five want the export as a spreadsheet, one wants a PDF.
+[00:00:09] Emma: On the design side, a spreadsheet is simpler. A PDF means thinking about pagination, headers and the customer's logo.
+[00:00:19] Frank: Same for engineering. The spreadsheet comes straight out of the query that already exists in the Orbit Board.
+[00:00:27] Alice: So we start with the spreadsheet and the PDF becomes a second step.
+[00:00:33] Chloe: Just one thing: the customer who asked for the PDF is our largest account. It's worth telling them first, so it doesn't look like we ignored them.
+[00:00:45] Ben: I'll call them tomorrow. And I'll show them the spreadsheet prototype, if Emma has something by then.
+[00:00:54] Emma: I have a draft. It isn't pretty, but it shows the columns and the date filter, which came up the most in the conversations.
+[00:01:06] Frank: About loading time: I measured it yesterday. A one-year report takes eleven seconds in the or bit board. The target I propose is three seconds.
+[00:01:17] Alice: Is three seconds realistic?
+[00:01:20] Frank: With a new database index and a result cache, yes. I already tried the index on a copy and it went down to four.
+[00:01:30] Chloe: That changes a lot for support. Slowness is the number one complaint in the low NPS scores.
+[00:01:38] Emma: I'd also like to propose something on the screen: while it loads, show what has already arrived instead of an empty screen.
+[00:01:48] Frank: We can, but it grows the scope. I'd leave it until after the index. First the fast query, then we see if we still need partial loading.
+[00:02:00] Alice: Agreed. Frank takes the index and the cache, Emma finishes the prototype, Ben calls the PDF customer.
+[00:02:08] Chloe: And I'll update the support knowledge base when it ships.
+[00:02:13] Alice: Great. Next review next week, with the prototype and the new measurement.

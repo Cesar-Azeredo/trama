@@ -1,0 +1,18 @@
+[00:00:00] Alice: Good morning, everyone. Let's start with the quarterly plan, because today's agenda is long and I want us to leave with three goals agreed.
+[00:00:11] Ben: On the product side, the priority is still the Orbit Board. Customers have been asking for report exports since August.
+[00:00:20] Chloe: And support feels that every day. Half of last week's tickets were about exports. If we fix that, our response time drops by half.
+[00:00:32] Daniel: I agree with the priority, but engineering is two people short until December. We can't promise exports and the new permissions screen in the same quarter.
+[00:00:44] Alice: Then let's choose. Which of the two has more impact on the retention OKR?
+[00:00:50] Ben: Exports, no doubt. Permissions were requested by two large customers, but exports come up in almost every renewal conversation.
+[00:01:01] Daniel: So permissions move to January. I prefer that. With a single delivery we can test it properly before releasing it to everyone.
+[00:01:12] Chloe: Can I put together the list of customers who asked the most, so Ben can talk to them before closing the scope?
+[00:01:21] Ben: Please do, that helps a lot. By Thursday?
+[00:01:25] Chloe: By Thursday.
+[00:01:27] Alice: Second goal: the NPS. We dropped four points last quarter and I want to understand why before setting a target.
+[00:01:36] Chloe: Most of the low scores mention how slow the or bit board gets when a report is large. It's not a bug, it's loading time.
+[00:01:46] Daniel: We can tackle that together with exports. It's the same query underneath, so speeding up one improves the other.
+[00:01:55] Alice: Great. So the second goal is to win back the four NPS points, with loading time as the indicator.
+[00:02:04] Ben: For the third goal I suggest documentation. The sales team has been asking for new material since the launch.
+[00:02:13] Alice: Agreed. Daniel, can you estimate exports before our next meeting?
+[00:02:18] Daniel: I can give a rough estimate by Monday, and a firmer one once Ben closes the scope with the customers.
+[00:02:28] Alice: Perfect. So we agreed: exports in the Orbit Board, four NPS points and the documentation for sales. Thanks, everyone.

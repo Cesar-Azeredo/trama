@@ -53,7 +53,7 @@ Pacote `trama/` (ADR 0025). Nenhum script Python na raiz.
 | `ferramentas/amostras.py` | trechos de UM cluster já processado, espalhados no tempo, sem piso de duração - para ouvir contaminação que a revisão descarta |
 | `ferramentas/colher_vozes.py` | galeria a partir de reuniões já rodadas (ADR 0011) |
 | `ferramentas/calibrar.py` | varredura offline de limiares |
-| `ferramentas/gerar_demo.py` | dados de demonstração (`audios-demo/`), pelas funções reais do pipeline |
+| `ferramentas/gerar_demo.py` | dados de demonstração em dois conjuntos (`audios-demo/pt`, `audios-demo/en`), pelas funções reais do pipeline; roteiros em `roteiro_demo.py` e `roteiro_demo_en.py` |
 | `experimental/ata.py` | ata local via Ollama (fora do MVP, ver ADR 0002) |
 | `experimental/cadastro_avulso.py` | galeria a partir de amostras dedicadas (descartado, ADR 0011) |
 

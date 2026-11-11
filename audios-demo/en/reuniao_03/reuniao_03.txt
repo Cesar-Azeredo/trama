@@ -1,0 +1,14 @@
+[00:00:00] Daniel: Let's do the retrospective of the first export release. Who wants to start with what worked?
+[00:00:07] Emma: I'll start. Validating the prototype with customers before writing code saved us at least a week of rework.
+[00:00:16] Ben: Agreed. And the call with the PDF customer went great. They understood the order and even helped us prioritize.
+[00:00:25] DESCONHECIDO_SPEAKER_03: From the data side, I want to note that the new index also sped up other reports that weren't even in scope.  <- conferir
+[00:00:35] Daniel: Nice. And what didn't work?
+[00:00:38] Ben: The estimate. We said two weeks and it took three, because the date filter had cases nobody foresaw.
+[00:00:46] DESCONHECIDO_SPEAKER_03: Time zones, mostly. Reports for customers in other countries cut off the last day of the month.  <- conferir
+[00:00:54] Daniel: That has to become an automated test. It can't depend on someone remembering time zones next time.
+[00:01:02] Emma: And I suggest bringing someone from data in at the start of the next project, not just at the end. Grace would have caught the time zone issue in the first conversation.
+[00:01:17] DESCONHECIDO_SPEAKER_03: Absolutely. Just call me.  <- conferir
+[00:01:20] Daniel: So we have three actions: a time zone test, data from the start, and estimates with room for edge cases.
+[00:01:29] Ben: And a celebration, because loading time in the Orbit Board dropped to three seconds.
+[00:01:35] Emma: Well deserved.
+[00:01:37] Daniel: Absolutely. Thanks, everyone.

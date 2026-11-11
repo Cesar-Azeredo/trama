@@ -58,8 +58,8 @@ async function esperar(url, tentativas = 100) {
 const ambiente = {
   ...process.env,
   REC_MEET_DEMO: "1",
-  REC_MEET_AUDIOS: resolve(RAIZ, "audios-demo"),
-  VOZES_DB: resolve(RAIZ, "audios-demo", "vozes-demo.db"),
+  REC_MEET_AUDIOS: resolve(RAIZ, "audios-demo", "pt"),
+  VOZES_DB: resolve(RAIZ, "audios-demo", "pt", "vozes-demo.db"),
   REC_MEET_TERMOS: resolve(RAIZ, "termos.exemplo.txt"),
   REC_MEET_PORTA: PORTA_API,
 };

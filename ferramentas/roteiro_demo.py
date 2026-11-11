@@ -16,6 +16,7 @@ O produto ficticio "Painel Órbita" aparece mal transcrito de dois jeitos:
 """
 
 PESSOAS = ["Beatriz", "Diego", "Helena", "Marcos", "Paula", "Tiago"]
+DESCONHECIDA = "Sofia"  # nao esta na galeria: vira voz desconhecida
 
 REUNIOES = [
     {

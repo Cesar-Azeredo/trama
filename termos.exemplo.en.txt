@@ -1,0 +1,41 @@
+# termos.exemplo.en.txt - example glossary, in English
+#
+# The real glossary lives in termos.txt, OUTSIDE git: it is your company's
+# vocabulary (product names, systems, acronyms). To start in English:
+#
+#     cp termos.exemplo.en.txt termos.txt
+#
+# Without termos.txt the app runs with an empty glossary. It can also be
+# edited in the app (Profile > Settings > Company terms).
+#
+# Format:  wrong => right
+# Lines starting with # are comments. Order matters: more specific
+# patterns first. The pipeline prints how many times each rule fired - a
+# rule that fires too often is probably wrong; one that never fires can
+# go. Case and accents don't matter for matching; the right side always
+# comes out exactly as written here.
+
+# --- AI tools ---
+chat GBT => ChatGPT
+chat GTP => ChatGPT
+chat GPT => ChatGPT
+
+# "cloud"/"Claud" when talking about an AI tool means Claude.
+# CAREFUL: if you talk about the cloud (cloud computing), comment these
+# lines out - they would break correct text.
+the cloud extension => the Claude extension
+
+# --- prioritization method ---
+rice score => RICE score
+ice score => ICE score
+
+# --- internal product (fictional, just for the example) ---
+in the orbit bored => in the Orbit Board
+orbit bored => Orbit Board
+
+# --- term descriptions (Glossary screen) ---
+# "#= term => description": starts with #, so the pipeline reads it as a
+# comment. Goes into the vocabulary of the downloaded .txt. Edited in the
+# app - only this section is rewritten.
+#= Orbit Board => internal metrics dashboard (fictional example)
+#= RICE score => prioritization by reach, impact, confidence and effort

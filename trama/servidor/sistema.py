@@ -21,7 +21,7 @@ CAMINHO_ATRIBUICAO = RAIZ / "ATRIBUICAO.md"
 # nenhuma antes desta tela; 0.3.0-dev = marco 3 em construcao.
 VERSAO = "0.3.0-dev"
 
-# Modo demonstracao (REC_MEET_DEMO=1): os dados de audios-demo/ nao tem
+# Modo demonstracao (REC_MEET_DEMO=1): os dados de audios-demo/<idioma> nao tem
 # audio - sao reunioes ficticias geradas por ferramentas/gerar_demo.py. A
 # tela avisa em vez de tentar tocar, e a rota de audio responde o codigo
 # sem_audio_na_demonstracao.

@@ -1,7 +1,10 @@
 """
-ferramentas/gerar_demo.py - Gera os dados de demonstracao: audios-demo/ com
-tres reunioes ficticias (.json e .txt, sem audio) e audios-demo/vozes-demo.db
-com os perfis de voz ficticios aprendidos nelas.
+ferramentas/gerar_demo.py - Gera os dados de demonstracao, em dois conjuntos
+com o mesmo desenho: audios-demo/pt/ e audios-demo/en/, cada um com tres
+reunioes ficticias (.json e .txt, sem audio) e um vozes-demo.db com os perfis
+de voz ficticios aprendidos nelas. Roteiros em ferramentas/roteiro_demo.py
+(portugues) e ferramentas/roteiro_demo_en.py (ingles); glossario de exemplo
+em termos.exemplo.txt e termos.exemplo.en.txt.
 
 Os .json saem das funcoes de verdade do pipeline - alinhar(), a analise de
 interacao, a decisao de nome por cluster, montar_saida() - e a revisao das
@@ -17,9 +20,10 @@ Uso (a partir da raiz):
     python ferramentas/gerar_demo.py
 
 Depois:
-    REC_MEET_DEMO=1 REC_MEET_AUDIOS=audios-demo \\
-    VOZES_DB=audios-demo/vozes-demo.db REC_MEET_TERMOS=termos.exemplo.txt \\
+    REC_MEET_DEMO=1 REC_MEET_AUDIOS=audios-demo/en \\
+    VOZES_DB=audios-demo/en/vozes-demo.db REC_MEET_TERMOS=termos.exemplo.en.txt \\
     trama-servidor
+(ou pt no lugar de en, e termos.exemplo.txt).
 """
 
 import json
@@ -30,16 +34,16 @@ import uuid
 from pathlib import Path
 
 RAIZ = Path(__file__).resolve().parents[1]
-PASTA = RAIZ / "audios-demo"
-BANCO = PASTA / "vozes-demo.db"
+PASTA_DEMO = RAIZ / "audios-demo"
 
-# Antes de importar o pacote: nucleo le VOZES_DB no import.
-os.environ["VOZES_DB"] = str(BANCO)
+# Antes de importar o pacote: nucleo le VOZES_DB no import. Cada conjunto
+# troca nucleo.DB_PATH para o banco dele (main).
+os.environ["VOZES_DB"] = str(PASTA_DEMO / "pt" / "vozes-demo.db")
 sys.path.insert(0, str(RAIZ))
 
 import numpy as np  # noqa: E402
 
-from ferramentas.roteiro_demo import PESSOAS, REUNIOES  # noqa: E402
+from ferramentas import roteiro_demo, roteiro_demo_en  # noqa: E402
 from trama import interacao, nucleo, pipeline, revisao, termos  # noqa: E402
 
 SEMENTE = 2026
@@ -53,6 +57,29 @@ SILENCIO_LACUNA_S = 1.3
 NAMESPACE = uuid.UUID("6f1c2a52-6a0b-4c1e-9a43-7c1d2f0e8b11")
 
 
+class Conjunto:
+    """Um conjunto de demonstracao: idioma, roteiro, glossario, pasta, banco."""
+
+    def __init__(self, idioma, roteiro, termos_exemplo, prefixo_id):
+        self.idioma = idioma
+        self.roteiro = roteiro
+        self.termos_exemplo = RAIZ / termos_exemplo
+        self.pasta = PASTA_DEMO / idioma
+        self.banco = self.pasta / "vozes-demo.db"
+        # reuniao_id = uuid5(NAMESPACE, prefixo + id): o conjunto em
+        # portugues (sem prefixo) mantem os ids de antes de existir o ingles.
+        self.prefixo_id = prefixo_id
+
+    def reuniao_id(self, id):
+        return str(uuid.uuid5(NAMESPACE, self.prefixo_id + id))
+
+
+CONJUNTOS = [
+    Conjunto("pt", roteiro_demo, "termos.exemplo.txt", ""),
+    Conjunto("en", roteiro_demo_en, "termos.exemplo.en.txt", "en/"),
+]
+
+
 class Trecho:
     """O que iter_turns espera de um segmento do pyannote: .start/.end."""
 
@@ -60,8 +87,9 @@ class Trecho:
         self.start, self.end = inicio, fim
 
 
-def _vozes_base(rng):
-    nomes = PESSOAS + ["Sofia"]  # Sofia nao esta na galeria: vira voz desconhecida
+def _vozes_base(rng, roteiro):
+    # a DESCONHECIDA nao esta na galeria: vira voz desconhecida na reuniao 3
+    nomes = roteiro.PESSOAS + [roteiro.DESCONHECIDA]
     return {n: nucleo.l2(rng.normal(size=DIMENSAO)) for n in nomes}
 
 
@@ -142,9 +170,9 @@ def _mapa(turnos, rotulos, vozes, rng):
     return mapa
 
 
-def _gerar(reuniao, vozes, rng, regras):
+def _gerar(conj, reuniao, vozes, rng, regras):
     id = reuniao["id"]
-    pasta = PASTA / id
+    pasta = conj.pasta / id
     pasta.mkdir(parents=True)
     falantes = list(dict.fromkeys(p for p, _, _ in reuniao["falas"]))
     rotulos = {p: f"SPEAKER_{i:02d}" for i, p in enumerate(falantes)}
@@ -159,7 +187,7 @@ def _gerar(reuniao, vozes, rng, regras):
     )
     termos.aplicar_em_falas(falas, regras, lacunas)
 
-    reuniao_id = str(uuid.uuid5(NAMESPACE, id))
+    reuniao_id = conj.reuniao_id(id)
     saida = pipeline.montar_saida(
         f"{id}.m4a",
         f"{id}_16k.wav",
@@ -198,7 +226,7 @@ def _revisar(caminho, rotulos):
     revisao.aplicar_e_gravar(caminho, dados, dados["reuniao_id"], renomear, aprender, retirar)
 
 
-def _datas_das_revisoes():
+def _datas_das_revisoes(conj):
     """Carimbos de hora do banco: cada contribuicao na data da propria
     reuniao, cada perfil na ultima contribuicao dele. Sem isto o banco
     mudaria a cada execucao (o ledger grava a hora da revisao), e a ordem
@@ -206,10 +234,10 @@ def _datas_das_revisoes():
     ficaria por conta do relogio."""
     import sqlite3
 
-    con = sqlite3.connect(BANCO)
+    con = sqlite3.connect(conj.banco)
     try:
-        for reuniao in REUNIOES:
-            reuniao_id = str(uuid.uuid5(NAMESPACE, reuniao["id"]))
+        for reuniao in conj.roteiro.REUNIOES:
+            reuniao_id = conj.reuniao_id(reuniao["id"])
             data = reuniao["data"].replace("Z", "+00:00")
             con.execute(
                 "UPDATE contribuicoes SET atualizado = ? WHERE reuniao_id = ?", (data, reuniao_id)
@@ -225,27 +253,33 @@ def _datas_das_revisoes():
 
 def _sem_caminho_absoluto():
     """Nenhum arquivo gerado pode conter o caminho desta maquina."""
-    for arquivo in PASTA.rglob("*"):
+    for arquivo in PASTA_DEMO.rglob("*"):
         if arquivo.suffix in (".json", ".txt") and str(RAIZ) in arquivo.read_text("utf-8"):
             raise SystemExit(f"caminho absoluto vazou em {arquivo}")
 
 
-def main():
-    if PASTA.exists():
-        shutil.rmtree(PASTA)
-    PASTA.mkdir()
+def _gerar_conjunto(conj):
+    conj.pasta.mkdir(parents=True)
+    nucleo.DB_PATH = conj.banco
     rng = np.random.default_rng(SEMENTE)
-    vozes = _vozes_base(rng)
-    regras = termos.carregar(RAIZ / "termos.exemplo.txt")
-    for reuniao in REUNIOES:
-        _gerar(reuniao, vozes, rng, regras)
-    _datas_das_revisoes()
-    for backup in PASTA.glob("vozes-demo.db.bak-*"):
+    vozes = _vozes_base(rng, conj.roteiro)
+    regras = termos.carregar(conj.termos_exemplo)
+    for reuniao in conj.roteiro.REUNIOES:
+        _gerar(conj, reuniao, vozes, rng, regras)
+    _datas_das_revisoes(conj)
+    for backup in conj.pasta.glob("vozes-demo.db.bak-*"):
         backup.unlink()
-    _sem_caminho_absoluto()
-    print(f"Pronto: {PASTA.relative_to(RAIZ)}/ ({len(REUNIOES)} reunioes) e {BANCO.name}")
+    print(f"Pronto: {conj.pasta.relative_to(RAIZ)}/ ({len(conj.roteiro.REUNIOES)} reunioes)")
     for nome, peso, _ in nucleo.listar_pessoas():
         print(f"  {nome:<10} {peso:5.0f} s de voz aprendida")
+
+
+def main():
+    if PASTA_DEMO.exists():
+        shutil.rmtree(PASTA_DEMO)
+    for conj in CONJUNTOS:
+        _gerar_conjunto(conj)
+    _sem_caminho_absoluto()
 
 
 if __name__ == "__main__":

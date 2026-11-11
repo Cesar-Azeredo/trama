@@ -426,6 +426,7 @@ def test_prompt_vazio_retorna_none():
 # ==========================================================================
 
 EXEMPLO = Path(__file__).resolve().parent.parent / "termos.exemplo.txt"
+EXEMPLO_EN = Path(__file__).resolve().parent.parent / "termos.exemplo.en.txt"
 
 
 def test_termos_do_exemplo_carregam():
@@ -486,6 +487,24 @@ def test_termos_do_exemplo_lado_certo_com_acento():
     for _, certo, errado in T.carregar(caminho):
         sem_til = re.findall(r"\b\w+(?:ao|aos|oes)\b", certo, re.IGNORECASE)
         assert not sem_til, f"{errado!r} => {certo!r}: {sem_til} sem acento"
+
+
+def test_termos_do_exemplo_em_ingles_carregam_corrigem_e_sao_idempotentes():
+    """O exemplo em ingles (demonstracao em ingles): mesmas garantias - carrega,
+    corrige o que promete e reaplicar nao muda nada."""
+    r = T.carregar(EXEMPLO_EN)
+    assert len(r) > 0
+    for entrada, esperado in [
+        ("we tried chat GBT yesterday", "ChatGPT"),
+        ("load it in the orbit bored", "in the Orbit Board"),
+        ("score it with the rice score", "RICE score"),
+    ]:
+        saida, _ = T.aplicar(entrada, r)
+        assert esperado in saida, f"{entrada!r} -> {saida!r}"
+    for _, _, errado in r:
+        uma, _ = T.aplicar(f"before {errado} after", r)
+        duas, contagem = T.aplicar(uma, r)
+        assert duas == uma and not contagem, f"{errado!r}: {uma!r} -> {duas!r}"
 
 
 def test_termos_do_exemplo_sao_idempotentes():

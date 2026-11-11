@@ -89,10 +89,12 @@ trama-revisar audios/reuniao_NN/reuniao_NN.json
 # servidor local (127.0.0.1:8000)
 trama-servidor            # --dev recarrega quando um .py muda
 
-# demonstração: reuniões e vozes fictícias, sem áudio (audios-demo/)
-python ferramentas/gerar_demo.py    # regera a partir de ferramentas/roteiro_demo.py
-REC_MEET_DEMO=1 REC_MEET_AUDIOS=audios-demo VOZES_DB=audios-demo/vozes-demo.db \
+# demonstração: reuniões e vozes fictícias, sem áudio, em dois conjuntos
+# (audios-demo/pt e audios-demo/en, mesmo desenho)
+python ferramentas/gerar_demo.py    # regera os dois (roteiro_demo.py, roteiro_demo_en.py)
+REC_MEET_DEMO=1 REC_MEET_AUDIOS=audios-demo/pt VOZES_DB=audios-demo/pt/vozes-demo.db \
   REC_MEET_TERMOS=termos.exemplo.txt trama-servidor
+# em inglês: audios-demo/en e termos.exemplo.en.txt
 
 # testes: cada suíte roda sozinha, ou todas com pytest
 for f in tests/test_*.py; do python "$f" | tail -1; done

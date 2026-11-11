@@ -1,5 +1,6 @@
 """
-tests/test_demo.py - Os dados de demonstracao (audios-demo/, gerados por
+tests/test_demo.py - Os dois conjuntos de demonstracao (audios-demo/pt e
+audios-demo/en, gerados por
 ferramentas/gerar_demo.py) abrem pelo servidor sem erro e mostram o que a
 demonstracao promete: tres reunioes ficticias, duas revisadas e uma a
 revisar, perfis de voz aprendidos, e audio indisponivel com o aviso certo.
@@ -24,25 +25,35 @@ from trama.servidor import glossario, reunioes, sistema
 
 RAIZ = Path(__file__).resolve().parent.parent
 DEMO = RAIZ / "audios-demo"
+# idioma -> (glossario de exemplo, produto ficticio corrigido, voz fora da galeria)
+CONJUNTOS = {
+    "pt": ("termos.exemplo.txt", "Painel Órbita", "Sofia"),
+    "en": ("termos.exemplo.en.txt", "Orbit Board", "Grace"),
+}
 
 
-def _cliente_na_copia():
+def _cliente_na_copia(idioma="pt"):
     from fastapi.testclient import TestClient
 
     import trama.servidor.app as app_mod
 
     pasta = Path(tempfile.mkdtemp(prefix="rec-meet-test-demo-"))
     copia = pasta / "audios-demo"
-    shutil.copytree(DEMO, copia)
+    shutil.copytree(DEMO / idioma, copia)
     reunioes.PASTA_AUDIOS = copia
     nucleo.DB_PATH = copia / "vozes-demo.db"
     glossario.CAMINHO = pasta / "termos.txt"
-    shutil.copy(RAIZ / "termos.exemplo.txt", glossario.CAMINHO)
+    shutil.copy(RAIZ / CONJUNTOS[idioma][0], glossario.CAMINHO)
     return pasta, TestClient(app_mod.app)
 
 
 def test_demo_lista_tres_reunioes_ficticias():
-    pasta, cliente = _cliente_na_copia()
+    for idioma in CONJUNTOS:
+        _lista_tres_reunioes(idioma)
+
+
+def _lista_tres_reunioes(idioma):
+    pasta, cliente = _cliente_na_copia(idioma)
     try:
         lista = cliente.get("/api/reunioes").json()
         assert [r["id"] for r in lista] == ["reuniao_03", "reuniao_02", "reuniao_01"]
@@ -53,7 +64,12 @@ def test_demo_lista_tres_reunioes_ficticias():
 
 
 def test_demo_detalhe_tem_o_que_a_tela_mostra():
-    pasta, cliente = _cliente_na_copia()
+    for idioma in CONJUNTOS:
+        _detalhe_tem_o_que_a_tela_mostra(idioma)
+
+
+def _detalhe_tem_o_que_a_tela_mostra(idioma):
+    pasta, cliente = _cliente_na_copia(idioma)
     try:
         d = cliente.get("/api/reunioes/reuniao_01").json()
         assert d["falas"] and d["eventos"] and d["regioes_sobrepostas"]
@@ -66,7 +82,7 @@ def test_demo_detalhe_tem_o_que_a_tela_mostra():
         marcas += d["lacunas_sem_texto"]
         assert not [m for m in marcas if m["falante"].startswith("DESCONHECIDO")], marcas
         # o glossario de exemplo corrigiu o produto ficticio
-        assert any("Painel Órbita" in f["texto"] for f in d["falas"])
+        assert any(CONJUNTOS[idioma][1] in f["texto"] for f in d["falas"]), idioma
         # reuniao 3: voz que nao esta na galeria fica a revisar
         d3 = cliente.get("/api/reunioes/reuniao_03").json()
         nomes = [c["nome"] for c in d3["clusters"].values()]
@@ -76,13 +92,28 @@ def test_demo_detalhe_tem_o_que_a_tela_mostra():
 
 
 def test_demo_tem_perfis_de_voz_e_nenhum_caminho_da_maquina():
-    pasta, cliente = _cliente_na_copia()
+    for idioma in CONJUNTOS:
+        _perfis_de_voz(idioma)
+    for arquivo in DEMO.rglob("*.json"):
+        texto = arquivo.read_text(encoding="utf-8")
+        assert "/Users/" not in texto and "/home/" not in texto, arquivo
+
+
+def test_demo_os_dois_conjuntos_tem_a_mesma_estrutura():
+    for idioma in CONJUNTOS:
+        assert sorted(p.name for p in (DEMO / idioma).iterdir()) == [
+            "reuniao_01",
+            "reuniao_02",
+            "reuniao_03",
+            "vozes-demo.db",
+        ], idioma
+
+
+def _perfis_de_voz(idioma):
+    pasta, cliente = _cliente_na_copia(idioma)
     try:
         nomes = [p["nome"] for p in cliente.get("/api/pessoas").json()]
-        assert nomes and "Sofia" not in nomes, nomes
-        for arquivo in DEMO.rglob("*.json"):
-            texto = arquivo.read_text(encoding="utf-8")
-            assert "/Users/" not in texto and "/home/" not in texto, arquivo
+        assert len(nomes) == 6 and CONJUNTOS[idioma][2] not in nomes, nomes
     finally:
         shutil.rmtree(pasta, ignore_errors=True)
 
