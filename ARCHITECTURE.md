@@ -217,6 +217,21 @@ fora da reunião - ver ADR 0011.
 Todas configuráveis por variável de ambiente. Recalibração é offline:
 `python ferramentas/calibrar.py <arquivo>.json --detalhe`.
 
+### Desempenho medido
+
+Uma máquina só: MacBook Pro M3 Max, 64 GB, MPS + mlx-whisper.
+
+- Reunião de 70 min: cerca de 6 min de processamento, do começo ao fim.
+- Embedding de voz no processador (`--device cpu`): 21 vezes mais lento
+  que no MPS, na mesma máquina.
+- Ata local (`experimental/ata.py`, fora do produto), `reuniao_08`, 70 min,
+  4 falantes: `llama3.1:8b` 2,4 min (qualidade insuficiente);
+  `qwen3.8:27b-mlx` 19,6 min, ~18 GB de memória (qualidade boa). Detalhes
+  em `docs/uso.md`.
+
+Não testado: outros Macs, PC com GPU NVIDIA, máquina só com processador.
+Memória mínima sugerida (16 GB) é estimativa, não medição.
+
 ### Testes
 
 15 suítes, 367 casos. Cada arquivo roda sozinho com `python` (imprime

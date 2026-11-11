@@ -112,10 +112,88 @@ review (CLI or UI) → confirms names → voice gallery learns (SQLite ledger)
 - **Voice database:** SQLite with versioned migrations and an automatic
   backup before each one ([ADR 0006](docs/adr/0006-migracoes-versionadas.md)).
 
-On an Apple Silicon laptop, a 70-minute meeting takes about six minutes.
-
 The full design, with where each threshold came from, is in
 [`ARCHITECTURE.md`](ARCHITECTURE.md) (Portuguese).
+
+## Tech stack
+
+**Pipeline**
+- **Python 3.12** — the pipeline, the server and the command-line tools.
+- **pyannote.audio** with `speaker-diarization-community-1` — splits the
+  recording into "who spoke when", including the overlapping speech.
+- **WeSpeaker** (`wespeaker-voxceleb-resnet34-LM`, via pyannote) — one voice
+  embedding per speaker cluster, compared against the voice gallery.
+- **Whisper large-v3** — transcription with word timestamps:
+  **mlx-whisper** on Apple Silicon, **faster-whisper** everywhere else.
+- **ffmpeg** — converts any recording to 16 kHz mono and cuts the short
+  passages played during review.
+
+**Data**
+- **SQLite** with **versioned migrations** — the voice gallery and the
+  ledger of what each reviewed meeting taught it, with a backup before
+  every migration.
+- **One JSON file per meeting** — the single source of truth the interface
+  reads: utterances, word timings, clusters, dynamics, overlaps.
+
+**Server**
+- **FastAPI** — a thin local API over the JSON files and the gallery,
+  bound to `127.0.0.1` only.
+- **Uvicorn** — runs it.
+- **Server-Sent Events** — live progress of a meeting being processed.
+
+**Frontend**
+- **React + TypeScript + Vite** — the interface, with no component
+  library; its own visual identity and bundled fonts.
+- **View Transitions API** — screen transitions without an animation
+  library.
+- **Typed i18n catalogs** — English and Portuguese, compiled into the
+  build; a missing translation fails the build.
+
+**Quality**
+- **pytest** — runs the Python suites (each also runs on its own with
+  `python tests/...`).
+- **vitest** — tests the frontend's pure logic.
+- **ruff** and **oxlint** — linting and formatting for Python and
+  TypeScript.
+- **coverage.py** and **radon** — test coverage and cyclomatic complexity,
+  measured before refactoring.
+- **GitHub Actions** — lint, all tests and the frontend build on every push.
+
+## Requirements and hardware
+
+**What was measured.** Development and every number in this repository
+come from one machine: a **MacBook Pro with Apple M3 Max and 64 GB of
+memory**, using MPS (the Apple GPU) and mlx-whisper. A 70-minute meeting
+takes about **6 minutes** to process end to end — roughly 6 minutes per
+hour of audio.
+
+**What was not tested.** Other Macs, PCs with an NVIDIA GPU, and machines
+with CPU only have **not** been tested. The code runs on CPU
+(`--device cpu`, faster-whisper is chosen automatically when Apple Silicon
+is not available), but there are no measurements for it.
+
+**Why the GPU matters.** Computing the voice embeddings on the CPU was
+measured at **21 times slower** than on MPS on the same machine. Expect
+processing time on a CPU-only machine to be a multiple of the figure
+above, not a small increase.
+
+**Memory.** As an **estimate, not a measurement**: 16 GB of RAM should be
+enough to process a meeting (the diarization and embedding models are
+small; Whisper large-v3 is the largest model loaded). Less memory may work
+with smaller Whisper models, untested.
+
+**The only heavy part is not part of the app.** Generating meeting minutes
+with a local LLM lives in [`experimental/`](experimental/) and is outside
+the product ([ADR 0002](docs/adr/0002-mvp-sem-ata.md)). On the same
+70-minute meeting, through Ollama:
+
+| Model | Time | Quality | Memory |
+|---|---|---|---|
+| `llama3.1:8b` | 2.4 min | not good enough | — |
+| `qwen3.8:27b-mlx` | 19.6 min | good | ~18 GB |
+
+Transcription, speaker identification, review and the interface do not
+need a machine like that.
 
 ## Technical decisions worth reading
 
