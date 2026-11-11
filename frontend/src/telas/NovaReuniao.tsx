@@ -19,17 +19,17 @@ import { listarPessoas, type Pessoa } from "../api/pessoas";
 import { corDaVoz } from "../vozes/corDaVoz";
 import { useIndiceGaleria } from "../vozes/useIndiceGaleria";
 import { formatarTamanhoArquivo } from "../util/formatarReuniao";
+import { textosAtuais, useTextos } from "../i18n/textos";
 import "./NovaReuniao.css";
 
 function validarArquivo(arquivo: File): string | null {
+  const t = textosAtuais().nova;
   const nome = arquivo.name.toLowerCase();
   if (!EXTENSOES_AUDIO_PERMITIDAS.some((ext) => nome.endsWith(ext))) {
-    return `Formato não aceito. Use ${EXTENSOES_AUDIO_PERMITIDAS.join(", ")}.`;
+    return t.formatoNaoAceito(EXTENSOES_AUDIO_PERMITIDAS.join(", "));
   }
   if (arquivo.size > TAMANHO_MAXIMO_AUDIO_BYTES) {
-    return `Arquivo maior que o limite de ${Math.round(
-      TAMANHO_MAXIMO_AUDIO_BYTES / 1024 / 1024,
-    )} MB.`;
+    return t.maiorQueLimite(String(Math.round(TAMANHO_MAXIMO_AUDIO_BYTES / 1024 / 1024)));
   }
   return null;
 }
@@ -87,6 +87,7 @@ function AreaArquivo({
   aoSairDoArrasto: () => void;
   aoSoltar: (e: DragEvent<HTMLLabelElement>) => void;
 }) {
+  const t = useTextos().nova;
   return (
     <label
       className={
@@ -118,12 +119,14 @@ function AreaArquivo({
       ) : (
         <>
           <p className="area-arquivo__instrucao">
-            Arraste o áudio da reunião aqui, ou{" "}
-            <span className="area-arquivo__link">escolha um arquivo</span>
+            {t.arrasteAqui}{" "}
+            <span className="area-arquivo__link">{t.escolhaUmArquivo}</span>
           </p>
           <p className="area-arquivo__formatos numeros">
-            {EXTENSOES_AUDIO_PERMITIDAS.join(" · ")} — até{" "}
-            {Math.round(TAMANHO_MAXIMO_AUDIO_BYTES / 1024 / 1024)} MB
+            {t.formatosAceitos(
+              EXTENSOES_AUDIO_PERMITIDAS.join(" · "),
+              String(Math.round(TAMANHO_MAXIMO_AUDIO_BYTES / 1024 / 1024)),
+            )}
           </p>
         </>
       )}
@@ -188,6 +191,7 @@ function SeletorPessoas({
   aoAlternar: (nome: string) => void;
   aoAdicionarNova: (nome: string) => void;
 }) {
+  const t = useTextos().nova;
   const indiceGaleria = useIndiceGaleria();
   const [digitando, setDigitando] = useState(false);
   const [entrada, setEntrada] = useState("");
@@ -220,13 +224,9 @@ function SeletorPessoas({
 
   return (
     <>
-      <p className="seletor-pessoas__explicacao">
-        É o maior ganho de precisão que existe: fixa quantos falantes
-        procurar e restringe a comparação a quem estava lá. Sem marcar
-        ninguém, o pipeline funciona igual, só que pior.
-      </p>
+      <p className="seletor-pessoas__explicacao">{t.explicacaoPessoas}</p>
       {galeria === null && (
-        <p className="seletor-pessoas__estado">Carregando pessoas…</p>
+        <p className="seletor-pessoas__estado">{t.carregandoPessoas}</p>
       )}
       <div className="seletor-pessoas">
         {(galeria ?? []).map((nome) => (
@@ -254,14 +254,14 @@ function SeletorPessoas({
             className="botao-pessoa botao-pessoa--nova"
             onClick={() => setDigitando(true)}
           >
-            + Pessoa nova
+            {t.pessoaNova}
           </button>
         )}
       </div>
       {digitando && (
         <div className="seletor-pessoas__nova">
           <label className="seletor-pessoas__rotulo-nova" htmlFor="nova-pessoa">
-            Nome da pessoa nova
+            {t.nomeDaPessoaNova}
           </label>
           <div className="seletor-pessoas__linha">
             <input
@@ -280,14 +280,14 @@ function SeletorPessoas({
               onClick={adicionar}
               disabled={!entrada.trim()}
             >
-              Adicionar
+              {t.adicionar}
             </button>
             <button
               type="button"
               className="seletor-pessoas__botao seletor-pessoas__botao--discreto"
               onClick={fecharCampo}
             >
-              Cancelar
+              {t.cancelar}
             </button>
           </div>
         </div>
@@ -296,14 +296,11 @@ function SeletorPessoas({
   );
 }
 
-function textoSelecionadas(n: number): string {
-  if (n === 0) return "nenhuma selecionada";
-  return n === 1 ? "1 selecionada" : `${n} selecionadas`;
-}
-
 // ---- tela ------------------------------------------------------------------
 
 export function NovaReuniao() {
+  const t = useTextos().nova;
+  const comum = useTextos().comum;
   const [arquivo, setArquivo] = useState<File | null>(null);
   const [erroArquivo, setErroArquivo] = useState<string | null>(null);
   const [arrastando, setArrastando] = useState(false);
@@ -372,7 +369,7 @@ export function NovaReuniao() {
     // Mesma regra do servidor (reunioes.validar_titulo), conferida ANTES de
     // subir o audio - para nao descobrir o problema depois de 500 MB.
     if (/[\x00-\x1f\x7f]/.test(titulo)) {
-      setErroEnvio("O título tem um caractere de controle (quebra de linha, tabulação...), que não é permitido.");
+      setErroEnvio(t.caractereDeControle);
       return;
     }
     setEnviando(true);
@@ -394,10 +391,7 @@ export function NovaReuniao() {
       } catch (e) {
         // O audio ja subiu: a reuniao existe, na fila. Nunca fingir que o
         // titulo foi salvo, nem processar como se tivesse sido.
-        setErroEnvio(
-          `O áudio foi enviado, mas o título não foi salvo: ${(e as Error).message} ` +
-            "A reunião ficou na fila, sem processar - dá para dar o título no detalhe dela.",
-        );
+        setErroEnvio(t.tituloNaoSalvo((e as Error).message));
         setEnviando(false);
         return;
       }
@@ -416,10 +410,10 @@ export function NovaReuniao() {
 
   return (
     <main className="tela-nova">
-      <h1 className="tela-nova__titulo">Nova reunião</h1>
+      <h1 className="tela-nova__titulo">{comum.novaReuniao}</h1>
 
       <div className="tela-nova__passos">
-      <Passo numero="01" titulo="O áudio" idTitulo="passo-audio">
+      <Passo numero="01" titulo={t.passoAudio} idTitulo="passo-audio">
         <AreaArquivo
           arquivo={arquivo}
           arrastando={arrastando}
@@ -443,18 +437,18 @@ export function NovaReuniao() {
             className="tela-nova__trocar"
             onClick={() => setArquivo(null)}
           >
-            Trocar arquivo
+            {t.trocarArquivo}
           </button>
         )}
       </Passo>
 
       <Passo
         numero="02"
-        titulo="Quem estava na sala"
+        titulo={t.passoPessoas}
         idTitulo="passo-pessoas"
         extra={
           <span className="passo__contador" aria-live="polite">
-            {textoSelecionadas(selecionadas.length)}
+            {t.selecionadas(selecionadas.length)}
           </span>
         }
       >
@@ -476,7 +470,7 @@ export function NovaReuniao() {
             aria-valuenow={Math.round(progresso * 100)}
             aria-valuemin={0}
             aria-valuemax={100}
-            aria-label="Progresso do envio"
+            aria-label={t.progressoDoEnvio}
           >
             <div
               className="barra-envio__preenchido"
@@ -491,7 +485,7 @@ export function NovaReuniao() {
 
       <div className="tela-nova__campo-titulo">
         <label className="tela-nova__rotulo-titulo" htmlFor="nova-titulo">
-          Título <span className="tela-nova__opcional">(opcional)</span>
+          {t.titulo} <span className="tela-nova__opcional">{t.opcional}</span>
         </label>
         <input
           id="nova-titulo"
@@ -499,13 +493,10 @@ export function NovaReuniao() {
           value={titulo}
           maxLength={TITULO_MAX_LEN}
           disabled={enviando}
-          placeholder="Ex.: Comitê de produto"
+          placeholder={t.exemploTitulo}
           onChange={(e) => setTitulo(e.target.value)}
         />
-        <p className="tela-nova__ajuda-titulo">
-          Sem título, a reunião fica com o nome padrão: “Reunião” e o
-          número dela. Dá para mudar depois, no detalhe.
-        </p>
+        <p className="tela-nova__ajuda-titulo">{t.ajudaTitulo}</p>
       </div>
 
       <div className="tela-nova__rodape">
@@ -515,10 +506,10 @@ export function NovaReuniao() {
           disabled={!arquivo || enviando}
           onClick={transcrever}
         >
-          {enviando ? "Enviando…" : "Transcrever"}
+          {enviando ? t.enviando : t.transcrever}
         </button>
         <span className="tela-nova__rodape-nota">
-          Cerca de 6 minutos por hora de áudio. Nada sai desta máquina.
+          {t.notaRodape}
         </span>
       </div>
       {erroEnvio && <p className="tela-nova__erro">{erroEnvio}</p>}

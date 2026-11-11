@@ -1,6 +1,8 @@
 import type { ResumoReuniao } from "../api/reunioes";
 import { corDaVoz } from "../vozes/corDaVoz";
 import { ehVozSemPessoa, ordemDaBarra } from "../util/falante";
+import { numero } from "../util/numeros";
+import { useTextos } from "../i18n/textos";
 import "./BarraFala.css";
 
 /**
@@ -17,6 +19,8 @@ export function BarraFala({
   dinamica: ResumoReuniao["dinamica"];
   indiceGaleria: Map<string, number>;
 }) {
+  const textos = useTextos();
+  const t = textos.correcao;
   if (!dinamica) return null;
   // Voz sem pessoa (DESCONHECIDO_/IGNORADO_) vai pro fim, em --tinta-tenue
   // (SKILL.md: o tom de falante nao identificado) - nunca uma cor de voz
@@ -26,12 +30,16 @@ export function BarraFala({
     <div
       className="barra-fala"
       role="img"
-      aria-label={`Tempo de fala: ${itens
-        .map(
-          (d) =>
-            `${ehVozSemPessoa(d.pessoa) ? "voz não atribuída" : d.pessoa} ${Math.round(d.fala_pct)}%`,
-        )
-        .join(", ")}`}
+      aria-label={t.tempoDeFala(
+        itens
+          .map((d) =>
+            t.itemTempoDeFala(
+              ehVozSemPessoa(d.pessoa) ? textos.formatos.vozSemPessoa : d.pessoa,
+              numero(Math.round(d.fala_pct)),
+            ),
+          )
+          .join(", "),
+      )}
     >
       {itens.map((d) => (
         <span

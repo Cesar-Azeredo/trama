@@ -15,6 +15,7 @@ import {
 import { BotaoPlay } from "../componentes/BotaoPlay";
 import { PainelCorrecao } from "../componentes/PainelCorrecao";
 import type { useReprodutor } from "../audio/useReprodutor";
+import { useTextos } from "../i18n/textos";
 import "./ConferirTermos.css";
 
 type Resposta = "certo" | "corrigir" | null;
@@ -34,6 +35,7 @@ function ItemParaConferir({
   aoResponder: (mensagem: string) => void;
   aoRecarregar: () => void;
 }) {
+  const t = useTextos().conferir;
   const [aberta, setAberta] = useState<Resposta>(null);
   const [descricao, setDescricao] = useState("");
   const [ocupado, setOcupado] = useState(false);
@@ -61,13 +63,13 @@ function ItemParaConferir({
         <BotaoPlay
           tocando={reprodutor.urlTocando === url}
           aoClicar={() => reprodutor.alternar(url)}
-          rotulo={`o trecho com ${item.forma}`}
+          rotulo={t.oTrechoCom(item.forma)}
         />
         <div>
           <p className="conferir__forma">
             {item.forma}{" "}
             <span className="conferir__vezes">
-              {item.total} {item.total === 1 ? "vez" : "vezes"} nesta reunião
+              {t.vezesNestaReuniao(item.total)}
             </span>
           </p>
           <p
@@ -91,7 +93,7 @@ function ItemParaConferir({
             onClick={() => setAberta("certo")}
             disabled={ocupado}
           >
-            Está certo
+            {t.estaCerto}
           </button>
           <button
             type="button"
@@ -99,17 +101,17 @@ function ItemParaConferir({
             onClick={() => setAberta("corrigir")}
             disabled={ocupado || !fala}
           >
-            Corrigir para…
+            {t.corrigirPara}
           </button>
           <button
             type="button"
             className="conferir__discreto"
             onClick={() =>
-              responder(() => marcarRespondido(item.forma), `“${item.forma}” ignorado.`)
+              responder(() => marcarRespondido(item.forma), t.ignorado(item.forma))
             }
             disabled={ocupado}
           >
-            Ignorar
+            {t.ignorar}
           </button>
         </div>
       )}
@@ -121,12 +123,12 @@ function ItemParaConferir({
             e.preventDefault();
             responder(
               () => adicionarTermo(item.forma, descricao),
-              `“${item.forma}” agora é um termo da empresa.`,
+              t.agoraETermo(item.forma),
             );
           }}
         >
           <label className="conferir__rotulo" htmlFor={`certo-${item.forma}`}>
-            O que é {item.forma}? <span className="conferir__opcional">opcional</span>
+            {t.oQueE(item.forma)} <span className="conferir__opcional">{t.opcional}</span>
           </label>
           <input
             id={`certo-${item.forma}`}
@@ -138,10 +140,10 @@ function ItemParaConferir({
           />
           <div className="conferir__respostas">
             <button type="submit" className="conferir__botao" disabled={ocupado}>
-              {ocupado ? "Gravando…" : "Confirmar"}
+              {ocupado ? t.gravando : t.confirmar}
             </button>
             <button type="button" className="conferir__discreto" onClick={() => setAberta(null)}>
-              Voltar
+              {t.voltar}
             </button>
           </div>
         </form>
@@ -157,13 +159,13 @@ function ItemParaConferir({
           fim={o.posicao + o.comprimento}
           topo={0}
           aoFechar={() => {
-            if (corrigidoEmTodas) aoResponder(`“${item.forma}” corrigido.`);
+            if (corrigidoEmTodas) aoResponder(t.corrigido(item.forma));
             else setAberta(null);
           }}
           // So nesta fala: nas proximas reunioes a forma poderia ser certa
           // - guarda que ja foi respondida, para nao perguntar de novo.
           aoCorrigirFala={() =>
-            responder(() => marcarRespondido(item.forma), `“${item.forma}” corrigido nesta fala.`)
+            responder(() => marcarRespondido(item.forma), t.corrigidoNestaFala(item.forma))
           }
           aoCorrigirEmTodas={() => {
             setCorrigidoEmTodas(true);
@@ -197,6 +199,7 @@ export function ConferirTermos({
   reprodutor: ReturnType<typeof useReprodutor>;
   aoConcluir: () => void;
 }) {
+  const t = useTextos().conferir;
   const [itens, setItens] = useState<TermoParaConferir[] | null>(null);
   const [dados, setDados] = useState<DetalheReuniao | null>(null);
   const [erro, setErro] = useState<string | null>(null);
@@ -238,32 +241,28 @@ export function ConferirTermos({
       <section className="conferir">
         <p className="conferir__erro">{erro}</p>
         <button type="button" className="conferir__botao" onClick={aoConcluir}>
-          Ir para a reunião
+          {t.irParaReuniao}
         </button>
       </section>
     );
   }
   if (itens === null || dados === null) {
-    return <p className="conferir__nota">Procurando termos para conferir…</p>;
+    return <p className="conferir__nota">{t.procurando}</p>;
   }
 
   return (
     <section className="conferir" aria-labelledby="conferir-titulo">
       <h2 className="conferir__titulo" id="conferir-titulo">
-        Termos para conferir
+        {t.titulo}
       </h2>
-      <p className="conferir__nota">
-        As vozes estão salvas. Estas palavras podem ter sido transcritas
-        errado - ouça e responda as que quiser. Nada aqui é obrigatório, e
-        uma resposta dada não é perguntada de novo.
-      </p>
+      <p className="conferir__nota">{t.nota}</p>
       {ultima && (
         <p className="conferir__feito" role="status">
           {ultima}
         </p>
       )}
       {itens.length === 0 ? (
-        <p className="conferir__nota">Tudo respondido.</p>
+        <p className="conferir__nota">{t.tudoRespondido}</p>
       ) : (
         <ul className="conferir__lista">
           {itens.map((item) => (
@@ -284,7 +283,7 @@ export function ConferirTermos({
       )}
       <div className="conferir__rodape">
         <button type="button" className="botao-salvar-revisao" onClick={aoConcluir}>
-          {itens.length === 0 ? "Ir para a reunião" : "Concluir"}
+          {itens.length === 0 ? t.irParaReuniao : t.concluir}
         </button>
       </div>
     </section>

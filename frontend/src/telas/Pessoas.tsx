@@ -11,14 +11,9 @@ import { corDaVoz } from "../vozes/corDaVoz";
 import { useIndiceGaleria, useRecarregarGaleria } from "../vozes/useIndiceGaleria";
 import { perfilEmFormacao } from "../vozes/perfil";
 import { formatarTitulo, numeroDaReuniao } from "../util/formatarReuniao";
+import { useTextos } from "../i18n/textos";
+import { numero } from "../util/numeros";
 import "./Pessoas.css";
-
-const TEXTO_CELULA: Record<EstadoCelula | "ausente" | "sem_dados", string> = {
-  confirmada: "presença confirmada",
-  na_sala: "estava na sala, presença não confirmada",
-  ausente: "ausente",
-  sem_dados: "reunião ainda não processada",
-};
 
 /**
  * Uma celula de 24px por reuniao. Preenchida na cor da pessoa = presenca
@@ -39,8 +34,10 @@ function Celula({
   estado: EstadoCelula | undefined;
   cor: string;
 }) {
+  const t = useTextos().pessoas;
+  const textoCelula: Record<EstadoCelula | "ausente" | "sem_dados", string> = t.celula;
   const tipo = !reuniao.processada ? "sem_dados" : (estado ?? "ausente");
-  const rotulo = `${formatarTitulo(reuniao.id)}: ${TEXTO_CELULA[tipo]}`;
+  const rotulo = t.rotuloCelula(formatarTitulo(reuniao.id), textoCelula[tipo]);
   const estilo =
     tipo === "confirmada"
       ? { background: cor, borderColor: cor }
@@ -58,8 +55,8 @@ function Celula({
   );
 }
 
-function formatarSegundos(s: number): string {
-  return `${Math.round(s)} s`;
+function formatarSegundos(s: number, t: { segundos: (valor: string) => string }): string {
+  return t.segundos(numero(Math.round(s)));
 }
 
 function ConfirmarExclusao({
@@ -75,22 +72,17 @@ function ConfirmarExclusao({
   aoConfirmar: () => void;
   aoCancelar: () => void;
 }) {
+  const t = useTextos().pessoas;
   return (
     <div className="confirmar-exclusao" role="alertdialog" aria-labelledby="confirmar-titulo">
       <p className="confirmar-exclusao__titulo" id="confirmar-titulo">
-        Excluir a voz de {pessoa.nome}?
+        {t.confirmarTitulo(pessoa.nome)}
       </p>
       <p className="confirmar-exclusao__texto">
-        Apaga o perfil de voz e tudo o que foi aprendido dela em cada
-        reunião revisada ({pessoa.total_reunioes}{" "}
-        {pessoa.total_reunioes === 1 ? "reunião" : "reuniões"}). Não dá para
-        desfazer. As transcrições continuam com o nome de quem falou; só a voz
-        sai do banco. Cópias de segurança antigas do banco (arquivos
-        vozes.db.bak) não são alteradas.
+        {t.confirmarTexto(pessoa.total_reunioes)}
       </p>
       <p className="confirmar-exclusao__texto">
-        Se a voz de {pessoa.nome} for confirmada de novo numa revisão, ela
-        volta a ser aprendida a partir dali.
+        {t.confirmarVolta(pessoa.nome)}
       </p>
       <div className="confirmar-exclusao__acoes">
         <button
@@ -99,7 +91,7 @@ function ConfirmarExclusao({
           onClick={aoConfirmar}
           disabled={excluindo}
         >
-          {excluindo ? "Excluindo…" : `Excluir a voz de ${pessoa.nome}`}
+          {excluindo ? t.excluindo : t.excluirVozDe(pessoa.nome)}
         </button>
         <button
           type="button"
@@ -108,7 +100,7 @@ function ConfirmarExclusao({
           disabled={excluindo}
           autoFocus
         >
-          Cancelar
+          {t.cancelar}
         </button>
       </div>
       {erro && <p className="confirmar-exclusao__erro">{erro}</p>}
@@ -117,30 +109,32 @@ function ConfirmarExclusao({
 }
 
 function Legenda() {
+  const t = useTextos().pessoas;
   return (
-    <ul className="legenda-participacao" aria-label="Legenda">
+    <ul className="legenda-participacao" aria-label={t.legenda}>
       <li>
         <span className="celula celula--confirmada celula--legenda" aria-hidden="true" />
-        presença confirmada na revisão
+        {t.legendaConfirmada}
       </li>
       <li>
         <span className="celula celula--na_sala celula--legenda" aria-hidden="true" />
-        estava na sala, não confirmada (ainda não revisada, ou cluster
-        ignorado)
+        {t.legendaNaSala}
       </li>
       <li>
         <span className="celula celula--ausente" aria-hidden="true" />
-        ausente
+        {t.legendaAusente}
       </li>
       <li>
         <span className="celula celula--sem_dados" aria-hidden="true" />
-        reunião ainda não processada
+        {t.legendaSemDados}
       </li>
     </ul>
   );
 }
 
 export function Pessoas() {
+  const textos = useTextos();
+  const t = textos.pessoas;
   const [dados, setDados] = useState<Participacao | null>(null);
   const [erro, setErro] = useState<string | null>(null);
   const [versao, setVersao] = useState(0);
@@ -173,8 +167,8 @@ export function Pessoas() {
       setConfirmando(null);
       setAviso(
         r.removidos.compactado
-          ? `A voz de ${nome} foi excluída.`
-          : `A voz de ${nome} foi excluída, mas o arquivo do banco não pôde ser compactado agora - restos do perfil podem continuar no arquivo até a próxima exclusão.`,
+          ? t.vozExcluida(nome)
+          : t.vozExcluidaSemCompactar(nome),
       );
       recarregarGaleria();
       setVersao((v) => v + 1);
@@ -191,7 +185,7 @@ export function Pessoas() {
 
   return (
     <main className="tela-pessoas">
-      <h1 className="tela-pessoas__titulo">Pessoas</h1>
+      <h1 className="tela-pessoas__titulo">{textos.comum.pessoas}</h1>
 
       {aviso && (
         <p className="tela-pessoas__aviso" role="status">
@@ -200,12 +194,11 @@ export function Pessoas() {
       )}
       {erro && <p className="tela-pessoas__erro">{erro}</p>}
       {!erro && dados === null && (
-        <p className="tela-pessoas__estado">Carregando pessoas…</p>
+        <p className="tela-pessoas__estado">{t.carregando}</p>
       )}
       {dados && dados.pessoas.length === 0 && (
         <p className="tela-pessoas__estado">
-          Nenhuma voz aprendida ainda. A primeira aparece quando você
-          confirmar quem é cada voz na revisão de uma reunião.
+          {t.semPessoas}
         </p>
       )}
 
@@ -215,10 +208,10 @@ export function Pessoas() {
             <table className="tabela-pessoas" role="table">
               <thead className="tabela-pessoas__cabecalho" role="rowgroup">
                 <tr role="row">
-                  <th scope="col" role="columnheader" className="tabela-pessoas__th">Pessoa</th>
-                  <th scope="col" role="columnheader" className="tabela-pessoas__th">Voz aprendida</th>
+                  <th scope="col" role="columnheader" className="tabela-pessoas__th">{t.colunaPessoa}</th>
+                  <th scope="col" role="columnheader" className="tabela-pessoas__th">{t.colunaVoz}</th>
                   <th scope="col" role="columnheader" className="tabela-pessoas__th">
-                    <span className="so-leitor-de-tela">Participação por reunião</span>
+                    <span className="so-leitor-de-tela">{t.colunaParticipacao}</span>
                     <span className="grade grade--cabecalho" aria-hidden="true">
                       {dados.reunioes.map((r) => (
                         <span key={r.id} className="grade__numero numeros">
@@ -227,9 +220,9 @@ export function Pessoas() {
                       ))}
                     </span>
                   </th>
-                  <th scope="col" role="columnheader" className="tabela-pessoas__th">Reuniões</th>
+                  <th scope="col" role="columnheader" className="tabela-pessoas__th">{textos.comum.reunioes}</th>
                   <th scope="col" role="columnheader" className="tabela-pessoas__th">
-                    <span className="so-leitor-de-tela">Ações</span>
+                    <span className="so-leitor-de-tela">{t.colunaAcoes}</span>
                   </th>
                 </tr>
               </thead>
@@ -249,12 +242,12 @@ export function Pessoas() {
                         </span>
                         {perfilEmFormacao(p.peso_s) && (
                           <span className="tabela-pessoas__formacao">
-                            perfil em formação
+                            {t.perfilEmFormacao}
                           </span>
                         )}
                       </th>
                       <td role="cell" className="tabela-pessoas__voz">
-                        <span className="numeros">{formatarSegundos(p.peso_s)}</span>
+                        <span className="numeros">{formatarSegundos(p.peso_s, t)}</span>
                         <span className="barra-voz" aria-hidden="true">
                           <span
                             className="barra-voz__preenchido"
@@ -288,7 +281,7 @@ export function Pessoas() {
                         <span className="numeros">{p.total_reunioes}</span>
                         {p.ultima && (
                           <>
-                            {" · última "}
+                            {t.ultima}
                             <a
                               className="tabela-pessoas__link"
                               href={`#/reuniao/${p.ultima}`}
@@ -307,9 +300,9 @@ export function Pessoas() {
                             setErroExclusao(null);
                             setConfirmando(p.nome);
                           }}
-                          aria-label={`Excluir a voz de ${p.nome}`}
+                          aria-label={t.excluirVozDe(p.nome)}
                         >
-                          Excluir
+                          {t.excluir}
                         </button>
                       </td>
                     </tr>
@@ -337,11 +330,7 @@ export function Pessoas() {
       )}
 
       <p className="tela-pessoas__explicacao">
-        Não existe cadastro de voz. O perfil de cada pessoa é colhido das
-        próprias reuniões, quando você confirma na revisão quem é cada voz, e
-        fica mais estável a cada revisão. Uma gravação avulsa, feita em outro
-        lugar e com outro aparelho, soa diferente demais da sala de reunião
-        para servir de base.
+        {t.explicacao}
       </p>
     </main>
   );

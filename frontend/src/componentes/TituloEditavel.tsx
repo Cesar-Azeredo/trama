@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, type KeyboardEvent } from "react";
 import { salvarTitulo, TITULO_MAX_LEN } from "../api/reunioes";
 import { formatarTitulo } from "../util/formatarReuniao";
+import { useTextos } from "../i18n/textos";
 import "./TituloEditavel.css";
 
 /**
@@ -22,6 +23,7 @@ export function TituloEditavel({
   titulo: string | null;
   aoMudar: (titulo: string | null) => void;
 }) {
+  const t = useTextos().correcao;
   const [editando, setEditando] = useState(false);
   const [texto, setTexto] = useState(titulo ?? "");
   const [salvando, setSalvando] = useState(false);
@@ -87,7 +89,7 @@ export function TituloEditavel({
           type="button"
           className="titulo-editavel__botao"
           onClick={abrir}
-          title="Clique para editar o título"
+          title={t.cliqueParaEditarTitulo}
         >
           {titulo || formatarTitulo(id)}
         </button>
@@ -98,7 +100,7 @@ export function TituloEditavel({
   return (
     <div className="titulo-editavel__edicao">
       <label className="so-leitor-de-tela" htmlFor={`titulo-${id}`}>
-        Título da reunião
+        {t.tituloDaReuniao}
       </label>
       <input
         ref={campoRef}
@@ -118,7 +120,7 @@ export function TituloEditavel({
         aria-describedby={`titulo-ajuda-${id}`}
       />
       <p className="titulo-editavel__ajuda" id={`titulo-ajuda-${id}`} role={erro ? "alert" : undefined}>
-        {erro ?? "Enter grava, Esc cancela. Vazio volta para o nome padrão."}
+        {erro ?? t.ajudaTitulo}
       </p>
     </div>
   );

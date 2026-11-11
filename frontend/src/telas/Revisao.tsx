@@ -17,6 +17,8 @@ import { ConferirTermos } from "./ConferirTermos";
 import { useReprodutor } from "../audio/useReprodutor";
 import { useRecarregarGaleria } from "../vozes/useIndiceGaleria";
 import { tituloDaReuniao } from "../util/formatarReuniao";
+import { numero } from "../util/numeros";
+import { useTextos, type Catalogo } from "../i18n/textos";
 import "./Revisao.css";
 
 const PREFIXO_DESCONHECIDO = "DESCONHECIDO";
@@ -64,26 +66,11 @@ function modoInicial(cluster: Cluster): Modo {
   return "aprender";
 }
 
-const OPCOES_MODO: { valor: Modo; rotulo: string; explicacao: string }[] = [
-  {
-    valor: "aprender",
-    rotulo: "Confirmar e aprender a voz",
-    explicacao:
-      "O nome vai para o transcript e esta voz passa a fazer parte do perfil da pessoa.",
-  },
-  {
-    valor: "so_nomear",
-    rotulo: "Só nomear, sem aprender",
-    explicacao:
-      "O nome vai para o transcript, mas o perfil de voz de ninguém muda. Use quando a voz é quase toda de uma pessoa, com trechos de outras.",
-  },
-  {
-    valor: "ignorar",
-    rotulo: "Ignorar este cluster",
-    explicacao:
-      "O nome não é gravado e o perfil de voz de ninguém é atualizado com este cluster. Use quando a voz estiver misturada demais para ter um nome.",
-  },
-];
+/** Ordem das opcoes na tela; rotulo e explicacao de cada uma vem do
+ * catalogo (useTextos().revisao.modos[valor]). */
+const OPCOES_MODO: Modo[] = ["aprender", "so_nomear", "ignorar"];
+
+type TextosRevisao = Catalogo["revisao"];
 
 /**
  * Ate n trechos do cluster para ouvir na revisao. MESMO criterio de
@@ -162,9 +149,9 @@ function selecionarTrechos(falas: Fala[], label: string, n = 3): Fala[] {
   return espalharNoTempo(candidatos, trechos, n);
 }
 
-function descricaoSimilaridade(sim: number, simMin: number): string {
-  if (sim < simMin) return "abaixo do limiar";
-  return sim - simMin > 0.1 ? "com folga" : "raspando no limiar";
+function descricaoSimilaridade(sim: number, simMin: number, t: TextosRevisao): string {
+  if (sim < simMin) return t.abaixoDoLimiar;
+  return sim - simMin > 0.1 ? t.comFolga : t.raspandoNoLimiar;
 }
 
 function TrechoTocavel({
@@ -176,6 +163,7 @@ function TrechoTocavel({
   fala: Fala;
   reprodutor: ReturnType<typeof useReprodutor>;
 }) {
+  const t = useTextos().revisao;
   const url = urlAudioTrecho(id, fala.inicio, fala.fim);
   const tocando = reprodutor.urlTocando === url;
   return (
@@ -183,7 +171,7 @@ function TrechoTocavel({
       <BotaoPlay
         tocando={tocando}
         aoClicar={() => reprodutor.alternar(url)}
-        rotulo={`trecho de ${fala.inicio.toFixed(0)}s`}
+        rotulo={t.trechoEm(fala.inicio.toFixed(0))}
       />
       <p className={"trecho-tocavel__texto" + (tocando ? " trecho-tocando" : "")}>
         {fala.texto}
@@ -199,6 +187,7 @@ function BarraSimilaridade({
   sim: number;
   simMin: number;
 }) {
+  const t = useTextos().revisao;
   const passou = sim >= simMin;
   return (
     <div className="barra-similaridade">
@@ -213,11 +202,11 @@ function BarraSimilaridade({
         <span
           className="barra-similaridade__limiar"
           style={{ left: `${Math.min(simMin, 1) * 100}%` }}
-          title={`limiar SIM_MIN = ${simMin.toFixed(2)}`}
+          title={t.limiarSimMin(numero(simMin, 2))}
         />
       </div>
       <span className="barra-similaridade__valor numeros">
-        {sim.toFixed(3)}
+        {numero(sim, 3)}
       </span>
       <span
         className={
@@ -225,7 +214,7 @@ function BarraSimilaridade({
           (passou ? "" : " barra-similaridade__descricao--falhou")
         }
       >
-        {descricaoSimilaridade(sim, simMin)}
+        {descricaoSimilaridade(sim, simMin, t)}
       </span>
     </div>
   );
@@ -260,18 +249,19 @@ function CartaoCluster({
   aoMudarModo: (modo: Modo) => void;
   reprodutor: ReturnType<typeof useReprodutor>;
 }) {
+  const t = useTextos().revisao;
   const ignorado = modo === "ignorar";
   const candidatos = Object.entries(cluster.scores)
     .sort((a, b) => b[1] - a[1])
     .slice(0, 3);
-  const explicacao = OPCOES_MODO.find((o) => o.valor === modo)!.explicacao;
+  const explicacao = t.modos[modo].explicacao;
 
   return (
     <div className="cartao-cluster">
       <div className="cartao-cluster__cabecalho">
         <span className="cartao-cluster__rotulo">{label}</span>
         <span className="cartao-cluster__fala-s numeros">
-          {cluster.fala_s.toFixed(0)}s de fala
+          {t.segundosDeFala(cluster.fala_s.toFixed(0))}
         </span>
       </div>
 
@@ -280,7 +270,7 @@ function CartaoCluster({
       {candidatos.length > 0 && (
         <p className="cartao-cluster__candidatos">
           {candidatos
-            .map(([nome, score]) => `${nome} ${score.toFixed(3)}`)
+            .map(([nome, score]) => `${nome} ${numero(score, 3)}`)
             .join(" · ")}
         </p>
       )}
@@ -292,7 +282,7 @@ function CartaoCluster({
       </div>
 
       <label className="cartao-cluster__campo">
-        <span className="cartao-cluster__campo-rotulo">Quem é?</span>
+        <span className="cartao-cluster__campo-rotulo">{t.quemE}</span>
         <input
           type="text"
           className="cartao-cluster__input"
@@ -301,9 +291,9 @@ function CartaoCluster({
           onChange={(e) => aoMudarNome(e.target.value)}
           placeholder={
             ignorado
-              ? "Ignorado"
+              ? t.ignorado
               : ehDesconhecido(cluster.nome) || ehIgnorado(cluster.nome)
-                ? "Nome da pessoa"
+                ? t.nomeDaPessoa
                 : cluster.nome
           }
           maxLength={NOME_MAX_LEN}
@@ -319,18 +309,18 @@ function CartaoCluster({
       <div
         className="cartao-cluster__modos"
         role="radiogroup"
-        aria-label={`O que fazer com ${label}`}
+        aria-label={t.oQueFazerCom(label)}
       >
-        {OPCOES_MODO.map((o) => (
-          <label key={o.valor} className="cartao-cluster__modo">
+        {OPCOES_MODO.map((valor) => (
+          <label key={valor} className="cartao-cluster__modo">
             <input
               type="radio"
               name={`modo-${label}`}
-              value={o.valor}
-              checked={modo === o.valor}
-              onChange={() => aoMudarModo(o.valor)}
+              value={valor}
+              checked={modo === valor}
+              onChange={() => aoMudarModo(valor)}
             />
-            {o.rotulo}
+            {t.modos[valor].rotulo}
           </label>
         ))}
       </div>
@@ -346,17 +336,16 @@ function segundos(s: number): string {
 /** Uma frase por efeito, com o numero - "Isso vai ensinar 110 s da voz de
  * Celso.", "Isso vai remover 64 s da voz de Luciano." Nenhuma voz entra
  * nem sai do banco sem a pessoa ver e confirmar. */
-function fraseDoEfeito(e: EfeitoNoLedger): string {
+function fraseDoEfeito(e: EfeitoNoLedger, t: TextosRevisao): string {
   if (e.tipo === "ensinar") {
-    return `Isso vai ensinar ${segundos(e.peso_s)} da voz de ${e.pessoa}.`;
+    return t.ensinar(segundos(e.peso_s), e.pessoa);
   }
   const base =
     e.tipo === "mover"
-      ? `Isso vai mover ${segundos(e.peso_s)} da voz de ${e.pessoa} para ${e.para}.`
-      : `Isso vai remover ${segundos(e.peso_s)} da voz de ${e.pessoa}.`;
-  return e.perfil_some
-    ? `${base} ${e.pessoa} fica sem voz aprendida e sai da galeria.`
-    : base;
+      ? t.mover(segundos(e.peso_s), e.pessoa, e.para ?? "")
+      : t.remover(segundos(e.peso_s), e.pessoa);
+  // Duas frases inteiras, cada uma traduzida por si - so o espaco entre elas.
+  return e.perfil_some ? `${base} ${t.perfilSome(e.pessoa)}` : base;
 }
 
 function AvisoLedger({
@@ -370,16 +359,17 @@ function AvisoLedger({
   aoConfirmar: () => void;
   aoVoltar: () => void;
 }) {
+  const t = useTextos().revisao;
   return (
     <div className="aviso-ledger" role="alertdialog" aria-labelledby="aviso-ledger-titulo">
       <p className="aviso-ledger__titulo" id="aviso-ledger-titulo">
-        Esta revisão muda a voz aprendida
+        {t.avisoLedgerTitulo}
       </p>
       <ul className="aviso-ledger__lista">
         {efeitos.map((e) => (
           <li key={e.cluster}>
             <span className="aviso-ledger__cluster">{e.cluster}</span>{" "}
-            {fraseDoEfeito(e)}
+            {fraseDoEfeito(e, t)}
           </li>
         ))}
       </ul>
@@ -390,7 +380,7 @@ function AvisoLedger({
           onClick={aoConfirmar}
           disabled={salvando}
         >
-          {salvando ? "Salvando…" : "Confirmar e salvar"}
+          {salvando ? t.salvando : t.confirmarESalvar}
         </button>
         <button
           type="button"
@@ -399,7 +389,7 @@ function AvisoLedger({
           disabled={salvando}
           autoFocus
         >
-          Voltar e rever
+          {t.voltarERever}
         </button>
       </div>
     </div>
@@ -407,6 +397,7 @@ function AvisoLedger({
 }
 
 export function Revisao({ id }: { id: string }) {
+  const t = useTextos().revisao;
   const [dados, setDados] = useState<DetalheReuniao | null>(null);
   const [erro, setErro] = useState<string | null>(null);
   const [nomesGaleria, setNomesGaleria] = useState<string[]>([]);
@@ -535,13 +526,13 @@ export function Revisao({ id }: { id: string }) {
 
       {erro && <p className="tela-revisao__erro">{erro}</p>}
       {!erro && dados === null && (
-        <p className="tela-revisao__estado">Carregando reunião…</p>
+        <p className="tela-revisao__estado">{t.carregandoReuniao}</p>
       )}
 
       {!erro && dados !== null && !temResultadoProcessado(dados) && (
         <p className="tela-revisao__estado">
           {dados.estado === "nao_processada"
-            ? "Esta reunião ainda não foi processada - não há clusters para revisar."
+            ? t.naoProcessada
             : dados.acao_processar.motivo}
         </p>
       )}
@@ -549,7 +540,7 @@ export function Revisao({ id }: { id: string }) {
       {!erro && dados !== null && temResultadoProcessado(dados) && etapa === "termos" && (
         <>
           <h1 className="tela-revisao__titulo">
-            Revisar {tituloDaReuniao(id, dados.titulo)}
+            {t.titulo(tituloDaReuniao(id, dados.titulo))}
           </h1>
           <ConferirTermos
             id={id}
@@ -564,16 +555,12 @@ export function Revisao({ id }: { id: string }) {
       {!erro && dados !== null && temResultadoProcessado(dados) && etapa === "vozes" && (
         <>
           <h1 className="tela-revisao__titulo">
-            Revisar {tituloDaReuniao(id, dados.titulo)}
+            {t.titulo(tituloDaReuniao(id, dados.titulo))}
           </h1>
 
           {dados.limiares_origem === "atual" && (
             <p className="tela-revisao__aviso-limiar">
-              Esta reunião foi processada antes de o limiar ser gravado
-              por reunião. O limiar marcado abaixo é o de hoje
-              (SIM_MIN = {dados.sim_min.toFixed(2)}), não
-              necessariamente o que estava em vigor quando ela foi
-              processada.
+              {t.avisoLimiarAntigo(numero(dados.sim_min, 2))}
             </p>
           )}
 
@@ -621,10 +608,10 @@ export function Revisao({ id }: { id: string }) {
               onClick={salvar}
               disabled={salvando || avisoLedger !== null}
             >
-              {salvando ? "Salvando…" : "Salvar revisão"}
+              {salvando ? t.salvando : t.salvarRevisao}
             </button>
             <span className="tela-revisao__rodape-legenda">
-              Nada é gravado até confirmar aqui.
+              {t.nadaGravadoAteConfirmar}
             </span>
             {erroSalvar && (
               <span className="tela-revisao__rodape-erro">{erroSalvar}</span>

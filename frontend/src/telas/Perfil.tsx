@@ -41,6 +41,7 @@ function Secao({
  * "enviar" (perfil/perfilLocal.ts). */
 function Voce() {
   const perfil = usePerfilLocal();
+  const t = useTextos().perfil;
   const [galeria, setGaleria] = useState<string[] | null>(null);
 
   useEffect(() => {
@@ -72,7 +73,7 @@ function Voce() {
     <div className="perfil__campos">
       <div className="perfil__campo">
         <label className="perfil__rotulo-campo" htmlFor="perfil-nome">
-          Seu nome
+          {t.seuNome}
         </label>
         <input
           id="perfil-nome"
@@ -84,7 +85,7 @@ function Voce() {
       </div>
       <div className="perfil__campo">
         <label className="perfil__rotulo-campo" htmlFor="perfil-pessoa">
-          Você na galeria de vozes (opcional)
+          {t.voceNaGaleria}
         </label>
         <select
           id="perfil-pessoa"
@@ -95,27 +96,21 @@ function Voce() {
             salvarPerfil({ ...perfil, pessoa: e.target.value || null })
           }
         >
-          <option value="">Nenhuma</option>
+          <option value="">{t.nenhuma}</option>
           {opcoes.map((nome) => (
             <option key={nome} value={nome}>
-              {galeria?.includes(nome) ? nome : `${nome} (fora da galeria)`}
+              {galeria?.includes(nome) ? nome : t.foraDaGaleria(nome)}
             </option>
           ))}
         </select>
       </div>
-      <p className="perfil__nota">
-        Guardado só neste navegador. Não existe login: o app é de um
-        usuário, nesta máquina.
-      </p>
+      <p className="perfil__nota">{t.notaLocal}</p>
     </div>
   );
 }
 
-const OPCOES_TEMA: { valor: PreferenciaTema; rotulo: string }[] = [
-  { valor: "sistema", rotulo: "Seguir o sistema" },
-  { valor: "claro", rotulo: "Claro" },
-  { valor: "escuro", rotulo: "Escuro" },
-];
+/** O rotulo de cada opcao vem do catalogo (perfil.tema), no render. */
+const OPCOES_TEMA: PreferenciaTema[] = ["sistema", "claro", "escuro"];
 
 /**
  * Radio nativo (a semantica de "um de tres" e do navegador e do teclado:
@@ -131,26 +126,27 @@ const OPCOES_TEMA: { valor: PreferenciaTema; rotulo: string }[] = [
  */
 function Aparencia() {
   const preferencia = usePreferenciaTema();
+  const t = useTextos().perfil;
   return (
     <div className="perfil__opcoes" role="radiogroup" aria-labelledby="perfil-aparencia">
-      {OPCOES_TEMA.map((o) => (
+      {OPCOES_TEMA.map((valor) => (
         <label
-          key={o.valor}
+          key={valor}
           className={
             "perfil__opcao" +
-            (preferencia === o.valor ? " perfil__opcao--selecionada" : "")
+            (preferencia === valor ? " perfil__opcao--selecionada" : "")
           }
         >
           <input
             type="radio"
             name="tema"
             className="so-leitor-de-tela"
-            value={o.valor}
-            checked={preferencia === o.valor}
-            onChange={() => definirPreferenciaTema(o.valor)}
+            value={valor}
+            checked={preferencia === valor}
+            onChange={() => definirPreferenciaTema(valor)}
           />
-          <span className="perfil__opcao-texto" data-texto={o.rotulo}>
-            {o.rotulo}
+          <span className="perfil__opcao-texto" data-texto={t.tema[valor]}>
+            {t.tema[valor]}
           </span>
         </label>
       ))}
@@ -237,28 +233,29 @@ function useSistema(): { dados: Sistema | null; erro: string | null } {
 
 export function Perfil() {
   const { dados: sistema, erro: erroSistema } = useSistema();
-  const t = useTextos().perfil;
+  const textos = useTextos();
+  const t = textos.perfil;
 
   const carregandoSistema = !sistema && !erroSistema && (
-    <p className="perfil__vazio">Carregando…</p>
+    <p className="perfil__vazio">{t.carregando}</p>
   );
   const falhaSistema = erroSistema && <p className="perfil__erro">{erroSistema}</p>;
 
   return (
     <main className="tela-perfil">
-      <h1 className="tela-perfil__titulo">Perfil</h1>
+      <h1 className="tela-perfil__titulo">{textos.comum.perfil}</h1>
 
-      <Secao id="perfil-voce" rotulo="Você">
+      <Secao id="perfil-voce" rotulo={t.voce}>
         <Voce />
       </Secao>
 
-      <h2 className="tela-perfil__subtitulo">Configurações</h2>
+      <h2 className="tela-perfil__subtitulo">{t.configuracoes}</h2>
 
       {/* Mesma ordem do DOM em qualquer largura; acima de 1440px o
           Termos da empresa (a secao longa) ocupa a coluna da direita inteira e as
           outras quatro empilham na esquerda (Perfil.css, ADR 0015). */}
       <div className="perfil__configuracoes">
-      <Secao id="perfil-aparencia" rotulo="Aparência">
+      <Secao id="perfil-aparencia" rotulo={t.aparencia}>
         <Aparencia />
       </Secao>
 
@@ -267,52 +264,45 @@ export function Perfil() {
         <p className="perfil__nota">{t.idiomaNota}</p>
       </Secao>
 
-      <Secao id="perfil-termos" rotulo="Termos da empresa" classe="perfil__secao--glossario">
+      <Secao id="perfil-termos" rotulo={t.termosDaEmpresa} classe="perfil__secao--glossario">
         <TermosDaEmpresa />
       </Secao>
 
-      <Secao id="perfil-processamento" rotulo="Processamento">
+      <Secao id="perfil-processamento" rotulo={t.processamento}>
         {carregandoSistema}
         {falhaSistema}
         {sistema && (
           <>
             <dl className="perfil__dl">
-              <Linha rotulo="Dispositivo">
+              <Linha rotulo={t.dispositivo}>
                 {NOME_DEVICE[sistema.device] ?? sistema.device}
               </Linha>
-              <Linha rotulo="Motor de transcrição">
+              <Linha rotulo={t.motorDeTranscricao}>
                 {NOME_ASR[sistema.asr] ?? sistema.asr}
               </Linha>
             </dl>
-            <p className="perfil__nota">
-              Detectados nesta máquina, a cada transcrição. Não há o que
-              escolher aqui.
-            </p>
+            <p className="perfil__nota">{t.notaProcessamento}</p>
           </>
         )}
       </Secao>
 
-      <Secao id="perfil-dados" rotulo="Dados e privacidade">
+      <Secao id="perfil-dados" rotulo={t.dadosEPrivacidade}>
         {carregandoSistema}
         {falhaSistema}
         {sistema && (
           <dl className="perfil__dl">
-            <Linha rotulo="Áudios e transcrições">
+            <Linha rotulo={t.audiosETranscricoes}>
               <span className="perfil__caminho numeros">{sistema.pasta_audios}</span>
             </Linha>
-            <Linha rotulo="Banco de vozes">
+            <Linha rotulo={t.bancoDeVozes}>
               <span className="perfil__caminho numeros">{sistema.banco_vozes}</span>
             </Linha>
           </dl>
         )}
-        <p className="perfil__texto">
-          Nada sai desta máquina. O áudio, a transcrição e os perfis de voz
-          ficam nestes arquivos, e o app não faz nenhuma requisição para
-          fora.
-        </p>
+        <p className="perfil__texto">{t.notaPrivacidade}</p>
       </Secao>
 
-      <Secao id="perfil-sobre" rotulo="Sobre">
+      <Secao id="perfil-sobre" rotulo={t.sobre}>
         {carregandoSistema}
         {falhaSistema}
         {sistema && (
@@ -320,11 +310,7 @@ export function Perfil() {
             <p className="perfil__texto">
               Trama <span className="numeros">{sistema.versao}</span>
             </p>
-            <p className="perfil__texto">
-              Usa modelos e bibliotecas de terceiros. As atribuições abaixo são
-              exigidas pelas licenças; o texto completo está em ATRIBUICAO.md,
-              na pasta do app.
-            </p>
+            <p className="perfil__texto">{t.notaAtribuicoes}</p>
             <ul className="perfil__licencas">
               {sistema.licencas.map((l) => {
                 const licenca = itemDaLicenca(l, "licenca");

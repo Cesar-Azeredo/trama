@@ -14,6 +14,7 @@ import {
   type Fala,
   type FalaAlterada,
 } from "../api/reunioes";
+import { useTextos } from "../i18n/textos";
 import "./FalaEditavel.css";
 
 /**
@@ -48,6 +49,7 @@ export function FalaEditavel({
   /** O texto como a tela mostra (com as marcas) quando nao esta editando. */
   children: ReactNode;
 }) {
+  const t = useTextos().correcao;
   const [editando, setEditando] = useState(false);
   const [texto, setTexto] = useState(fala.texto);
   const [salvando, setSalvando] = useState(false);
@@ -158,8 +160,8 @@ export function FalaEditavel({
           type="button"
           className="botao-corrigir-fala"
           onClick={abrir}
-          aria-label="Editar o texto desta fala"
-          title="Editar o texto da fala inteira"
+          aria-label={t.editarFala}
+          title={t.tituloEditarFala}
         >
           <svg width="12" height="12" viewBox="0 0 14 14" aria-hidden="true">
             <path
@@ -179,7 +181,7 @@ export function FalaEditavel({
   return (
     <div className="linha-fala__texto fala-editavel__edicao" onBlur={aoSairDoBloco}>
       <label className="so-leitor-de-tela" htmlFor={idCampo}>
-        Texto da fala
+        {t.textoDaFala}
       </label>
       <textarea
         ref={campoRef}
@@ -203,7 +205,7 @@ export function FalaEditavel({
           id={`${idCampo}-ajuda`}
           role={erro ? "alert" : undefined}
         >
-          {erro ?? "Enter grava, Esc cancela."}
+          {erro ?? t.ajudaFala}
         </p>
         {fala.edicao_manual && (
           <button
@@ -214,9 +216,9 @@ export function FalaEditavel({
             // perde o foco, o blur grava o texto e o desfazer chega tarde.
             onMouseDown={(e) => e.preventDefault()}
             onClick={voltarAoOriginal}
-            title={`Texto transcrito: “${fala.edicao_manual.texto_original}”`}
+            title={t.textoTranscrito(fala.edicao_manual.texto_original)}
           >
-            Voltar ao original
+            {t.voltarAoOriginal}
           </button>
         )}
       </div>

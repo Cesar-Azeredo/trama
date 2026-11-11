@@ -1,6 +1,7 @@
 import { useRef } from "react";
 import type { Cluster, Evento, Turno } from "../api/reunioes";
 import { corDaVoz } from "../vozes/corDaVoz";
+import { useTextos } from "../i18n/textos";
 import "./FitaDeTempo.css";
 
 /**
@@ -31,6 +32,7 @@ export function FitaDeTempo({
   duracaoTotal: number;
   aoClicar: (tempo: number) => void;
 }) {
+  const t = useTextos().correcao;
   const ref = useRef<HTMLButtonElement>(null);
 
   function clicar(e: React.MouseEvent<HTMLButtonElement>) {
@@ -48,7 +50,7 @@ export function FitaDeTempo({
       type="button"
       className="fita-de-tempo"
       onClick={clicar}
-      aria-label="Fita de tempo da reunião inteira. Clique para saltar o transcript para aquele ponto."
+      aria-label={t.fitaDeTempo}
     >
       {turnos.map(([inicio, fim, rotulo], i) => {
         const nome = clusters[rotulo]?.nome ?? rotulo;

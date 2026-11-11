@@ -14,6 +14,8 @@ import {
   TERMO_MAX_LEN,
   type TermoDaEmpresa,
 } from "../../api/termos";
+import { useTextos } from "../../i18n/textos";
+import { numero } from "../../util/numeros";
 import { ReaplicarNasReunioes } from "./ReaplicarNasReunioes";
 
 /** A mesma comparacao do servidor (glossario._chave_variacao): sem acento,
@@ -48,6 +50,7 @@ function AdicionarVariacao({
   const [ocupado, setOcupado] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
   const id = useId();
+  const t = useTextos().termos;
   // A mesma variacao duas vezes no mesmo termo nunca entra - o servidor
   // tambem recusa; aqui so evita a ida e explica antes.
   const repetida = errado.trim()
@@ -80,8 +83,8 @@ function AdicionarVariacao({
       });
       aoTerminar(
         (r.total > 0
-          ? `“${previa.trecho}” corrigido em ${r.total} ${r.total === 1 ? "lugar" : "lugares"}.`
-          : `“${previa.trecho}” será corrigido nas próximas reuniões.`) +
+          ? t.corrigidoEm(previa.trecho, r.total)
+          : t.seraCorrigidoNasProximas(previa.trecho)) +
           (r.aviso ? ` ${r.aviso}` : ""),
       );
     } catch (e) {
@@ -91,6 +94,8 @@ function AdicionarVariacao({
       setOcupado(false);
     }
   }
+
+  const aparece = previa ? t.apareceVezesEmReunioes(previa.total, previa.reunioes.length) : null;
 
   return (
     <form
@@ -103,7 +108,7 @@ function AdicionarVariacao({
       }}
     >
       <label className="perfil__rotulo-campo" htmlFor={`${id}-errado`}>
-        Como aparece escrito errado
+        {t.comoApareceErrado}
       </label>
       <input
         id={`${id}-errado`}
@@ -118,22 +123,21 @@ function AdicionarVariacao({
       />
       {repetida && (
         <p className="perfil__nota" role="status">
-          “{repetida.errado}” já é uma variação de {termo}.
+          {t.jaEVariacao(repetida.errado, termo)}
         </p>
       )}
       {previa && !repetida && (
         <div className="termos__previa" aria-live="polite">
           {previa.total === 0 ? (
-            <p className="perfil__nota">
-              Não aparece em nenhuma reunião processada. Vale para as próximas.
-            </p>
+            <p className="perfil__nota">{t.naoApareceEmNenhuma}</p>
           ) : (
             <details>
               <summary>
-                Aparece <span className="numeros">{previa.total}</span>{" "}
-                {previa.total === 1 ? "vez" : "vezes"} em{" "}
-                <span className="numeros">{previa.reunioes.length}</span>{" "}
-                {previa.reunioes.length === 1 ? "reunião" : "reuniões"}
+                {aparece?.[0]}
+                <span className="numeros">{numero(previa.total)}</span>
+                {aparece?.[1]}
+                <span className="numeros">{numero(previa.reunioes.length)}</span>
+                {aparece?.[2]}
               </summary>
               <ul>
                 {previa.reunioes.flatMap((r) =>
@@ -163,15 +167,15 @@ function AdicionarVariacao({
           disabled={ocupado || !errado.trim() || !!repetida}
         >
           {ocupado
-            ? "Conferindo…"
+            ? t.conferindo
             : !previa
-              ? "Conferir"
+              ? t.conferir
               : previa.total === 0
-                ? "Adicionar"
-                : `Corrigir em ${previa.total} ${previa.total === 1 ? "lugar" : "lugares"}`}
+                ? t.adicionar
+                : t.corrigirEm(previa.total)}
         </button>
         <button type="button" className="perfil__botao-discreto" onClick={() => aoTerminar(null)}>
-          Cancelar
+          {t.cancelar}
         </button>
       </div>
     </form>
@@ -200,6 +204,7 @@ function DescricaoDoTermo({
   // da tela, ele nao pode gravar o texto que acabou de ser desfeito.
   const cancelado = useRef(false);
   const id = useId();
+  const t = useTextos().termos;
 
   async function gravar() {
     if (cancelado.current) {
@@ -211,10 +216,10 @@ function DescricaoDoTermo({
       if (!descricao) setAberto(false);
       return;
     }
-    setEstado("Salvando…");
+    setEstado(t.salvando);
     try {
       await definirDescricao(termo, valor);
-      setEstado("Salvo.");
+      setEstado(t.salvo);
       aoGravar();
     } catch (e) {
       setEstado((e as Error).message);
@@ -236,9 +241,9 @@ function DescricaoDoTermo({
           cancelado.current = false;
           setAberto(true);
         }}
-        aria-label={`Adicionar descrição de ${termo}`}
+        aria-label={t.adicionarDescricaoDe(termo)}
       >
-        + Adicionar descrição
+        {t.adicionarDescricao}
       </button>
     );
   }
@@ -246,7 +251,7 @@ function DescricaoDoTermo({
   return (
     <div className="termos__descricao">
       <label className="so-leitor-de-tela" htmlFor={id}>
-        Descrição de {termo}
+        {t.descricaoDe(termo)}
       </label>
       <input
         id={id}
@@ -256,7 +261,7 @@ function DescricaoDoTermo({
         // So quando abriu pelo link (termo sem descricao): com descricao,
         // o campo ja mostra o texto e nao rouba o foco ao carregar.
         autoFocus={descricao === ""}
-        placeholder="Descrição (ex.: ferramenta de aprovação de projetos)"
+        placeholder={t.descricaoExemplo}
         onChange={(e) => {
           setValor(e.target.value);
           setEstado(null);
@@ -304,6 +309,7 @@ export function TermosDaEmpresa() {
   const [novaDescricao, setNovaDescricao] = useState("");
   const [adicionando, setAdicionando] = useState(false);
   const id = useId();
+  const tx = useTextos().termos;
 
   function recarregar() {
     lerTermosDaEmpresa()
@@ -328,7 +334,7 @@ export function TermosDaEmpresa() {
     setAdicionando(true);
     await executar(
       () => adicionarTermo(novoTermo, novaDescricao),
-      `“${novoTermo.trim()}” adicionado.`,
+      tx.adicionado(novoTermo.trim()),
     );
     setNovoTermo("");
     setNovaDescricao("");
@@ -336,16 +342,11 @@ export function TermosDaEmpresa() {
   }
 
   if (erroCarga) return <p className="perfil__erro">{erroCarga}</p>;
-  if (termos === null) return <p className="perfil__vazio">Carregando termos…</p>;
+  if (termos === null) return <p className="perfil__vazio">{tx.carregandoTermos}</p>;
 
   return (
     <div className="termos">
-      <p className="perfil__texto">
-        Nomes, siglas e produtos da empresa, escritos do jeito certo. As formas
-        erradas embaixo de cada um são corrigidas sozinhas em toda transcrição
-        nova. O que é cada termo vai junto da transcrição baixada (.txt), para
-        quem ler entender.
-      </p>
+      <p className="perfil__texto">{tx.explicacao}</p>
 
       <ul className="termos__lista">
         {termos.map((t) => (
@@ -356,11 +357,11 @@ export function TermosDaEmpresa() {
                 type="button"
                 className="perfil__botao-discreto"
                 onClick={() =>
-                  executar(() => removerTermo(t.termo), `“${t.termo}” removido.`)
+                  executar(() => removerTermo(t.termo), tx.removido(t.termo))
                 }
-                aria-label={`Remover o termo ${t.termo}`}
+                aria-label={tx.removerOTermo(t.termo)}
               >
-                Remover termo
+                {tx.removerTermo}
               </button>
             </div>
             {/* key com a descricao: gravada (ou mudada por outra acao), o
@@ -373,7 +374,7 @@ export function TermosDaEmpresa() {
             />
             {t.variacoes.length > 0 && (
               <p className="termos__variacoes">
-                <span className="termos__rotulo-variacoes">Corrige:</span>{" "}
+                <span className="termos__rotulo-variacoes">{tx.corrige}</span>{" "}
                 {t.variacoes.map((v, k) => (
                   <span key={v.errado} className="termos__variacao">
                     {v.errado}
@@ -386,11 +387,11 @@ export function TermosDaEmpresa() {
                       onClick={() =>
                         executar(
                           () => removerVariacao(v.errado),
-                          `“${v.errado}” não será mais corrigido.`,
+                          tx.naoSeraMaisCorrigido(v.errado),
                         )
                       }
-                      aria-label={`Parar de corrigir ${v.errado}`}
-                      title="Parar de corrigir (o que já foi corrigido continua)"
+                      aria-label={tx.pararDeCorrigir(v.errado)}
+                      title={tx.pararDeCorrigirDica}
                     >
                       ×
                     </button>
@@ -417,7 +418,7 @@ export function TermosDaEmpresa() {
                 className="glossario__adicionar"
                 onClick={() => setVariacaoAberta(t.termo)}
               >
-                + Adicionar variação
+                {tx.adicionarVariacao}
               </button>
             )}
           </li>
@@ -431,27 +432,27 @@ export function TermosDaEmpresa() {
           adicionar();
         }}
       >
-        <p className="perfil__rotulo-campo">Adicionar termo</p>
+        <p className="perfil__rotulo-campo">{tx.adicionarTermo}</p>
         <label className="so-leitor-de-tela" htmlFor={`${id}-nome`}>
-          Nome do termo
+          {tx.nomeDoTermo}
         </label>
         <input
           id={`${id}-nome`}
           className="perfil__input"
           value={novoTermo}
           maxLength={TERMO_MAX_LEN}
-          placeholder="Nome, do jeito certo (ex.: MQX)"
+          placeholder={tx.nomeDoTermoExemplo}
           onChange={(e) => setNovoTermo(e.target.value)}
         />
         <label className="so-leitor-de-tela" htmlFor={`${id}-descricao`}>
-          O que é
+          {tx.oQueE}
         </label>
         <input
           id={`${id}-descricao`}
           className="perfil__input"
           value={novaDescricao}
           maxLength={DESCRICAO_MAX_LEN}
-          placeholder="O que é? (opcional)"
+          placeholder={tx.oQueEExemplo}
           onChange={(e) => setNovaDescricao(e.target.value)}
         />
         <div className="perfil__acoes perfil__acoes--sem-regua">
@@ -460,7 +461,7 @@ export function TermosDaEmpresa() {
             className="perfil__botao-primario"
             disabled={!novoTermo.trim() || adicionando}
           >
-            {adicionando ? "Adicionando…" : "Adicionar termo"}
+            {adicionando ? tx.adicionando : tx.adicionarTermo}
           </button>
         </div>
       </form>

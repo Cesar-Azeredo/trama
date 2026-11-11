@@ -4,7 +4,9 @@ import {
   reaplicarGlossario,
   type PreviaReaplicacao,
 } from "../../api/termos";
+import { useTextos } from "../../i18n/textos";
 import { formatarTitulo } from "../../util/formatarReuniao";
+import { numero } from "../../util/numeros";
 
 /**
  * Reaplica os termos da empresa SALVOS (o termos.txt inteiro) nas reunioes ja processadas (.json e .txt),
@@ -18,6 +20,7 @@ export function ReaplicarNasReunioes({ desabilitado }: { desabilitado: boolean }
   const [mensagem, setMensagem] = useState<{ tipo: "ok" | "erro"; texto: string } | null>(
     null,
   );
+  const t = useTextos().termos;
 
   async function verPrevia() {
     setOcupado(true);
@@ -41,9 +44,7 @@ export function ReaplicarNasReunioes({ desabilitado }: { desabilitado: boolean }
       setMensagem({
         tipo: "ok",
         texto:
-          r.aplicadas.length === 0
-            ? "Nada foi alterado."
-            : `Aplicado em ${r.aplicadas.length} ${r.aplicadas.length === 1 ? "reunião" : "reuniões"}.`,
+          r.aplicadas.length === 0 ? t.nadaFoiAlterado : t.aplicadoEm(r.aplicadas.length),
       });
     } catch (e) {
       setMensagem({ tipo: "erro", texto: (e as Error).message });
@@ -52,6 +53,10 @@ export function ReaplicarNasReunioes({ desabilitado }: { desabilitado: boolean }
       setOcupado(false);
     }
   }
+
+  const substituicoes = previa
+    ? t.substituicoesEmReunioes(previa.total, previa.reunioes.length)
+    : null;
 
   return (
     <div className="reaplicar">
@@ -63,24 +68,19 @@ export function ReaplicarNasReunioes({ desabilitado }: { desabilitado: boolean }
             onClick={verPrevia}
             disabled={desabilitado || ocupado}
           >
-            {ocupado ? "Conferindo…" : "Aplicar às reuniões já processadas"}
+            {ocupado ? t.conferindo : t.aplicarNasProcessadas}
           </button>
           <p className="perfil__nota">
-            {desabilitado
-              ? "Salve antes - a correção usa o que está gravado."
-              : "Mostra antes quantas substituições seriam feitas, e em quais reuniões. Nada muda até você confirmar."}
+            {desabilitado ? t.salveAntes : t.mostraAntes}
           </p>
         </>
       )}
 
       {previa && previa.total === 0 && (
         <div className="reaplicar__previa">
-          <p className="perfil__texto">
-            Nada a corrigir: as reuniões já processadas estão de acordo com os
-            termos da empresa.
-          </p>
+          <p className="perfil__texto">{t.nadaACorrigir}</p>
           <button type="button" className="perfil__botao-discreto" onClick={() => setPrevia(null)}>
-            Fechar
+            {t.fechar}
           </button>
         </div>
       )}
@@ -88,27 +88,24 @@ export function ReaplicarNasReunioes({ desabilitado }: { desabilitado: boolean }
       {previa && previa.total > 0 && (
         <div className="reaplicar__previa" role="alertdialog" aria-labelledby="reaplicar-titulo">
           <p className="reaplicar__titulo" id="reaplicar-titulo">
-            <span className="numeros">{previa.total}</span>{" "}
-            {previa.total === 1 ? "substituição" : "substituições"} em{" "}
-            <span className="numeros">{previa.reunioes.length}</span>{" "}
-            {previa.reunioes.length === 1 ? "reunião" : "reuniões"}
+            {substituicoes?.[0]}
+            <span className="numeros">{numero(previa.total)}</span>
+            {substituicoes?.[1]}
+            <span className="numeros">{numero(previa.reunioes.length)}</span>
+            {substituicoes?.[2]}
           </p>
           <ul className="reaplicar__lista">
             {previa.reunioes.map((r) => (
               <li key={r.id}>
                 <span className="reaplicar__reuniao">{formatarTitulo(r.id)}</span>{" "}
-                <span className="numeros">{r.substituicoes}</span> —{" "}
+                <span className="numeros">{numero(r.substituicoes)}</span> —{" "}
                 {Object.entries(r.por_termo)
-                  .map(([termo, n]) => `${termo} ×${n}`)
+                  .map(([termo, n]) => `${termo} ×${numero(n)}`)
                   .join(", ")}
               </li>
             ))}
           </ul>
-          <p className="perfil__nota">
-            Reescreve o texto (.json e .txt) dessas reuniões. As marcas de
-            posição (pista de palavra, confiança baixa, trecho sem texto)
-            acompanham a correção.
-          </p>
+          <p className="perfil__nota">{t.notaReescreve}</p>
           <div className="perfil__acoes perfil__acoes--sem-regua">
             <button
               type="button"
@@ -116,7 +113,7 @@ export function ReaplicarNasReunioes({ desabilitado }: { desabilitado: boolean }
               onClick={aplicar}
               disabled={ocupado}
             >
-              {ocupado ? "Aplicando…" : "Aplicar"}
+              {ocupado ? t.aplicando : t.aplicar}
             </button>
             <button
               type="button"
@@ -125,7 +122,7 @@ export function ReaplicarNasReunioes({ desabilitado }: { desabilitado: boolean }
               disabled={ocupado}
               autoFocus
             >
-              Cancelar
+              {t.cancelar}
             </button>
           </div>
         </div>

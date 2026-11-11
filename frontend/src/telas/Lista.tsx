@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { buscarNasFalas, BUSCA_MAX_LEN, type ReuniaoEncontrada } from "../api/busca";
 import { corDoTextoDaVoz } from "../vozes/corDaVoz";
+import { useTextos } from "../i18n/textos";
 import {
   listarReunioes,
   iniciarProcessamento,
@@ -39,6 +40,7 @@ function AcaoProcessar({
   erro: string | null;
   aoProcessar: (id: string) => void;
 }) {
+  const t = useTextos().lista;
   if (
     reuniao.estado !== "nao_processada" &&
     reuniao.estado !== "processando" &&
@@ -64,7 +66,7 @@ function AcaoProcessar({
           disabled={acionando}
           onClick={() => aoProcessar(reuniao.id)}
         >
-          {acionando ? "Iniciando…" : rotuloBotaoProcessar(reuniao.estado)}
+          {acionando ? t.iniciando : rotuloBotaoProcessar(reuniao.estado)}
         </button>
       )}
       {erro && <span className="linha-reuniao__erro-acao">{erro}</span>}
@@ -79,6 +81,7 @@ function AcaoProcessar({
  * coluna com zero (mesma regra da barra de fala - ausente e ausente).
  */
 function ColunaDinamica({ reuniao }: { reuniao: ResumoReuniao }) {
+  const t = useTextos().lista;
   const i = reuniao.interacao;
   return (
     <div className="linha-reuniao__dinamica">
@@ -87,16 +90,16 @@ function ColunaDinamica({ reuniao }: { reuniao: ResumoReuniao }) {
           <span>
             {i.mais_interrompeu ? (
               <>
-                {i.mais_interrompeu.pessoa} interrompeu mais{" "}
+                {t.interrompeuMais(i.mais_interrompeu.pessoa)}{" "}
                 <span className="numeros">({i.mais_interrompeu.vezes}×)</span>
               </>
             ) : (
-              "ninguém interrompeu"
+              t.ninguemInterrompeu
             )}
           </span>
           <span>
             <span className="numeros">{i.disputas}</span>{" "}
-            {i.disputas === 1 ? "disputa" : "disputas"}
+            {t.disputas(i.disputas)}
           </span>
         </>
       )}
@@ -117,6 +120,7 @@ function LinhaReuniao({
   erroAcao: string | null;
   aoProcessar: (id: string) => void;
 }) {
+  const t = useTextos().lista;
   const apagado = reuniao.estado !== "completa";
 
   return (
@@ -159,7 +163,7 @@ function LinhaReuniao({
             <div className="linha-reuniao__sem-dinamica">
               <span className="linha-reuniao__sem-dinamica-traco" />
               <span className="linha-reuniao__sem-dinamica-legenda">
-                sem dinâmica
+                {t.semDinamica}
               </span>
             </div>
           )}
@@ -178,7 +182,7 @@ function LinhaReuniao({
         {!ehPendente(reuniao) && !reuniao.revisada && (
           <div className="linha-reuniao__acao">
             <a className="botao-processar" href={`#/reuniao/${reuniao.id}/revisar`}>
-              Revisar
+              {t.revisar}
             </a>
           </div>
         )}
@@ -228,11 +232,12 @@ function ResultadosNaFala({
   reunioes: ResumoReuniao[];
   indiceGaleria: Map<string, number>;
 }) {
+  const t = useTextos();
   const total = resultados.reduce((n, r) => n + r.total, 0);
   return (
     <section className="grupo-reunioes" aria-labelledby="grupo-na-fala">
       <h2 className="grupo-reunioes__rotulo" id="grupo-na-fala">
-        Na fala <SeparadorContagem /> <span className="numeros">{total}</span>
+        {t.lista.naFala} <SeparadorContagem /> <span className="numeros">{total}</span>
       </h2>
       {resultados.map((r) => {
         const reuniao = reunioes.find((x) => x.id === r.id);
@@ -242,17 +247,17 @@ function ResultadosNaFala({
               {tituloDaReuniao(r.id, reuniao?.titulo)}
             </p>
             <ul className="trechos-reuniao__lista">
-              {r.trechos.map((t, i) => (
+              {r.trechos.map((trecho, i) => (
                 <li key={i}>
-                  <a className="trecho-busca" href={`#/reuniao/${r.id}/em/${t.inicio}`}>
+                  <a className="trecho-busca" href={`#/reuniao/${r.id}/em/${trecho.inicio}`}>
                     <span className="trecho-busca__quem">
-                      <span style={{ color: corDoTextoDaVoz(t.falante, indiceGaleria) }}>
-                        {ehVozSemPessoa(t.falante) ? "voz não atribuída" : t.falante}
+                      <span style={{ color: corDoTextoDaVoz(trecho.falante, indiceGaleria) }}>
+                        {ehVozSemPessoa(trecho.falante) ? t.formatos.vozSemPessoa : trecho.falante}
                       </span>{" "}
-                      <span className="numeros">{formatarDuracao(t.inicio)}</span>
+                      <span className="numeros">{formatarDuracao(trecho.inicio)}</span>
                     </span>
                     <span className="trecho-busca__texto">
-                      <TrechoComDestaque texto={t.texto} destaques={t.destaques} />
+                      <TrechoComDestaque texto={trecho.texto} destaques={trecho.destaques} />
                     </span>
                   </a>
                 </li>
@@ -260,8 +265,7 @@ function ResultadosNaFala({
             </ul>
             {r.total > r.trechos.length && (
               <p className="trechos-reuniao__mais">
-                e mais {r.total - r.trechos.length}{" "}
-                {r.total - r.trechos.length === 1 ? "fala" : "falas"} nesta reunião
+                {t.lista.maisFalas(r.total - r.trechos.length)}
               </p>
             )}
           </div>
@@ -272,6 +276,7 @@ function ResultadosNaFala({
 }
 
 export function Lista() {
+  const t = useTextos().lista;
   const [reunioes, setReunioes] = useState<ResumoReuniao[] | null>(null);
   const [erro, setErro] = useState<string | null>(null);
   const [acionando, setAcionando] = useState<string | null>(null);
@@ -343,36 +348,36 @@ export function Lista() {
     <main className="tela-lista">
       {erro && <p className="tela-lista__erro">{erro}</p>}
       {!erro && reunioes === null && (
-        <p className="tela-lista__estado">Carregando reuniões…</p>
+        <p className="tela-lista__estado">{t.carregando}</p>
       )}
       {!erro && reunioes !== null && reunioes.length === 0 && (
         <p className="tela-lista__estado">
-          Nenhuma reunião encontrada em audios/.
+          {t.semReunioes}
         </p>
       )}
       {!erro && reunioes !== null && reunioes.length > 0 && (
         <>
           <div className="tela-lista__topo">
             <label className="so-leitor-de-tela" htmlFor="busca-reunioes">
-              Buscar
+              {t.buscar}
             </label>
             <input
               id="busca-reunioes"
               type="search"
               className="tela-lista__busca"
-              placeholder="Título, pessoa ou trecho da fala"
+              placeholder={t.placeholderBusca}
               maxLength={BUSCA_MAX_LEN}
               value={busca}
               onChange={(e) => setBusca(e.target.value)}
             />
             <p className="tela-lista__contagem numeros" aria-live="polite">
               {busca.trim()
-                ? `${encontradas.length} de ${reunioes.length}`
-                : `${reunioes.length} ${reunioes.length === 1 ? "reunião" : "reuniões"}`}
+                ? t.contagemBusca(encontradas.length, reunioes.length)
+                : t.contagem(reunioes.length)}
             </p>
           </div>
           {encontradas.length === 0 && naFala !== null && naFala.length === 0 && (
-            <p className="tela-lista__estado">Nenhuma reunião com “{busca.trim()}”.</p>
+            <p className="tela-lista__estado">{t.semResultado(busca.trim())}</p>
           )}
           {erroNaFala && <p className="tela-lista__erro">{erroNaFala}</p>}
           {grupos(encontradas).map((g) => (

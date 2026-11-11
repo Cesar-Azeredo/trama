@@ -1,0 +1,23 @@
+/** Segunda etapa da revisão: termos para conferir (telas/ConferirTermos.tsx). */
+export const conferir = {
+  oTrechoCom: (forma: string) => `o trecho com ${forma}`,
+  vezesNestaReuniao: (n: number) => (n === 1 ? "1 vez nesta reunião" : `${n} vezes nesta reunião`),
+  estaCerto: "Está certo",
+  corrigirPara: "Corrigir para…",
+  ignorar: "Ignorar",
+  ignorado: (forma: string) => `“${forma}” ignorado.`,
+  agoraETermo: (forma: string) => `“${forma}” agora é um termo da empresa.`,
+  oQueE: (forma: string) => `O que é ${forma}?`,
+  opcional: "opcional",
+  gravando: "Gravando…",
+  confirmar: "Confirmar",
+  voltar: "Voltar",
+  corrigido: (forma: string) => `“${forma}” corrigido.`,
+  corrigidoNestaFala: (forma: string) => `“${forma}” corrigido nesta fala.`,
+  irParaReuniao: "Ir para a reunião",
+  procurando: "Procurando termos para conferir…",
+  titulo: "Termos para conferir",
+  nota: "As vozes estão salvas. Estas palavras podem ter sido transcritas errado - ouça e responda as que quiser. Nada aqui é obrigatório, e uma resposta dada não é perguntada de novo.",
+  tudoRespondido: "Tudo respondido.",
+  concluir: "Concluir",
+};

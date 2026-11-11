@@ -35,6 +35,8 @@ import {
   formatarTamanhoArquivo,
   rotuloBotaoProcessar,
 } from "../util/formatarReuniao";
+import { numero } from "../util/numeros";
+import { useTextos } from "../i18n/textos";
 import "./Detalhe.css";
 
 /** Mesmo criterio de contagem usado em pipeline.py para medir a distribuicao
@@ -187,12 +189,6 @@ const RANQUE_SEVERIDADE: Record<Evento["tipo"], number> = {
   disputa: 2,
 };
 
-const ROTULO_TIPO: Record<Evento["tipo"], string> = {
-  apoio: "apoio",
-  interrupcao: "interrupção",
-  disputa: "disputa",
-};
-
 /**
  * Agrupa os eventos de UMA fala por pessoa E tipo - nunca so por pessoa.
  * Agrupando so por pessoa, duas interrupcoes e um apoio da mesma pessoa
@@ -244,16 +240,15 @@ function MarcaEventos({
   indiceGaleria: Map<string, number>;
   rotulo: (nome: string) => string;
 }) {
+  const t = useTextos().detalhe;
   return (
     <div className="linha-fala__eventos">
       {agruparEventos(eventos).map(({ entrante, tipo, lista }) => {
         const aproximado = lista.some((e) => e.aproximado);
         const titulo = [
           rotulo(entrante),
-          ...lista.map(
-            (e) =>
-              `${formatarTimestamp(e.tempo)} ${ROTULO_TIPO[e.tipo]}` +
-              (e.aproximado ? " (fala mais próxima, não exata)" : ""),
+          ...lista.map((e) =>
+            t.ocorrenciaEvento(formatarTimestamp(e.tempo), t.tipoEvento[e.tipo], e.aproximado),
           ),
         ].join("\n");
         return (
@@ -281,7 +276,7 @@ function MarcaEventos({
             <span
               className={`evento-marca__tipo evento-marca__tipo--${tipo}`}
             >
-              {ROTULO_TIPO[tipo]}
+              {t.tipoEvento[tipo]}
               {lista.length > 1 && ` ·${lista.length}`}
             </span>
           </span>
@@ -299,12 +294,13 @@ function MarcaEventos({
  * vermelho/amarelo saturado) - peso e posicao, igual ao resto da marginalia.
  */
 function MarcaConfiancaBaixa({ confianca }: { confianca: number }) {
+  const t = useTextos().detalhe;
   return (
     <span
       className="marca-confianca-baixa"
-      title={`Confiança média baixa nesta fala (${Math.round(confianca * 100)}%) - vale conferir o áudio antes de citar`}
+      title={t.tituloConfiancaBaixa(numero(Math.round(confianca * 100)))}
     >
-      confiança baixa
+      {t.confiancaBaixa}
     </span>
   );
 }
@@ -315,12 +311,13 @@ function MarcaConfiancaBaixa({ confianca }: { confianca: number }) {
  * title - e "Voltar ao original" mora dentro da edicao.
  */
 function MarcaEditada({ textoOriginal }: { textoOriginal: string }) {
+  const t = useTextos().detalhe;
   return (
     <span
       className="marca-editada"
-      title={`Corrigido à mão. Texto transcrito: “${textoOriginal}”`}
+      title={t.tituloEditada(textoOriginal)}
     >
-      editado à mão
+      {t.editadoAMao}
     </span>
   );
 }
@@ -340,12 +337,13 @@ function BotaoTocarFala({
   aoClicar: () => void;
   rotulo: string;
 }) {
+  const t = useTextos().comum;
   return (
     <button
       type="button"
       className="botao-tocar-fala"
       onClick={aoClicar}
-      aria-label={tocando ? `Pausar ${rotulo}` : `Tocar ${rotulo}`}
+      aria-label={tocando ? t.pausar(rotulo) : t.tocar(rotulo)}
       aria-pressed={tocando}
     >
       {tocando ? (
@@ -398,6 +396,7 @@ function TextoComMarcas({
   indiceGaleria: Map<string, number>;
   rotulo: (nome: string) => string;
 }) {
+  const t = useTextos().detalhe;
   const divergentes = fala.palavras_divergentes ?? [];
   if (divergentes.length === 0 && lacunas.length === 0 && faixas.length === 0) {
     return <>{fala.texto}</>;
@@ -420,9 +419,9 @@ function TextoComMarcas({
         <span
           key={`l${ini}-${partes.length}`}
           className="marca-lacuna"
-          title="Trecho sem nenhuma palavra transcrita aqui (ex.: riso, gesto, respiração) - a transcrição não afirma o que era"
+          title={t.tituloLacuna}
         >
-          {" "}[som não transcrito]{" "}
+          {" "}{t.lacuna}{" "}
         </span>,
       );
     }
@@ -439,7 +438,7 @@ function TextoComMarcas({
         <span
           className="palavra-divergente"
           style={{ "--cor-pista": corDoTextoDaVoz(div.falante, indiceGaleria) } as CSSProperties}
-          title={`Pista: pode ser ${rotulo(div.falante)} - atribuição por palavra, não confirmada`}
+          title={t.tituloPista(rotulo(div.falante))}
         >
           {pedaco}
         </span>
@@ -450,7 +449,7 @@ function TextoComMarcas({
         <span
           className="faixa-sobreposicao"
           style={{ "--cor-faixa": corDaVoz(faixa.outra, indiceGaleria) } as CSSProperties}
-          title={`Sobreposição: ${rotulo(faixa.outra)} falava ao mesmo tempo`}
+          title={t.tituloSobreposicao(rotulo(faixa.outra))}
         >
           {conteudo}
         </span>
@@ -470,6 +469,7 @@ function ResumoDinamica({
   indiceGaleria: Map<string, number>;
   rotulo: (nome: string) => string;
 }) {
+  const t = useTextos().detalhe;
   const pessoas = Object.entries(dinamica).sort(
     (a, b) => b[1].fala_pct - a[1].fala_pct,
   );
@@ -483,16 +483,16 @@ function ResumoDinamica({
           />
           <span className="resumo-dinamica__nome">{rotulo(nome)}</span>
           <span className="resumo-dinamica__stat numeros">
-            {Math.round(d.fala_pct)}% da fala
+            {t.pctDaFala(numero(Math.round(d.fala_pct)))}
           </span>
           {d.interrompeu > 0 && (
             <span className="resumo-dinamica__stat numeros">
-              interrompeu {d.interrompeu}×
+              {t.interrompeu(d.interrompeu)}
             </span>
           )}
           {d.foi_interrompido > 0 && (
             <span className="resumo-dinamica__stat numeros">
-              foi interrompido {d.foi_interrompido}×
+              {t.foiInterrompido(d.foi_interrompido)}
             </span>
           )}
         </div>
@@ -512,6 +512,8 @@ interface SelecaoTela {
 }
 
 export function Detalhe({ id, em }: { id: string; em?: number }) {
+  const t = useTextos().detalhe;
+  const tc = useTextos().comum;
   const [dados, setDados] = useState<DetalheReuniao | null>(null);
   const [erro, setErro] = useState<string | null>(null);
   const [mostrarEventos, setMostrarEventos] = useState(lerPreferenciaMostrarEventos);
@@ -697,12 +699,12 @@ export function Detalhe({ id, em }: { id: string; em?: number }) {
   return (
     <main className="tela-detalhe">
       <a className="tela-detalhe__voltar" href="#/reunioes">
-        ← Reuniões
+        ← {tc.reunioes}
       </a>
 
       {erro && <p className="tela-detalhe__erro">{erro}</p>}
       {!erro && dados === null && (
-        <p className="tela-detalhe__estado">Carregando reunião…</p>
+        <p className="tela-detalhe__estado">{t.carregando}</p>
       )}
 
       {!erro && dados !== null && !temResultadoProcessado(dados) && (
@@ -718,15 +720,15 @@ export function Detalhe({ id, em }: { id: string; em?: number }) {
             </p>
           )}
           <dl className="tela-detalhe__ficha">
-            <dt>Arquivo</dt>
+            <dt>{t.arquivo}</dt>
             <dd>{dados.audio_nome ?? "—"}</dd>
-            <dt>Tamanho</dt>
+            <dt>{t.tamanho}</dt>
             <dd>
               {dados.audio_tamanho_bytes !== null
                 ? formatarTamanhoArquivo(dados.audio_tamanho_bytes)
                 : "—"}
             </dd>
-            <dt>Duração</dt>
+            <dt>{t.duracao}</dt>
             <dd>
               {dados.duracao_s !== null
                 ? formatarDuracao(dados.duracao_s)
@@ -747,7 +749,7 @@ export function Detalhe({ id, em }: { id: string; em?: number }) {
               disabled={acionando}
               onClick={processar}
             >
-              {acionando ? "Iniciando…" : rotuloBotaoProcessar(dados.estado)}
+              {acionando ? t.iniciando : rotuloBotaoProcessar(dados.estado)}
             </button>
           )}
           {erroProcessar && (
@@ -782,17 +784,17 @@ export function Detalhe({ id, em }: { id: string; em?: number }) {
             <div className="tela-detalhe__revisao">
               {dados.revisada ? (
                 <>
-                  <span className="tela-detalhe__estado-revisada">Revisada</span>
+                  <span className="tela-detalhe__estado-revisada">{t.revisada}</span>
                   <a
                     className="tela-detalhe__editar-revisao"
                     href={`#/reuniao/${dados.id}/revisar`}
                   >
-                    Editar revisão
+                    {t.editarRevisao}
                   </a>
                 </>
               ) : (
                 <a className="tela-detalhe__revisar" href={`#/reuniao/${dados.id}/revisar`}>
-                  Revisar
+                  {t.revisar}
                 </a>
               )}
               <a
@@ -800,7 +802,7 @@ export function Detalhe({ id, em }: { id: string; em?: number }) {
                 href={`/api/reunioes/${encodeURIComponent(dados.id)}/transcricao`}
                 download
               >
-                Baixar transcrição (.txt)
+                {t.baixarTranscricao}
               </a>
             </div>
           </header>
@@ -824,7 +826,7 @@ export function Detalhe({ id, em }: { id: string; em?: number }) {
             }
           >
             {(temEventos || dados.dinamica) && (
-              <aside className="tela-detalhe__painel" aria-label="Dinâmica da reunião">
+              <aside className="tela-detalhe__painel" aria-label={t.dinamicaDaReuniao}>
                 {temEventos && (
                   <label className="tela-detalhe__toggle-eventos">
                     <input
@@ -832,14 +834,13 @@ export function Detalhe({ id, em }: { id: string; em?: number }) {
                       checked={mostrarEventos}
                       onChange={alternarMostrarEventos}
                     />
-                    Mostrar interações (apoios, interrupções, disputas)
+                    {t.mostrarInteracoes}
                   </label>
                 )}
                 {temEventos && mostrarEventos && temTemposDePalavra && (
                   <p className="tela-detalhe__legenda-faixa">
                     <span className="tela-detalhe__amostra-faixa" aria-hidden="true" />
-                    Fundo colorido no texto: outra pessoa falava ao mesmo tempo,
-                    na cor dela.
+                    {t.legendaFaixa}
                   </p>
                 )}
                 {dados.dinamica && (
@@ -878,7 +879,7 @@ export function Detalhe({ id, em }: { id: string; em?: number }) {
                   onMouseDown={(e) => e.preventDefault()}
                   onClick={() => setPainel(selecao)}
                 >
-                  Corrigir
+                  {t.corrigir}
                 </button>
               )}
               {painel && dados.falas[painel.indice] && (
@@ -920,7 +921,7 @@ export function Detalhe({ id, em }: { id: string; em?: number }) {
                           <BotaoTocarFala
                             tocando={reprodutor.urlTocando === urlFala}
                             aoClicar={() => reprodutor.alternar(urlFala)}
-                            rotulo={`fala de ${rotulo(grupo.falante)} em ${formatarTimestamp(f.inicio)}`}
+                            rotulo={t.falaDe(rotulo(grupo.falante), formatarTimestamp(f.inicio))}
                           />
                           {j === 0 && (
                             <>

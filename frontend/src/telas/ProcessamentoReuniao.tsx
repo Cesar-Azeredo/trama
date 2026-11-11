@@ -9,6 +9,7 @@ import {
 } from "../api/reunioes";
 import { formatarDuracao, tituloDaReuniao } from "../util/formatarReuniao";
 import { ETAPAS } from "../util/etapasProcessamento";
+import { useTextos } from "../i18n/textos";
 import "./ProcessamentoReuniao.css";
 
 /**
@@ -28,8 +29,9 @@ function normalizarTexto(s: string): string {
 }
 
 function IconeConcluida() {
+  const t = useTextos().processamento;
   return (
-    <svg width="11" height="11" viewBox="0 0 14 14" role="img" aria-label="concluída">
+    <svg width="11" height="11" viewBox="0 0 14 14" role="img" aria-label={t.concluida}>
       <path
         d="M2 7.5 L5.5 11 L12 3"
         fill="none"
@@ -43,19 +45,23 @@ function IconeConcluida() {
 }
 
 function ListaEtapas({ etapaAtual, rotuloAoVivo }: { etapaAtual: number; rotuloAoVivo: string }) {
+  const t = useTextos().processamento;
   return (
     <ol className="lista-etapas">
-      {ETAPAS.map((texto, i) => {
+      {/* `original` (sempre portugues) e o que se compara com o rotulo ao
+          vivo do pipeline; `texto` e o que a tela mostra, no idioma dela. */}
+      {ETAPAS.map((original, i) => {
+        const texto = t.etapas[i];
         const numero = i + 1;
         const concluida = numero < etapaAtual;
         const atual = numero === etapaAtual;
         const acrescentaInfo =
           atual &&
           rotuloAoVivo !== "" &&
-          normalizarTexto(rotuloAoVivo) !== normalizarTexto(texto);
+          normalizarTexto(rotuloAoVivo) !== normalizarTexto(original);
         return (
           <li
-            key={texto}
+            key={original}
             aria-current={atual ? "step" : undefined}
             className={
               "lista-etapas__item" +
@@ -89,6 +95,9 @@ type EstadoTela =
   | { tipo: "progresso"; dados: EstadoProcessamento };
 
 export function ProcessamentoReuniao({ id }: { id: string }) {
+  const t = useTextos().processamento;
+  const comum = useTextos().comum;
+  const formatos = useTextos().formatos;
   const [tela, setTela] = useState<EstadoTela>({ tipo: "carregando" });
   const [decorrido, setDecorrido] = useState(0);
   const [emAcao, setEmAcao] = useState(false);
@@ -149,9 +158,7 @@ export function ProcessamentoReuniao({ id }: { id: string }) {
   }, [tela]);
 
   async function cancelar() {
-    const confirmado = window.confirm(
-      "Cancelar o processamento?\n\nO áudio continua salvo - você pode tentar de novo depois, sem subir o arquivo outra vez.",
-    );
+    const confirmado = window.confirm(t.confirmarCancelar);
     if (!confirmado) return;
     setEmAcao(true);
     setErroAcao(null);
@@ -180,12 +187,12 @@ export function ProcessamentoReuniao({ id }: { id: string }) {
   return (
     <main className="tela-processamento">
       <a className="tela-processamento__voltar" href="#/reunioes">
-        ← Reuniões
+        ← {comum.reunioes}
       </a>
       <h1 className="tela-processamento__titulo">{tituloDaReuniao(id, titulo)}</h1>
 
       {tela.tipo === "carregando" && (
-        <p className="tela-processamento__estado">Conectando…</p>
+        <p className="tela-processamento__estado">{t.conectando}</p>
       )}
 
       {tela.tipo === "ocioso" && <TelaOciosa id={id} />}
@@ -194,7 +201,7 @@ export function ProcessamentoReuniao({ id }: { id: string }) {
         <>
           <ListaEtapas etapaAtual={tela.dados.etapa} rotuloAoVivo={tela.dados.rotulo} />
           <p className="tela-processamento__decorrido numeros">
-            Decorrido: {formatarDuracao(decorrido)}
+            {t.decorrido(formatarDuracao(decorrido))}
           </p>
           <div className="tela-processamento__rodape">
             <button
@@ -203,10 +210,10 @@ export function ProcessamentoReuniao({ id }: { id: string }) {
               onClick={cancelar}
               disabled={emAcao}
             >
-              Cancelar
+              {t.cancelar}
             </button>
             <span className="tela-processamento__legenda-cancelar">
-              Mantém o áudio salvo - dá para tentar de novo.
+              {t.legendaCancelar}
             </span>
           </div>
           {erroAcao && <p className="tela-processamento__erro">{erroAcao}</p>}
@@ -215,12 +222,9 @@ export function ProcessamentoReuniao({ id }: { id: string }) {
 
       {tela.tipo === "progresso" && tela.dados.status === "cancelado" && (
         <div className="tela-processamento__aviso">
-          <p>
-            Processamento cancelado. O áudio continua salvo - você pode
-            tentar novamente quando quiser.
-          </p>
+          <p>{t.cancelado}</p>
           <a className="tela-processamento__link" href={`#/reuniao/${id}`}>
-            Ver reunião
+            {t.verReuniao}
           </a>
         </div>
       )}
@@ -228,8 +232,7 @@ export function ProcessamentoReuniao({ id }: { id: string }) {
       {tela.tipo === "progresso" && tela.dados.status === "erro" && (
         <div className="tela-processamento__aviso tela-processamento__aviso--erro">
           <p>
-            {tela.dados.mensagem_erro ??
-              "O processamento falhou. Tente novamente."}
+            {tela.dados.mensagem_erro ?? t.falhou}
           </p>
           <button
             type="button"
@@ -237,7 +240,7 @@ export function ProcessamentoReuniao({ id }: { id: string }) {
             onClick={() => tentarDeNovo(tela.dados.pessoas)}
             disabled={emAcao}
           >
-            {emAcao ? "Tentando…" : "Tentar novamente"}
+            {emAcao ? t.tentando : formatos.tentarNovamente}
           </button>
           {erroAcao && <p className="tela-processamento__erro">{erroAcao}</p>}
         </div>
@@ -254,7 +257,13 @@ export function ProcessamentoReuniao({ id }: { id: string }) {
  * que "ocioso" so pode significar uma coisa.
  */
 function TelaOciosa({ id }: { id: string }) {
-  const [mensagem, setMensagem] = useState("Verificando…");
+  const t = useTextos().processamento;
+  // O que mostrar, nao o texto pronto - o texto sai do catalogo na hora de
+  // desenhar, para trocar junto com o idioma. O erro vem do servidor como
+  // esta.
+  const [mensagem, setMensagem] = useState<
+    { tipo: "verificando" } | { tipo: "parada" } | { tipo: "erro"; texto: string }
+  >({ tipo: "verificando" });
 
   useEffect(() => {
     let cancelado = false;
@@ -265,13 +274,10 @@ function TelaOciosa({ id }: { id: string }) {
           window.location.hash = `#/reuniao/${id}/revisar`;
           return;
         }
-        setMensagem(
-          "Esta reunião não está sendo processada agora. Volte para a " +
-            "lista para iniciar ou tentar de novo.",
-        );
+        setMensagem({ tipo: "parada" });
       })
       .catch((e: Error) => {
-        if (!cancelado) setMensagem(e.message);
+        if (!cancelado) setMensagem({ tipo: "erro", texto: e.message });
       });
     return () => {
       cancelado = true;
@@ -280,9 +286,15 @@ function TelaOciosa({ id }: { id: string }) {
 
   return (
     <div className="tela-processamento__aviso">
-      <p>{mensagem}</p>
+      <p>
+        {mensagem.tipo === "verificando"
+          ? t.verificando
+          : mensagem.tipo === "parada"
+            ? t.naoEstaProcessando
+            : mensagem.texto}
+      </p>
       <a className="tela-processamento__link" href="#/reunioes">
-        Ver lista de reuniões
+        {t.verLista}
       </a>
     </div>
   );

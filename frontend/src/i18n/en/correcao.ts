@@ -1,0 +1,45 @@
+import type { Catalogo } from "../textos";
+
+export const correcao: Catalogo["correcao"] = {
+  tituloPainel: "Correct “{trecho}”",
+  oCertoE: "Should be",
+  ondeCorrigir: "Where to correct",
+  soNestaFala: "Only in this utterance",
+  emTodas: "In every meeting, and in future ones",
+  conferindo: "Checking meetings…",
+  naoAparece: "Doesn't appear in any processed meeting. Applies to future ones.",
+  aparece: (total, reunioes) =>
+    `Appears {total} ${total === 1 ? "time" : "times"} in {reunioes} ${reunioes === 1 ? "meeting" : "meetings"}`,
+  oQueEIsso: "What is it?",
+  opcional: "optional",
+  exemploDescricao: "e.g. project approval tool",
+  corrigir: "Correct",
+  corrigirEmLugares: (n) => `Correct in ${n} ${n === 1 ? "place" : "places"}`,
+  corrigirEmTodas: "Correct everywhere",
+  corrigindo: "Correcting…",
+  cancelar: "Cancel",
+  fechar: "Close",
+  corrigidoEmTodas: (total, reunioes) =>
+    `Corrected in ${total} ${total === 1 ? "place" : "places"}` +
+    (reunioes > 1 ? `, across ${reunioes} meetings` : "") +
+    ". Also applies to future meetings.",
+  procurandoParecidas: "Looking for similar forms…",
+  talvezTambem: (certo) => `These might also be ${certo}`,
+  vezes: (n) => (n === 1 ? `${n} time` : `${n} times`),
+  jaTinhaDuvida: "the transcript was already unsure",
+  marqueAsQueSao: "Check the ones that are",
+  corrigirMarcadas: (n) => (n === 1 ? "Correct the checked one" : `Correct the ${n} checked`),
+  maisCorrigidos: (n) => `${n} more ${n === 1 ? "place" : "places"} corrected.`,
+  editarFala: "Edit the text of this utterance",
+  tituloEditarFala: "Edit the text of the whole utterance",
+  textoDaFala: "Utterance text",
+  ajudaFala: "Enter saves, Esc cancels.",
+  voltarAoOriginal: "Revert to original",
+  textoTranscrito: (original) => `Transcribed text: “${original}”`,
+  cliqueParaEditarTitulo: "Click to edit the title",
+  tituloDaReuniao: "Meeting title",
+  ajudaTitulo: "Enter saves, Esc cancels. Leave empty to use the default name.",
+  fitaDeTempo: "Timeline of the whole meeting. Click to jump the transcript to that point.",
+  tempoDeFala: (itens) => `Speaking time: ${itens}`,
+  itemTempoDeFala: (nome, pct) => `${nome} ${pct}%`,
+};

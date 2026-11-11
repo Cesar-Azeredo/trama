@@ -1,4 +1,4 @@
-import { useEffect, useId, useRef, useState, type KeyboardEvent } from "react";
+import { Fragment, useEffect, useId, useRef, useState, type KeyboardEvent, type ReactNode } from "react";
 import {
   aplicarCorrecao,
   aplicarVariacoes,
@@ -9,6 +9,7 @@ import {
 } from "../api/correcoes";
 import { corrigirFala, type Fala, type FalaAlterada } from "../api/reunioes";
 import { DESCRICAO_MAX_LEN, definirDescricao, TERMO_MAX_LEN } from "../api/termos";
+import { useTextos } from "../i18n/textos";
 import "./PainelCorrecao.css";
 
 function formatarHorario(segundos: number): string {
@@ -17,6 +18,24 @@ function formatarHorario(segundos: number): string {
   const m = Math.floor((s % 3600) / 60);
   const par = (n: number) => String(n).padStart(2, "0");
   return h > 0 ? `${h}:${par(m)}:${par(s % 60)}` : `${par(m)}:${par(s % 60)}`;
+}
+
+/**
+ * Frase do catalogo com {marcador}: cada marcador vira o elemento dado
+ * (numero ou trecho com estilo proprio), o resto continua texto. A frase
+ * inteira vem do catalogo, na ordem do idioma - nunca pedacos colados.
+ */
+function preencher(modelo: string, partes: Record<string, ReactNode>): ReactNode[] {
+  return modelo
+    .split(/(\{[a-z]+\})/)
+    .map((pedaco, i) => {
+      const chave = pedaco.match(/^\{([a-z]+)\}$/)?.[1];
+      return chave !== undefined && chave in partes ? (
+        <Fragment key={i}>{partes[chave]}</Fragment>
+      ) : (
+        pedaco
+      );
+    });
 }
 
 /**
@@ -32,6 +51,7 @@ function VariacoesParecidas({
   certo: string;
   aoCorrigir: () => void;
 }) {
+  const t = useTextos().correcao;
   const [sugestao, setSugestao] = useState<SugestaoVariacoes | null>(null);
   const [marcadas, setMarcadas] = useState<Set<string>>(new Set());
   const [salvando, setSalvando] = useState(false);
@@ -68,7 +88,7 @@ function VariacoesParecidas({
     try {
       const r = await aplicarVariacoes(certo, [...marcadas], sugestao.assinatura);
       setFeito(
-        `Mais ${r.total} ${r.total === 1 ? "lugar corrigido" : "lugares corrigidos"}.` +
+        t.maisCorrigidos(r.total) +
           (r.aviso ? ` ${r.aviso}` : ""),
       );
       aoCorrigir();
@@ -87,12 +107,12 @@ function VariacoesParecidas({
     );
   }
   if (erro && !sugestao) return <p className="painel-correcao__erro">{erro}</p>;
-  if (!sugestao) return <p className="painel-correcao__nota">Procurando formas parecidas…</p>;
+  if (!sugestao) return <p className="painel-correcao__nota">{t.procurandoParecidas}</p>;
   if (sugestao.variacoes.length === 0) return null;
 
   return (
     <fieldset className="painel-correcao__variacoes">
-      <legend className="painel-correcao__titulo">Talvez estas também sejam {certo}</legend>
+      <legend className="painel-correcao__titulo">{t.talvezTambem(certo)}</legend>
       <ul>
         {sugestao.variacoes.map((v) => (
           <li key={v.forma}>
@@ -105,8 +125,8 @@ function VariacoesParecidas({
               <span>
                 <span className="painel-correcao__forma">{v.forma}</span>{" "}
                 <span className="painel-correcao__nota-inline">
-                  {v.total} {v.total === 1 ? "vez" : "vezes"}
-                  {v.baixa_confianca ? " · a transcrição já tinha dúvida" : ""}
+                  {t.vezes(v.total)}
+                  {v.baixa_confianca ? ` · ${t.jaTinhaDuvida}` : ""}
                 </span>
               </span>
             </label>
@@ -141,10 +161,10 @@ function VariacoesParecidas({
           onClick={corrigirMarcadas}
         >
           {salvando
-            ? "Corrigindo…"
+            ? t.corrigindo
             : marcadas.size === 0
-              ? "Marque as que são"
-              : `Corrigir ${marcadas.size === 1 ? "a marcada" : `as ${marcadas.size} marcadas`}`}
+              ? t.marqueAsQueSao
+              : t.corrigirMarcadas(marcadas.size)}
         </button>
       </div>
     </fieldset>
@@ -188,6 +208,7 @@ export function PainelCorrecao({
   /** Depois de corrigir em todas: o transcript precisa ser relido. */
   aoCorrigirEmTodas: () => void;
 }) {
+  const t = useTextos().correcao;
   // Fixo na abertura: depois de "em todas" o Detalhe rele a reuniao, e o
   // mesmo intervalo de fala.texto ja traria o texto corrigido.
   const [trecho] = useState(() => fala.texto.slice(inicio, fim));
@@ -216,7 +237,7 @@ export function PainelCorrecao({
     if (!certo.trim() || certo.trim() === trecho) return;
     let cancelado = false;
     setConferindo(true);
-    const t = setTimeout(() => {
+    const espera = setTimeout(() => {
       previaCorrecao(trecho, certo)
         .then((p) => {
           if (!cancelado) setPrevia(p);
@@ -230,7 +251,7 @@ export function PainelCorrecao({
     }, 300);
     return () => {
       cancelado = true;
-      clearTimeout(t);
+      clearTimeout(espera);
     };
   }, [alcance, certo, trecho, feito]);
 
@@ -259,9 +280,7 @@ export function PainelCorrecao({
         assinatura: previa!.assinatura,
       });
       setFeito(
-        `Corrigido em ${r.total} ${r.total === 1 ? "lugar" : "lugares"}` +
-          (r.aplicadas.length > 1 ? `, em ${r.aplicadas.length} reuniões` : "") +
-          ". Vale também para as próximas reuniões." +
+        t.corrigidoEmTodas(r.total, r.aplicadas.length) +
           (r.aviso ? ` ${r.aviso}` : ""),
       );
       aoCorrigirEmTodas();
@@ -281,10 +300,10 @@ export function PainelCorrecao({
 
   const rotuloConfirmar =
     alcance === "fala"
-      ? "Corrigir"
+      ? t.corrigir
       : previa && previa.total > 0
-        ? `Corrigir em ${previa.total} ${previa.total === 1 ? "lugar" : "lugares"}`
-        : "Corrigir em todas";
+        ? t.corrigirEmLugares(previa.total)
+        : t.corrigirEmTodas;
 
   return (
     <div
@@ -295,7 +314,9 @@ export function PainelCorrecao({
       onKeyDown={aoTeclar}
     >
       <p className="painel-correcao__titulo" id={`${id}-titulo`}>
-        Corrigir “<span className="painel-correcao__trecho">{trecho}</span>”
+        {preencher(t.tituloPainel, {
+          trecho: <span className="painel-correcao__trecho">{trecho}</span>,
+        })}
       </p>
 
       {feito ? (
@@ -310,7 +331,7 @@ export function PainelCorrecao({
           />
           <div className="painel-correcao__acoes">
             <button type="button" className="painel-correcao__discreto" onClick={aoFechar}>
-              Fechar
+              {t.fechar}
             </button>
           </div>
         </>
@@ -322,7 +343,7 @@ export function PainelCorrecao({
           }}
         >
           <label className="painel-correcao__rotulo" htmlFor={`${id}-certo`}>
-            O certo é
+            {t.oCertoE}
           </label>
           <input
             ref={campoRef}
@@ -334,7 +355,7 @@ export function PainelCorrecao({
           />
 
           <fieldset className="painel-correcao__alcance">
-            <legend className="painel-correcao__rotulo">Onde corrigir</legend>
+            <legend className="painel-correcao__rotulo">{t.ondeCorrigir}</legend>
             <label className="painel-correcao__opcao">
               <input
                 type="radio"
@@ -342,7 +363,7 @@ export function PainelCorrecao({
                 checked={alcance === "fala"}
                 onChange={() => setAlcance("fala")}
               />
-              Só nesta fala
+              {t.soNestaFala}
             </label>
             <label className="painel-correcao__opcao">
               <input
@@ -351,25 +372,25 @@ export function PainelCorrecao({
                 checked={alcance === "todas"}
                 onChange={() => setAlcance("todas")}
               />
-              Em todas as reuniões e nas próximas
+              {t.emTodas}
             </label>
           </fieldset>
 
           {alcance === "todas" && mudou && (
             <div className="painel-correcao__previa" aria-live="polite">
-              {conferindo && <p className="painel-correcao__nota">Conferindo as reuniões…</p>}
+              {conferindo && <p className="painel-correcao__nota">{t.conferindo}</p>}
               {previa && previa.total === 0 && (
                 <p className="painel-correcao__nota">
-                  Não aparece em nenhuma reunião processada. Vale para as próximas.
+                  {t.naoAparece}
                 </p>
               )}
               {previa && previa.total > 0 && (
                 <details className="painel-correcao__onde">
                   <summary>
-                    Aparece <span className="numeros">{previa.total}</span>{" "}
-                    {previa.total === 1 ? "vez" : "vezes"} em{" "}
-                    <span className="numeros">{previa.reunioes.length}</span>{" "}
-                    {previa.reunioes.length === 1 ? "reunião" : "reuniões"}
+                    {preencher(t.aparece(previa.total, previa.reunioes.length), {
+                      total: <span className="numeros">{previa.total}</span>,
+                      reunioes: <span className="numeros">{previa.reunioes.length}</span>,
+                    })}
                   </summary>
                   <ul>
                     {previa.reunioes.map((r) => (
@@ -400,14 +421,14 @@ export function PainelCorrecao({
           )}
 
           <label className="painel-correcao__rotulo" htmlFor={`${id}-descricao`}>
-            O que é isso? <span className="painel-correcao__opcional">opcional</span>
+            {t.oQueEIsso} <span className="painel-correcao__opcional">{t.opcional}</span>
           </label>
           <input
             id={`${id}-descricao`}
             className="painel-correcao__campo"
             value={descricao}
             maxLength={DESCRICAO_MAX_LEN}
-            placeholder="ex.: ferramenta de aprovação de projetos"
+            placeholder={t.exemploDescricao}
             onChange={(e) => setDescricao(e.target.value)}
           />
 
@@ -419,10 +440,10 @@ export function PainelCorrecao({
 
           <div className="painel-correcao__acoes">
             <button type="submit" className="painel-correcao__primario" disabled={!podeConfirmar}>
-              {salvando ? "Corrigindo…" : rotuloConfirmar}
+              {salvando ? t.corrigindo : rotuloConfirmar}
             </button>
             <button type="button" className="painel-correcao__discreto" onClick={aoFechar}>
-              Cancelar
+              {t.cancelar}
             </button>
           </div>
         </form>
