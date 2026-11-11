@@ -1,3 +1,5 @@
+import { mensagemDe } from "../api/cliente";
+import { useMensagem, type Mensagem } from "../i18n/mensagem";
 import { useEffect, useState, type ReactNode } from "react";
 import { listarPessoas } from "../api/pessoas";
 import { lerSistema, type Licenca, type Sistema } from "../api/sistema";
@@ -212,17 +214,17 @@ function itemDaLicenca(licenca: Licenca, rotulo: string): string | null {
   );
 }
 
-function useSistema(): { dados: Sistema | null; erro: string | null } {
+function useSistema(): { dados: Sistema | null; erro: Mensagem | null } {
   const [dados, setDados] = useState<Sistema | null>(null);
-  const [erro, setErro] = useState<string | null>(null);
+  const [erro, setErro] = useState<Mensagem | null>(null);
   useEffect(() => {
     let cancelado = false;
     lerSistema()
       .then((d) => {
         if (!cancelado) setDados(d);
       })
-      .catch((e: Error) => {
-        if (!cancelado) setErro(e.message);
+      .catch((e: unknown) => {
+        if (!cancelado) setErro(mensagemDe(e));
       });
     return () => {
       cancelado = true;
@@ -233,13 +235,14 @@ function useSistema(): { dados: Sistema | null; erro: string | null } {
 
 export function Perfil() {
   const { dados: sistema, erro: erroSistema } = useSistema();
+  const textoDe = useMensagem();
   const textos = useTextos();
   const t = textos.perfil;
 
   const carregandoSistema = !sistema && !erroSistema && (
     <p className="perfil__vazio">{t.carregando}</p>
   );
-  const falhaSistema = erroSistema && <p className="perfil__erro">{erroSistema}</p>;
+  const falhaSistema = erroSistema && <p className="perfil__erro">{textoDe(erroSistema)}</p>;
 
   return (
     <main className="tela-perfil">

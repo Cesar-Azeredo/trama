@@ -1,9 +1,4 @@
-import { enviarJson, textoDoAviso } from "./cliente";
-
-/** O aviso chega como codigo (ou lista) e vai para a tela como texto. */
-function comAvisoEmTexto<T extends { aviso: unknown }>(r: T): T {
-  return { ...r, aviso: textoDoAviso(r.aviso) };
-}
+import { enviarJson } from "./cliente";
 
 /** Espelha servidor/correcao.py (ADR 0019): corrigir um trecho em todas as
  * reunioes e nas proximas. */
@@ -27,20 +22,22 @@ export interface PreviaCorrecao {
   reunioes: { id: string; titulo: string | null; ocorrencias: OcorrenciaCorrecao[] }[];
   /** So quando a correcao nao pode valer em todo lugar (uma correcao mais
    * geral, ja existente, continua valendo em parte do texto). */
-  aviso: string | null;
+  /** codigo + parametros, lista deles, ou null - a tela guarda como
+   * Mensagem (mensagemDoAviso) e resolve no render. */
+  aviso: unknown;
   assinatura: string;
 }
 
 export function previaCorrecao(trecho: string, certo: string): Promise<PreviaCorrecao> {
-  return enviarJson<PreviaCorrecao>("/api/correcoes/previa", { trecho, certo }).then(
-    comAvisoEmTexto,
-  );
+  return enviarJson<PreviaCorrecao>("/api/correcoes/previa", { trecho, certo });
 }
 
 export interface CorrecaoAplicada {
   aplicadas: string[];
   total: number;
-  aviso: string | null;
+  /** codigo + parametros, lista deles, ou null - a tela guarda como
+   * Mensagem (mensagemDoAviso) e resolve no render. */
+  aviso: unknown;
 }
 
 /** So grava o que a previa com esta assinatura mostrou - 409 se alguma
@@ -51,7 +48,7 @@ export function aplicarCorrecao(corpo: {
   descricao: string;
   assinatura: string;
 }): Promise<CorrecaoAplicada> {
-  return enviarJson<CorrecaoAplicada>("/api/correcoes", corpo).then(comAvisoEmTexto);
+  return enviarJson<CorrecaoAplicada>("/api/correcoes", corpo);
 }
 
 // ---- variacoes parecidas (ADR 0020) ---------------------------------------
@@ -93,5 +90,5 @@ export function aplicarVariacoes(
     certo,
     formas,
     assinatura,
-  }).then(comAvisoEmTexto);
+  });
 }

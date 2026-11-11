@@ -1,3 +1,5 @@
+import { mensagemDe } from "../api/cliente";
+import { mensagem, useMensagem, type Mensagem } from "../i18n/mensagem";
 import { useEffect, useState } from "react";
 import {
   excluirPessoa,
@@ -136,12 +138,13 @@ export function Pessoas() {
   const textos = useTextos();
   const t = textos.pessoas;
   const [dados, setDados] = useState<Participacao | null>(null);
-  const [erro, setErro] = useState<string | null>(null);
+  const [erro, setErro] = useState<Mensagem | null>(null);
+  const textoDe = useMensagem();
   const [versao, setVersao] = useState(0);
   const [confirmando, setConfirmando] = useState<string | null>(null);
   const [excluindo, setExcluindo] = useState(false);
-  const [erroExclusao, setErroExclusao] = useState<string | null>(null);
-  const [aviso, setAviso] = useState<string | null>(null);
+  const [erroExclusao, setErroExclusao] = useState<Mensagem | null>(null);
+  const [aviso, setAviso] = useState<Mensagem | null>(null);
   const indiceGaleria = useIndiceGaleria();
   const recarregarGaleria = useRecarregarGaleria();
 
@@ -151,8 +154,8 @@ export function Pessoas() {
       .then((d) => {
         if (!cancelado) setDados(d);
       })
-      .catch((e: Error) => {
-        if (!cancelado) setErro(e.message);
+      .catch((e: unknown) => {
+        if (!cancelado) setErro(mensagemDe(e));
       });
     return () => {
       cancelado = true;
@@ -165,15 +168,16 @@ export function Pessoas() {
     try {
       const r = await excluirPessoa(nome);
       setConfirmando(null);
+      const compactado = r.removidos.compactado;
       setAviso(
-        r.removidos.compactado
-          ? t.vozExcluida(nome)
-          : t.vozExcluidaSemCompactar(nome),
+        mensagem((c) =>
+          compactado ? c.pessoas.vozExcluida(nome) : c.pessoas.vozExcluidaSemCompactar(nome),
+        ),
       );
       recarregarGaleria();
       setVersao((v) => v + 1);
     } catch (e) {
-      setErroExclusao((e as Error).message);
+      setErroExclusao(mensagemDe(e));
     } finally {
       setExcluindo(false);
     }
@@ -189,10 +193,10 @@ export function Pessoas() {
 
       {aviso && (
         <p className="tela-pessoas__aviso" role="status">
-          {aviso}
+          {textoDe(aviso)}
         </p>
       )}
-      {erro && <p className="tela-pessoas__erro">{erro}</p>}
+      {erro && <p className="tela-pessoas__erro">{textoDe(erro)}</p>}
       {!erro && dados === null && (
         <p className="tela-pessoas__estado">{t.carregando}</p>
       )}
@@ -316,7 +320,7 @@ export function Pessoas() {
             <ConfirmarExclusao
               pessoa={dados.pessoas.find((p) => p.nome === confirmando)!}
               excluindo={excluindo}
-              erro={erroExclusao}
+              erro={textoDe(erroExclusao)}
               aoConfirmar={() => excluir(confirmando)}
               aoCancelar={() => {
                 setConfirmando(null);

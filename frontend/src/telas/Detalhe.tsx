@@ -1,4 +1,5 @@
-import { textoDoAviso } from "../api/cliente";
+import { mensagemDe, textoDoAviso } from "../api/cliente";
+import { useMensagem, type Mensagem } from "../i18n/mensagem";
 import {
   Fragment,
   useEffect,
@@ -518,11 +519,12 @@ export function Detalhe({ id, em }: { id: string; em?: number }) {
   // O .txt sai no idioma da interface (cabecalho e instrucoes; a fala nunca).
   const idioma = useIdioma();
   const tc = useTextos().comum;
+  const textoDe = useMensagem();
   const [dados, setDados] = useState<DetalheReuniao | null>(null);
-  const [erro, setErro] = useState<string | null>(null);
+  const [erro, setErro] = useState<Mensagem | null>(null);
   const [mostrarEventos, setMostrarEventos] = useState(lerPreferenciaMostrarEventos);
   const [acionando, setAcionando] = useState(false);
-  const [erroProcessar, setErroProcessar] = useState<string | null>(null);
+  const [erroProcessar, setErroProcessar] = useState<Mensagem | null>(null);
   const indiceGaleria = useIndiceGaleria();
   const transcriptRef = useRef<HTMLDivElement>(null);
   const reprodutor = useReprodutor();
@@ -537,8 +539,8 @@ export function Detalhe({ id, em }: { id: string; em?: number }) {
       .then((d) => {
         if (!cancelado) setDados(d);
       })
-      .catch((e: Error) => {
-        if (!cancelado) setErro(e.message);
+      .catch((e: unknown) => {
+        if (!cancelado) setErro(mensagemDe(e));
       });
     return () => {
       cancelado = true;
@@ -605,7 +607,7 @@ export function Detalhe({ id, em }: { id: string; em?: number }) {
   function recarregar() {
     carregarReuniao(id)
       .then(setDados)
-      .catch((e: Error) => setErro(e.message));
+      .catch((e: unknown) => setErro(mensagemDe(e)));
   }
 
   function atualizarFala(indice: number, alterada: FalaAlterada) {
@@ -651,7 +653,7 @@ export function Detalhe({ id, em }: { id: string; em?: number }) {
       await iniciarProcessamento(id, []);
       window.location.hash = `#/reuniao/${id}/processando`;
     } catch (e) {
-      setErroProcessar((e as Error).message);
+      setErroProcessar(mensagemDe(e));
       setAcionando(false);
     }
   }
@@ -706,7 +708,7 @@ export function Detalhe({ id, em }: { id: string; em?: number }) {
         ← {tc.reunioes}
       </a>
 
-      {erro && <p className="tela-detalhe__erro">{erro}</p>}
+      {erro && <p className="tela-detalhe__erro">{textoDe(erro)}</p>}
       {!erro && dados === null && (
         <p className="tela-detalhe__estado">{t.carregando}</p>
       )}
@@ -757,7 +759,7 @@ export function Detalhe({ id, em }: { id: string; em?: number }) {
             </button>
           )}
           {erroProcessar && (
-            <p className="tela-detalhe__erro">{erroProcessar}</p>
+            <p className="tela-detalhe__erro">{textoDe(erroProcessar)}</p>
           )}
         </div>
       )}
@@ -814,7 +816,7 @@ export function Detalhe({ id, em }: { id: string; em?: number }) {
           {dados.avisos && dados.avisos.length > 0 && (
             <div className="tela-detalhe__avisos">
               {dados.avisos.map((aviso, i) => (
-                <p key={i}>{aviso}</p>
+                <p key={i}>{textoDoAviso(aviso)}</p>
               ))}
             </div>
           )}

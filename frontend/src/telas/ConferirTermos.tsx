@@ -1,3 +1,5 @@
+import { mensagemDe } from "../api/cliente";
+import { mensagem, useMensagem, type Mensagem } from "../i18n/mensagem";
 import { useEffect, useState } from "react";
 import {
   carregarReuniao,
@@ -32,27 +34,28 @@ function ItemParaConferir({
   item: TermoParaConferir;
   dados: DetalheReuniao;
   reprodutor: ReturnType<typeof useReprodutor>;
-  aoResponder: (mensagem: string) => void;
+  aoResponder: (mensagem: Mensagem) => void;
   aoRecarregar: () => void;
 }) {
   const t = useTextos().conferir;
   const [aberta, setAberta] = useState<Resposta>(null);
   const [descricao, setDescricao] = useState("");
   const [ocupado, setOcupado] = useState(false);
-  const [erro, setErro] = useState<string | null>(null);
+  const [erro, setErro] = useState<Mensagem | null>(null);
+  const textoDe = useMensagem();
   const [corrigidoEmTodas, setCorrigidoEmTodas] = useState(false);
   const o = item.ocorrencia;
   const url = urlAudioTrecho(id, o.audio_inicio, o.audio_fim);
   const fala = temResultadoProcessado(dados) ? dados.falas[o.indice] : undefined;
 
-  async function responder(acao: () => Promise<unknown>, mensagem: string) {
+  async function responder(acao: () => Promise<unknown>, m: Mensagem) {
     setOcupado(true);
     setErro(null);
     try {
       await acao();
-      aoResponder(mensagem);
+      aoResponder(m);
     } catch (e) {
-      setErro((e as Error).message);
+      setErro(mensagemDe(e));
       setOcupado(false);
     }
   }
@@ -107,7 +110,10 @@ function ItemParaConferir({
             type="button"
             className="conferir__discreto"
             onClick={() =>
-              responder(() => marcarRespondido(item.forma), t.ignorado(item.forma))
+              responder(
+                () => marcarRespondido(item.forma),
+                mensagem((c) => c.conferir.ignorado(item.forma)),
+              )
             }
             disabled={ocupado}
           >
@@ -123,7 +129,7 @@ function ItemParaConferir({
             e.preventDefault();
             responder(
               () => adicionarTermo(item.forma, descricao),
-              t.agoraETermo(item.forma),
+              mensagem((c) => c.conferir.agoraETermo(item.forma)),
             );
           }}
         >
@@ -159,13 +165,16 @@ function ItemParaConferir({
           fim={o.posicao + o.comprimento}
           topo={0}
           aoFechar={() => {
-            if (corrigidoEmTodas) aoResponder(t.corrigido(item.forma));
+            if (corrigidoEmTodas) aoResponder(mensagem((c) => c.conferir.corrigido(item.forma)));
             else setAberta(null);
           }}
           // So nesta fala: nas proximas reunioes a forma poderia ser certa
           // - guarda que ja foi respondida, para nao perguntar de novo.
           aoCorrigirFala={() =>
-            responder(() => marcarRespondido(item.forma), t.corrigidoNestaFala(item.forma))
+            responder(
+              () => marcarRespondido(item.forma),
+              mensagem((c) => c.conferir.corrigidoNestaFala(item.forma)),
+            )
           }
           aoCorrigirEmTodas={() => {
             setCorrigidoEmTodas(true);
@@ -176,7 +185,7 @@ function ItemParaConferir({
 
       {erro && (
         <p className="conferir__erro" role="alert">
-          {erro}
+          {textoDe(erro)}
         </p>
       )}
     </li>
@@ -202,13 +211,14 @@ export function ConferirTermos({
   const t = useTextos().conferir;
   const [itens, setItens] = useState<TermoParaConferir[] | null>(null);
   const [dados, setDados] = useState<DetalheReuniao | null>(null);
-  const [erro, setErro] = useState<string | null>(null);
-  const [ultima, setUltima] = useState<string | null>(null);
+  const [erro, setErro] = useState<Mensagem | null>(null);
+  const [ultima, setUltima] = useState<Mensagem | null>(null);
+  const textoDe = useMensagem();
 
   function recarregarReuniao() {
     carregarReuniao(id)
       .then(setDados)
-      .catch((e: Error) => setErro(e.message));
+      .catch((e: unknown) => setErro(mensagemDe(e)));
   }
 
   useEffect(() => {
@@ -224,10 +234,10 @@ export function ConferirTermos({
         setItens(lista);
         setDados(d);
       })
-      .catch((e: Error) => {
+      .catch((e: unknown) => {
         // Falha aqui nao pode prender a pessoa na revisao: as vozes ja
         // foram gravadas.
-        if (!cancelado) setErro(e.message);
+        if (!cancelado) setErro(mensagemDe(e));
       });
     return () => {
       cancelado = true;
@@ -239,7 +249,7 @@ export function ConferirTermos({
   if (erro) {
     return (
       <section className="conferir">
-        <p className="conferir__erro">{erro}</p>
+        <p className="conferir__erro">{textoDe(erro)}</p>
         <button type="button" className="conferir__botao" onClick={aoConcluir}>
           {t.irParaReuniao}
         </button>
@@ -258,7 +268,7 @@ export function ConferirTermos({
       <p className="conferir__nota">{t.nota}</p>
       {ultima && (
         <p className="conferir__feito" role="status">
-          {ultima}
+          {textoDe(ultima)}
         </p>
       )}
       {itens.length === 0 ? (

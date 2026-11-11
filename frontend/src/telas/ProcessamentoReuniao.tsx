@@ -1,3 +1,5 @@
+import { mensagemDe } from "../api/cliente";
+import { useMensagem, type Mensagem } from "../i18n/mensagem";
 import { useEffect, useRef, useState } from "react";
 import {
   cancelarProcessamento,
@@ -98,7 +100,8 @@ export function ProcessamentoReuniao({ id }: { id: string }) {
   const [tela, setTela] = useState<EstadoTela>({ tipo: "carregando" });
   const [decorrido, setDecorrido] = useState(0);
   const [emAcao, setEmAcao] = useState(false);
-  const [erroAcao, setErroAcao] = useState<string | null>(null);
+  const [erroAcao, setErroAcao] = useState<Mensagem | null>(null);
+  const textoDe = useMensagem();
   const esRef = useRef<EventSource | null>(null);
   // O titulo (dado na Nova reuniao, ou depois) - o progresso por SSE nao o
   // traz. Falha ao buscar so deixa o padrao "Reuniao NN".
@@ -162,7 +165,7 @@ export function ProcessamentoReuniao({ id }: { id: string }) {
     try {
       await cancelarProcessamento(id);
     } catch (e) {
-      setErroAcao((e as Error).message);
+      setErroAcao(mensagemDe(e));
     } finally {
       setEmAcao(false);
     }
@@ -175,7 +178,7 @@ export function ProcessamentoReuniao({ id }: { id: string }) {
       await iniciarProcessamento(id, pessoas);
       conectar();
     } catch (e) {
-      setErroAcao((e as Error).message);
+      setErroAcao(mensagemDe(e));
     } finally {
       setEmAcao(false);
     }
@@ -213,7 +216,7 @@ export function ProcessamentoReuniao({ id }: { id: string }) {
               {t.legendaCancelar}
             </span>
           </div>
-          {erroAcao && <p className="tela-processamento__erro">{erroAcao}</p>}
+          {erroAcao && <p className="tela-processamento__erro">{textoDe(erroAcao)}</p>}
         </>
       )}
 
@@ -239,7 +242,7 @@ export function ProcessamentoReuniao({ id }: { id: string }) {
           >
             {emAcao ? t.tentando : formatos.tentarNovamente}
           </button>
-          {erroAcao && <p className="tela-processamento__erro">{erroAcao}</p>}
+          {erroAcao && <p className="tela-processamento__erro">{textoDe(erroAcao)}</p>}
         </div>
       )}
     </main>
@@ -256,11 +259,11 @@ export function ProcessamentoReuniao({ id }: { id: string }) {
 function TelaOciosa({ id }: { id: string }) {
   const t = useTextos().processamento;
   // O que mostrar, nao o texto pronto - o texto sai do catalogo na hora de
-  // desenhar, para trocar junto com o idioma. O erro vem do servidor como
-  // esta.
+  // desenhar, para trocar junto com o idioma (o erro tambem: Mensagem).
   const [mensagem, setMensagem] = useState<
-    { tipo: "verificando" } | { tipo: "parada" } | { tipo: "erro"; texto: string }
+    { tipo: "verificando" } | { tipo: "parada" } | { tipo: "erro"; erro: Mensagem }
   >({ tipo: "verificando" });
+  const textoDe = useMensagem();
 
   useEffect(() => {
     let cancelado = false;
@@ -273,8 +276,8 @@ function TelaOciosa({ id }: { id: string }) {
         }
         setMensagem({ tipo: "parada" });
       })
-      .catch((e: Error) => {
-        if (!cancelado) setMensagem({ tipo: "erro", texto: e.message });
+      .catch((e: unknown) => {
+        if (!cancelado) setMensagem({ tipo: "erro", erro: mensagemDe(e) });
       });
     return () => {
       cancelado = true;
@@ -288,7 +291,7 @@ function TelaOciosa({ id }: { id: string }) {
           ? t.verificando
           : mensagem.tipo === "parada"
             ? t.naoEstaProcessando
-            : mensagem.texto}
+            : textoDe(mensagem.erro)}
       </p>
       <a className="tela-processamento__link" href="#/reunioes">
         {t.verLista}

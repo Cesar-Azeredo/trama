@@ -1,3 +1,5 @@
+import { mensagemDe, textoDoAviso } from "../api/cliente";
+import { mensagem, useMensagem, type Mensagem } from "../i18n/mensagem";
 import { tituloDaReuniao } from "../util/formatarReuniao";
 import { Fragment, useEffect, useId, useRef, useState, type KeyboardEvent, type ReactNode } from "react";
 import {
@@ -56,8 +58,9 @@ function VariacoesParecidas({
   const [sugestao, setSugestao] = useState<SugestaoVariacoes | null>(null);
   const [marcadas, setMarcadas] = useState<Set<string>>(new Set());
   const [salvando, setSalvando] = useState(false);
-  const [erro, setErro] = useState<string | null>(null);
-  const [feito, setFeito] = useState<string | null>(null);
+  const textoDe = useMensagem();
+  const [erro, setErro] = useState<Mensagem | null>(null);
+  const [feito, setFeito] = useState<Mensagem | null>(null);
 
   useEffect(() => {
     let cancelado = false;
@@ -65,8 +68,8 @@ function VariacoesParecidas({
       .then((s) => {
         if (!cancelado) setSugestao(s);
       })
-      .catch((e: Error) => {
-        if (!cancelado) setErro(e.message);
+      .catch((e: unknown) => {
+        if (!cancelado) setErro(mensagemDe(e));
       });
     return () => {
       cancelado = true;
@@ -88,13 +91,18 @@ function VariacoesParecidas({
     setErro(null);
     try {
       const r = await aplicarVariacoes(certo, [...marcadas], sugestao.assinatura);
+      // codigo + parametros, resolvido no render: muda com o idioma
+      const aviso = r.aviso;
       setFeito(
-        t.maisCorrigidos(r.total) +
-          (r.aviso ? ` ${r.aviso}` : ""),
+        mensagem(
+          (c) =>
+            c.correcao.maisCorrigidos(r.total) +
+            (aviso ? ` ${textoDoAviso(aviso, c) ?? ""}` : ""),
+        ),
       );
       aoCorrigir();
     } catch (e) {
-      setErro((e as Error).message);
+      setErro(mensagemDe(e));
     } finally {
       setSalvando(false);
     }
@@ -103,11 +111,11 @@ function VariacoesParecidas({
   if (feito) {
     return (
       <p className="painel-correcao__feito" role="status">
-        {feito}
+        {textoDe(feito)}
       </p>
     );
   }
-  if (erro && !sugestao) return <p className="painel-correcao__erro">{erro}</p>;
+  if (erro && !sugestao) return <p className="painel-correcao__erro">{textoDe(erro)}</p>;
   if (!sugestao) return <p className="painel-correcao__nota">{t.procurandoParecidas}</p>;
   if (sugestao.variacoes.length === 0) return null;
 
@@ -151,7 +159,7 @@ function VariacoesParecidas({
       </ul>
       {erro && (
         <p className="painel-correcao__erro" role="alert">
-          {erro}
+          {textoDe(erro)}
         </p>
       )}
       <div className="painel-correcao__acoes">
@@ -220,8 +228,9 @@ export function PainelCorrecao({
   const [previa, setPrevia] = useState<PreviaCorrecao | null>(null);
   const [conferindo, setConferindo] = useState(false);
   const [salvando, setSalvando] = useState(false);
-  const [erro, setErro] = useState<string | null>(null);
-  const [feito, setFeito] = useState<string | null>(null);
+  const textoDe = useMensagem();
+  const [erro, setErro] = useState<Mensagem | null>(null);
+  const [feito, setFeito] = useState<Mensagem | null>(null);
   const campoRef = useRef<HTMLInputElement>(null);
   const id = useId();
 
@@ -243,8 +252,8 @@ export function PainelCorrecao({
         .then((p) => {
           if (!cancelado) setPrevia(p);
         })
-        .catch((e: Error) => {
-          if (!cancelado) setErro(e.message);
+        .catch((e: unknown) => {
+          if (!cancelado) setErro(mensagemDe(e));
         })
         .finally(() => {
           if (!cancelado) setConferindo(false);
@@ -280,13 +289,17 @@ export function PainelCorrecao({
         descricao,
         assinatura: previa!.assinatura,
       });
+      const aviso = r.aviso;
       setFeito(
-        t.corrigidoEmTodas(r.total, r.aplicadas.length) +
-          (r.aviso ? ` ${r.aviso}` : ""),
+        mensagem(
+          (c) =>
+            c.correcao.corrigidoEmTodas(r.total, r.aplicadas.length) +
+            (aviso ? ` ${textoDoAviso(aviso, c) ?? ""}` : ""),
+        ),
       );
       aoCorrigirEmTodas();
     } catch (e) {
-      setErro((e as Error).message);
+      setErro(mensagemDe(e));
     } finally {
       setSalvando(false);
     }
@@ -323,7 +336,7 @@ export function PainelCorrecao({
       {feito ? (
         <>
           <p className="painel-correcao__feito" role="status">
-            {feito}
+            {textoDe(feito)}
           </p>
           <VariacoesParecidas
             trecho={trecho}
@@ -419,7 +432,9 @@ export function PainelCorrecao({
                   </ul>
                 </details>
               )}
-              {previa?.aviso && <p className="painel-correcao__nota">{previa.aviso}</p>}
+              {previa?.aviso ? (
+                <p className="painel-correcao__nota">{textoDoAviso(previa.aviso)}</p>
+              ) : null}
             </div>
           )}
 
@@ -437,7 +452,7 @@ export function PainelCorrecao({
 
           {erro && (
             <p className="painel-correcao__erro" role="alert">
-              {erro}
+              {textoDe(erro)}
             </p>
           )}
 

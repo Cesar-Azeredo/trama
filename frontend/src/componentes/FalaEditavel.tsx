@@ -1,3 +1,5 @@
+import { mensagemDe } from "../api/cliente";
+import { useMensagem, type Mensagem } from "../i18n/mensagem";
 import {
   useEffect,
   useLayoutEffect,
@@ -53,7 +55,8 @@ export function FalaEditavel({
   const [editando, setEditando] = useState(false);
   const [texto, setTexto] = useState(fala.texto);
   const [salvando, setSalvando] = useState(false);
-  const [erro, setErro] = useState<string | null>(null);
+  const textoDe = useMensagem();
+  const [erro, setErro] = useState<Mensagem | null>(null);
   const campoRef = useRef<HTMLTextAreaElement>(null);
   const lapisRef = useRef<HTMLButtonElement>(null);
   const encerrandoRef = useRef(false);
@@ -108,7 +111,7 @@ export function FalaEditavel({
       aoMudar(await acao());
       fechar();
     } catch (e) {
-      setErro((e as Error).message);
+      setErro(mensagemDe(e));
     } finally {
       salvandoRef.current = false;
       setSalvando(false);
@@ -205,7 +208,7 @@ export function FalaEditavel({
           id={`${idCampo}-ajuda`}
           role={erro ? "alert" : undefined}
         >
-          {erro ?? t.ajudaFala}
+          {textoDe(erro) ?? t.ajudaFala}
         </p>
         {fala.edicao_manual && (
           <button

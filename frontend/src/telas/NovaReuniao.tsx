@@ -1,3 +1,5 @@
+import { mensagemDe } from "../api/cliente";
+import { mensagem, useMensagem, type Mensagem } from "../i18n/mensagem";
 import {
   useEffect,
   useRef,
@@ -19,17 +21,17 @@ import { listarPessoas, type Pessoa } from "../api/pessoas";
 import { corDaVoz } from "../vozes/corDaVoz";
 import { useIndiceGaleria } from "../vozes/useIndiceGaleria";
 import { formatarTamanhoArquivo } from "../util/formatarReuniao";
-import { textosAtuais, useTextos } from "../i18n/textos";
+import { useTextos } from "../i18n/textos";
 import "./NovaReuniao.css";
 
-function validarArquivo(arquivo: File): string | null {
-  const t = textosAtuais().nova;
+function validarArquivo(arquivo: File): Mensagem | null {
   const nome = arquivo.name.toLowerCase();
   if (!EXTENSOES_AUDIO_PERMITIDAS.some((ext) => nome.endsWith(ext))) {
-    return t.formatoNaoAceito(EXTENSOES_AUDIO_PERMITIDAS.join(", "));
+    return mensagem((c) => c.nova.formatoNaoAceito(EXTENSOES_AUDIO_PERMITIDAS.join(", ")));
   }
   if (arquivo.size > TAMANHO_MAXIMO_AUDIO_BYTES) {
-    return t.maiorQueLimite(String(Math.round(TAMANHO_MAXIMO_AUDIO_BYTES / 1024 / 1024)));
+    const limite = String(Math.round(TAMANHO_MAXIMO_AUDIO_BYTES / 1024 / 1024));
+    return mensagem((c) => c.nova.maiorQueLimite(limite));
   }
   return null;
 }
@@ -302,14 +304,15 @@ export function NovaReuniao() {
   const t = useTextos().nova;
   const comum = useTextos().comum;
   const [arquivo, setArquivo] = useState<File | null>(null);
-  const [erroArquivo, setErroArquivo] = useState<string | null>(null);
+  const [erroArquivo, setErroArquivo] = useState<Mensagem | null>(null);
+  const textoDe = useMensagem();
   const [arrastando, setArrastando] = useState(false);
   const [pessoasGaleria, setPessoasGaleria] = useState<Pessoa[] | null>(null);
   const [novas, setNovas] = useState<string[]>([]);
   const [selecionadas, setSelecionadas] = useState<string[]>([]);
   const [enviando, setEnviando] = useState(false);
   const [progresso, setProgresso] = useState(0);
-  const [erroEnvio, setErroEnvio] = useState<string | null>(null);
+  const [erroEnvio, setErroEnvio] = useState<Mensagem | null>(null);
   const [titulo, setTitulo] = useState("");
 
   useEffect(() => {
@@ -369,7 +372,7 @@ export function NovaReuniao() {
     // Mesma regra do servidor (reunioes.validar_titulo), conferida ANTES de
     // subir o audio - para nao descobrir o problema depois de 500 MB.
     if (/[\x00-\x1f\x7f]/.test(titulo)) {
-      setErroEnvio(t.caractereDeControle);
+      setErroEnvio(mensagem((c) => c.nova.caractereDeControle));
       return;
     }
     setEnviando(true);
@@ -380,7 +383,7 @@ export function NovaReuniao() {
     try {
       criado = await enviarAudio(arquivo, setProgresso);
     } catch (e) {
-      setErroEnvio((e as Error).message);
+      setErroEnvio(mensagemDe(e));
       setEnviando(false);
       return;
     }
@@ -391,7 +394,8 @@ export function NovaReuniao() {
       } catch (e) {
         // O audio ja subiu: a reuniao existe, na fila. Nunca fingir que o
         // titulo foi salvo, nem processar como se tivesse sido.
-        setErroEnvio(t.tituloNaoSalvo((e as Error).message));
+        const motivo = mensagemDe(e);
+        setErroEnvio(mensagem((c) => c.nova.tituloNaoSalvo(motivo.texto(c))));
         setEnviando(false);
         return;
       }
@@ -430,7 +434,7 @@ export function NovaReuniao() {
             if (solto) escolherArquivo(solto);
           }}
         />
-        {erroArquivo && <p className="tela-nova__erro">{erroArquivo}</p>}
+        {erroArquivo && <p className="tela-nova__erro">{textoDe(erroArquivo)}</p>}
         {arquivo && !enviando && (
           <button
             type="button"
@@ -512,7 +516,7 @@ export function NovaReuniao() {
           {t.notaRodape}
         </span>
       </div>
-      {erroEnvio && <p className="tela-nova__erro">{erroEnvio}</p>}
+      {erroEnvio && <p className="tela-nova__erro">{textoDe(erroEnvio)}</p>}
     </main>
   );
 }

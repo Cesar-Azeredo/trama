@@ -546,7 +546,10 @@ Erros e avisos do servidor chegam como `{"codigo", "parametros"}`
 (`trama/erros.py`); `api/cliente.ts` (`mensagemDeErro`, `textoDoAviso`)
 devolve o texto de `i18n/<idioma>/erros.ts`. Aviso gravado como texto num
 `.json` antigo aparece como está. `tests/test_codigos_de_erro.py` liga os
-dois lados. A transcrição baixada recebe `?idioma=` (`servidor/transcricao.py`,
+dois lados. Nenhuma tela guarda mensagem como texto: o estado guarda uma
+`Mensagem` (`i18n/mensagem.ts`, função do catálogo) e resolve no render
+com `useMensagem()`; as funções de `api/` lançam `ErroDaApi`, que carrega
+a `Mensagem` (`mensagemDe(e)` no `catch`). A transcrição baixada recebe `?idioma=` (`servidor/transcricao.py`,
 `TEXTOS`); a fala nunca é traduzida.
 
 ### Telas

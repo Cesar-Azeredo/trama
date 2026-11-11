@@ -1,3 +1,5 @@
+import { mensagemDe } from "../api/cliente";
+import { useMensagem, type Mensagem } from "../i18n/mensagem";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { buscarNasFalas, BUSCA_MAX_LEN, type ReuniaoEncontrada } from "../api/busca";
 import { corDoTextoDaVoz } from "../vozes/corDaVoz";
@@ -278,15 +280,14 @@ function ResultadosNaFala({
 export function Lista() {
   const t = useTextos().lista;
   const [reunioes, setReunioes] = useState<ResumoReuniao[] | null>(null);
-  const [erro, setErro] = useState<string | null>(null);
+  const [erro, setErro] = useState<Mensagem | null>(null);
+  const textoDe = useMensagem();
   const [acionando, setAcionando] = useState<string | null>(null);
-  const [erroAcao, setErroAcao] = useState<{ id: string; mensagem: string } | null>(
-    null,
-  );
+  const [erroAcao, setErroAcao] = useState<{ id: string; mensagem: Mensagem } | null>(null);
   const indiceGaleria = useIndiceGaleria();
   const [busca, setBusca] = useState("");
   const [naFala, setNaFala] = useState<ReuniaoEncontrada[] | null>(null);
-  const [erroNaFala, setErroNaFala] = useState<string | null>(null);
+  const [erroNaFala, setErroNaFala] = useState<Mensagem | null>(null);
   const consultaAtual = useRef(0);
 
   // Busca nas falas (servidor): a partir de 2 caracteres, 250ms depois da
@@ -309,8 +310,8 @@ export function Lista() {
             setErroNaFala(null);
           }
         })
-        .catch((e: Error) => {
-          if (minha === consultaAtual.current) setErroNaFala(e.message);
+        .catch((e: unknown) => {
+          if (minha === consultaAtual.current) setErroNaFala(mensagemDe(e));
         });
     }, 250);
     return () => window.clearTimeout(espera);
@@ -322,8 +323,8 @@ export function Lista() {
       .then((dados) => {
         if (!cancelado) setReunioes(dados);
       })
-      .catch((e: Error) => {
-        if (!cancelado) setErro(e.message);
+      .catch((e: unknown) => {
+        if (!cancelado) setErro(mensagemDe(e));
       });
     return () => {
       cancelado = true;
@@ -337,7 +338,7 @@ export function Lista() {
       await iniciarProcessamento(id, []);
       window.location.hash = `#/reuniao/${id}/processando`;
     } catch (e) {
-      setErroAcao({ id, mensagem: (e as Error).message });
+      setErroAcao({ id, mensagem: mensagemDe(e) });
       setAcionando(null);
     }
   }
@@ -346,7 +347,7 @@ export function Lista() {
 
   return (
     <main className="tela-lista">
-      {erro && <p className="tela-lista__erro">{erro}</p>}
+      {erro && <p className="tela-lista__erro">{textoDe(erro)}</p>}
       {!erro && reunioes === null && (
         <p className="tela-lista__estado">{t.carregando}</p>
       )}
@@ -379,7 +380,7 @@ export function Lista() {
           {encontradas.length === 0 && naFala !== null && naFala.length === 0 && (
             <p className="tela-lista__estado">{t.semResultado(busca.trim())}</p>
           )}
-          {erroNaFala && <p className="tela-lista__erro">{erroNaFala}</p>}
+          {erroNaFala && <p className="tela-lista__erro">{textoDe(erroNaFala)}</p>}
           {grupos(encontradas).map((g) => (
             <section
               key={g.chave}
@@ -399,7 +400,7 @@ export function Lista() {
                     reuniao={r}
                     indiceGaleria={indiceGaleria}
                     acionando={acionando === r.id}
-                    erroAcao={erroAcao?.id === r.id ? erroAcao.mensagem : null}
+                    erroAcao={erroAcao?.id === r.id ? textoDe(erroAcao.mensagem) : null}
                     aoProcessar={processar}
                   />
                 ))}

@@ -57,12 +57,14 @@ repetia.
 ## Consequências
 
 - Texto novo na tela entra nos dois catálogos ou o build falha.
-- Mensagem já exibida (erro, aviso) fica no idioma do momento em que
-  chegou; muda na próxima carga.
-- Ainda em português no inglês: o rótulo ao vivo de cada etapa do
-  processamento, que vem do stdout do pipeline, e o título padrão
-  ("Reunião NN") de reunião sem título nas listas de ocorrências da
-  correção, montado no servidor. O `.txt` que o pipeline grava em disco
-  pela CLI continua em português.
+- Mensagem que a tela guarda (erro, aviso, "feito") nunca é texto pronto:
+  é uma `Mensagem` (`i18n/mensagem.ts`), função do catálogo resolvida no
+  render. Trocar de idioma redesenha inclusive a mensagem que já está na
+  tela. O que a API lança é `ErroDaApi`, que carrega a `Mensagem`.
+- O servidor também não manda frase sobre o processamento: a etapa vai
+  pelo número, e o que o pipeline acrescentou a ela (falantes, motor,
+  termos) vai como dado. O título padrão ("Reunião NN"/"Meeting NN") é
+  montado na tela, pelo id.
+- O `.txt` que o pipeline grava em disco pela CLI continua em português.
 - Há dois conjuntos de demonstração (`audios-demo/pt`, `audios-demo/en`) e
   dois glossários de exemplo, com a mesma estrutura.

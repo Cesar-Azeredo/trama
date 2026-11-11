@@ -7,11 +7,11 @@
 import {
   buscarJson,
   enviarJson,
+  ErroDaApi,
   mensagemDeErro,
-  textoDoAviso,
   type CodigoComParametros,
 } from "./cliente";
-import { textosAtuais } from "../i18n/textos";
+import { mensagem } from "../i18n/mensagem";
 
 /** "processando"/"interrompido" so existem por causa do marco 2 (upload +
  * processamento pelo servidor, ver ARCHITECTURE.md) - "interrompido" e o
@@ -207,7 +207,9 @@ export interface DetalheProcessado extends DataETitulo {
    * ausente-quando-zero) numa reuniao processada por esta versao do
    * pipeline.py - mesma convencao de "eventos"/"regioes_sobrepostas". */
   lacunas_sem_texto?: LacunaSemTexto[];
-  avisos?: string[];
+  /** codigo + parametros (servidor atual) ou texto (.json antigo) - a tela
+   * resolve no render com textoDoAviso. */
+  avisos?: unknown[];
   /** "processamento": valores gravados no .json por esta reuniao (pipeline.py
    * atual). "atual": a reuniao e de antes dessa mudanca - sim_min/
    * margem_min sao run.SIM_MIN/MARGEM_MIN de HOJE, nao os do
@@ -252,16 +254,8 @@ export function temResultadoProcessado(
   return dados.estado === "completa" || dados.estado === "incompleta";
 }
 
-export async function carregarReuniao(id: string): Promise<DetalheReuniao> {
-  const dados = await buscarJson<DetalheReuniao>(`/api/reunioes/${encodeURIComponent(id)}`);
-  // avisos gravados no .json: codigo (servidor atual) ou texto (.json de
-  // antes) - a tela recebe sempre texto, no idioma escolhido.
-  if ("avisos" in dados && Array.isArray(dados.avisos)) {
-    dados.avisos = dados.avisos
-      .map((a: unknown) => textoDoAviso(a))
-      .filter((a): a is string => !!a);
-  }
-  return dados;
+export function carregarReuniao(id: string): Promise<DetalheReuniao> {
+  return buscarJson<DetalheReuniao>(`/api/reunioes/${encodeURIComponent(id)}`);
 }
 
 // ---- GET /api/reunioes/{id}/audio ----------------------------------------
@@ -373,13 +367,10 @@ export function enviarAudio(
         resolve(corpo as DetalheNaoProcessada);
         return;
       }
-      reject(
-        new Error(
-          mensagemDeErro(xhr.status, corpo, textosAtuais().erros.falhaComServidor(xhr.status)),
-        ),
-      );
+      reject(new ErroDaApi(mensagemDeErro(xhr.status, corpo)));
     };
-    xhr.onerror = () => reject(new Error(textosAtuais().erros.falhaDeRedeNoEnvio));
+    xhr.onerror = () =>
+      reject(new ErroDaApi(mensagem((t) => t.erros.falhaDeRedeNoEnvio)));
     xhr.send(forma);
   });
 }

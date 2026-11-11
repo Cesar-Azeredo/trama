@@ -1,3 +1,5 @@
+import { mensagemDe } from "../api/cliente";
+import { useMensagem, type Mensagem } from "../i18n/mensagem";
 import { useEffect, useRef, useState, type KeyboardEvent } from "react";
 import { salvarTitulo, TITULO_MAX_LEN } from "../api/reunioes";
 import { formatarTitulo } from "../util/formatarReuniao";
@@ -27,7 +29,8 @@ export function TituloEditavel({
   const [editando, setEditando] = useState(false);
   const [texto, setTexto] = useState(titulo ?? "");
   const [salvando, setSalvando] = useState(false);
-  const [erro, setErro] = useState<string | null>(null);
+  const textoDe = useMensagem();
+  const [erro, setErro] = useState<Mensagem | null>(null);
   const campoRef = useRef<HTMLInputElement>(null);
   const botaoRef = useRef<HTMLButtonElement>(null);
   const cancelouRef = useRef(false);
@@ -62,7 +65,7 @@ export function TituloEditavel({
       aoMudar(await salvarTitulo(id, texto));
       fechar();
     } catch (e) {
-      setErro((e as Error).message);
+      setErro(mensagemDe(e));
     } finally {
       setSalvando(false);
     }
@@ -120,7 +123,7 @@ export function TituloEditavel({
         aria-describedby={`titulo-ajuda-${id}`}
       />
       <p className="titulo-editavel__ajuda" id={`titulo-ajuda-${id}`} role={erro ? "alert" : undefined}>
-        {erro ?? t.ajudaTitulo}
+        {textoDe(erro) ?? t.ajudaTitulo}
       </p>
     </div>
   );

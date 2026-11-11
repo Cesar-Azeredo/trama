@@ -1,3 +1,5 @@
+import { mensagemDe, textoDoAviso } from "../../api/cliente";
+import { mensagem, useMensagem, type Mensagem } from "../../i18n/mensagem";
 import { tituloDaReuniao } from "../../util/formatarReuniao";
 import { useEffect, useId, useRef, useState } from "react";
 import {
@@ -44,14 +46,15 @@ function AdicionarVariacao({
 }: {
   termo: string;
   variacoes: { errado: string }[];
-  aoTerminar: (mensagem: string | null) => void;
+  aoTerminar: (mensagem: Mensagem | null) => void;
 }) {
   const [errado, setErrado] = useState("");
   const [previa, setPrevia] = useState<PreviaCorrecao | null>(null);
   const [ocupado, setOcupado] = useState(false);
-  const [erro, setErro] = useState<string | null>(null);
+  const [erro, setErro] = useState<Mensagem | null>(null);
   const id = useId();
   const t = useTextos().termos;
+  const textoDe = useMensagem();
   // A mesma variacao duas vezes no mesmo termo nunca entra - o servidor
   // tambem recusa; aqui so evita a ida e explica antes.
   const repetida = errado.trim()
@@ -65,7 +68,7 @@ function AdicionarVariacao({
     try {
       setPrevia(await previaCorrecao(errado, termo));
     } catch (e) {
-      setErro((e as Error).message);
+      setErro(mensagemDe(e));
     } finally {
       setOcupado(false);
     }
@@ -82,14 +85,20 @@ function AdicionarVariacao({
         descricao: "",
         assinatura: previa.assinatura,
       });
+      // codigo + parametros, resolvido no render: muda com o idioma
+      const { trecho } = previa;
+      const aviso = r.aviso;
       aoTerminar(
-        (r.total > 0
-          ? t.corrigidoEm(previa.trecho, r.total)
-          : t.seraCorrigidoNasProximas(previa.trecho)) +
-          (r.aviso ? ` ${r.aviso}` : ""),
+        mensagem(
+          (c) =>
+            (r.total > 0
+              ? c.termos.corrigidoEm(trecho, r.total)
+              : c.termos.seraCorrigidoNasProximas(trecho)) +
+            (aviso ? ` ${textoDoAviso(aviso, c) ?? ""}` : ""),
+        ),
       );
     } catch (e) {
-      setErro((e as Error).message);
+      setErro(mensagemDe(e));
       setPrevia(null);
     } finally {
       setOcupado(false);
@@ -154,12 +163,12 @@ function AdicionarVariacao({
               </ul>
             </details>
           )}
-          {previa.aviso && <p className="perfil__nota">{previa.aviso}</p>}
+          {previa.aviso ? <p className="perfil__nota">{textoDoAviso(previa.aviso)}</p> : null}
         </div>
       )}
       {erro && (
         <p className="perfil__status perfil__status--erro" role="alert">
-          {erro}
+          {textoDe(erro)}
         </p>
       )}
       <div className="perfil__acoes perfil__acoes--sem-regua">
@@ -194,7 +203,8 @@ function DescricaoDoTermo({
   aoGravar: () => void;
 }) {
   const [valor, setValor] = useState(descricao);
-  const [estado, setEstado] = useState<string | null>(null);
+  const [estado, setEstado] = useState<Mensagem | null>(null);
+  const textoDe = useMensagem();
   // Sem descricao, o campo so existe depois do clique no link: um campo
   // aberto embaixo de cada termo parecia o app perguntando o que e cada
   // um, e confundia com a correcao de texto, que e o que importa.
@@ -218,13 +228,13 @@ function DescricaoDoTermo({
       if (!descricao) setAberto(false);
       return;
     }
-    setEstado(t.salvando);
+    setEstado(mensagem((c) => c.termos.salvando));
     try {
       await definirDescricao(termo, valor);
-      setEstado(t.salvo);
+      setEstado(mensagem((c) => c.termos.salvo));
       aoGravar();
     } catch (e) {
-      setEstado((e as Error).message);
+      setEstado(mensagemDe(e));
     }
   }
 
@@ -289,7 +299,7 @@ function DescricaoDoTermo({
       />
       {estado && (
         <span className="perfil__status" role="status">
-          {estado}
+          {textoDe(estado)}
         </span>
       )}
     </div>
@@ -304,8 +314,9 @@ function DescricaoDoTermo({
  */
 export function TermosDaEmpresa() {
   const [termos, setTermos] = useState<TermoDaEmpresa[] | null>(null);
-  const [erroCarga, setErroCarga] = useState<string | null>(null);
-  const [mensagem, setMensagem] = useState<{ tipo: "ok" | "erro"; texto: string } | null>(null);
+  const [erroCarga, setErroCarga] = useState<Mensagem | null>(null);
+  const [aviso, setAviso] = useState<{ tipo: "ok" | "erro"; mensagem: Mensagem } | null>(null);
+  const textoDe = useMensagem();
   const [variacaoAberta, setVariacaoAberta] = useState<string | null>(null);
   const [novoTermo, setNovoTermo] = useState("");
   const [novaDescricao, setNovaDescricao] = useState("");
@@ -316,34 +327,35 @@ export function TermosDaEmpresa() {
   function recarregar() {
     lerTermosDaEmpresa()
       .then(setTermos)
-      .catch((e: Error) => setErroCarga(e.message));
+      .catch((e: unknown) => setErroCarga(mensagemDe(e)));
   }
 
   useEffect(recarregar, []);
 
-  async function executar(acao: () => Promise<TermoDaEmpresa[]>, ok: string) {
-    setMensagem(null);
+  async function executar(acao: () => Promise<TermoDaEmpresa[]>, ok: Mensagem) {
+    setAviso(null);
     try {
       setTermos(await acao());
-      setMensagem({ tipo: "ok", texto: ok });
+      setAviso({ tipo: "ok", mensagem: ok });
     } catch (e) {
-      setMensagem({ tipo: "erro", texto: (e as Error).message });
+      setAviso({ tipo: "erro", mensagem: mensagemDe(e) });
     }
   }
 
   async function adicionar() {
     if (!novoTermo.trim()) return;
+    const termoNovo = novoTermo.trim();
     setAdicionando(true);
     await executar(
       () => adicionarTermo(novoTermo, novaDescricao),
-      tx.adicionado(novoTermo.trim()),
+      mensagem((c) => c.termos.adicionado(termoNovo)),
     );
     setNovoTermo("");
     setNovaDescricao("");
     setAdicionando(false);
   }
 
-  if (erroCarga) return <p className="perfil__erro">{erroCarga}</p>;
+  if (erroCarga) return <p className="perfil__erro">{textoDe(erroCarga)}</p>;
   if (termos === null) return <p className="perfil__vazio">{tx.carregandoTermos}</p>;
 
   return (
@@ -359,7 +371,10 @@ export function TermosDaEmpresa() {
                 type="button"
                 className="perfil__botao-discreto"
                 onClick={() =>
-                  executar(() => removerTermo(t.termo), tx.removido(t.termo))
+                  executar(
+                    () => removerTermo(t.termo),
+                    mensagem((c) => c.termos.removido(t.termo)),
+                  )
                 }
                 aria-label={tx.removerOTermo(t.termo)}
               >
@@ -389,7 +404,7 @@ export function TermosDaEmpresa() {
                       onClick={() =>
                         executar(
                           () => removerVariacao(v.errado),
-                          tx.naoSeraMaisCorrigido(v.errado),
+                          mensagem((c) => c.termos.naoSeraMaisCorrigido(v.errado)),
                         )
                       }
                       aria-label={tx.pararDeCorrigir(v.errado)}
@@ -406,10 +421,10 @@ export function TermosDaEmpresa() {
               <AdicionarVariacao
                 termo={t.termo}
                 variacoes={t.variacoes}
-                aoTerminar={(texto) => {
+                aoTerminar={(m) => {
                   setVariacaoAberta(null);
-                  if (texto) {
-                    setMensagem({ tipo: "ok", texto });
+                  if (m) {
+                    setAviso({ tipo: "ok", mensagem: m });
                     recarregar();
                   }
                 }}
@@ -468,12 +483,12 @@ export function TermosDaEmpresa() {
         </div>
       </form>
 
-      {mensagem && (
+      {aviso && (
         <p
-          className={"perfil__status" + (mensagem.tipo === "erro" ? " perfil__status--erro" : "")}
+          className={"perfil__status" + (aviso.tipo === "erro" ? " perfil__status--erro" : "")}
           role="status"
         >
-          {mensagem.texto}
+          {textoDe(aviso.mensagem)}
         </p>
       )}
 

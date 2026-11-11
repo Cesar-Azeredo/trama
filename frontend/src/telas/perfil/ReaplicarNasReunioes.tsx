@@ -1,3 +1,5 @@
+import { mensagemDe } from "../../api/cliente";
+import { mensagem, useMensagem, type Mensagem } from "../../i18n/mensagem";
 import { useState } from "react";
 import {
   previaReaplicacao,
@@ -17,18 +19,17 @@ import { numero } from "../../util/numeros";
 export function ReaplicarNasReunioes({ desabilitado }: { desabilitado: boolean }) {
   const [previa, setPrevia] = useState<PreviaReaplicacao | null>(null);
   const [ocupado, setOcupado] = useState(false);
-  const [mensagem, setMensagem] = useState<{ tipo: "ok" | "erro"; texto: string } | null>(
-    null,
-  );
+  const [aviso, setAviso] = useState<{ tipo: "ok" | "erro"; mensagem: Mensagem } | null>(null);
+  const textoDe = useMensagem();
   const t = useTextos().termos;
 
   async function verPrevia() {
     setOcupado(true);
-    setMensagem(null);
+    setAviso(null);
     try {
       setPrevia(await previaReaplicacao());
     } catch (e) {
-      setMensagem({ tipo: "erro", texto: (e as Error).message });
+      setAviso({ tipo: "erro", mensagem: mensagemDe(e) });
     } finally {
       setOcupado(false);
     }
@@ -37,17 +38,17 @@ export function ReaplicarNasReunioes({ desabilitado }: { desabilitado: boolean }
   async function aplicar() {
     if (!previa) return;
     setOcupado(true);
-    setMensagem(null);
+    setAviso(null);
     try {
       const r = await reaplicarGlossario(previa.assinatura);
       setPrevia(null);
-      setMensagem({
+      const n = r.aplicadas.length;
+      setAviso({
         tipo: "ok",
-        texto:
-          r.aplicadas.length === 0 ? t.nadaFoiAlterado : t.aplicadoEm(r.aplicadas.length),
+        mensagem: mensagem((c) => (n === 0 ? c.termos.nadaFoiAlterado : c.termos.aplicadoEm(n))),
       });
     } catch (e) {
-      setMensagem({ tipo: "erro", texto: (e as Error).message });
+      setAviso({ tipo: "erro", mensagem: mensagemDe(e) });
       setPrevia(null);
     } finally {
       setOcupado(false);
@@ -128,12 +129,12 @@ export function ReaplicarNasReunioes({ desabilitado }: { desabilitado: boolean }
         </div>
       )}
 
-      {mensagem && (
+      {aviso && (
         <p
-          className={"perfil__status" + (mensagem.tipo === "erro" ? " perfil__status--erro" : "")}
+          className={"perfil__status" + (aviso.tipo === "erro" ? " perfil__status--erro" : "")}
           role="status"
         >
-          {mensagem.texto}
+          {textoDe(aviso.mensagem)}
         </p>
       )}
     </div>

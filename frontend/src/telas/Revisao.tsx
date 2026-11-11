@@ -1,4 +1,5 @@
-import { textoDoAviso } from "../api/cliente";
+import { useMensagem, type Mensagem } from "../i18n/mensagem";
+import { mensagemDe, textoDoAviso } from "../api/cliente";
 import { useEffect, useMemo, useState } from "react";
 import {
   carregarReuniao,
@@ -400,12 +401,13 @@ function AvisoLedger({
 export function Revisao({ id }: { id: string }) {
   const t = useTextos().revisao;
   const [dados, setDados] = useState<DetalheReuniao | null>(null);
-  const [erro, setErro] = useState<string | null>(null);
+  const [erro, setErro] = useState<Mensagem | null>(null);
+  const textoDe = useMensagem();
   const [nomesGaleria, setNomesGaleria] = useState<string[]>([]);
   const [nomes, setNomes] = useState<Record<string, string>>({});
   const [modos, setModos] = useState<Record<string, Modo>>({});
   const [salvando, setSalvando] = useState(false);
-  const [erroSalvar, setErroSalvar] = useState<string | null>(null);
+  const [erroSalvar, setErroSalvar] = useState<Mensagem | null>(null);
   const [avisoLedger, setAvisoLedger] = useState<EfeitoNoLedger[] | null>(null);
   // Depois de gravar as vozes, a segunda etapa: termos para conferir (ADR
   // 0022). Sem nada a conferir, ConferirTermos volta direto ao Detalhe.
@@ -438,8 +440,8 @@ export function Revisao({ id }: { id: string }) {
           setModos(modosIniciais);
         }
       })
-      .catch((e: Error) => {
-        if (!cancelado) setErro(e.message);
+      .catch((e: unknown) => {
+        if (!cancelado) setErro(mensagemDe(e));
       });
     listarPessoas()
       .then((pessoas) => {
@@ -491,7 +493,7 @@ export function Revisao({ id }: { id: string }) {
       }
     } catch (e) {
       setSalvando(false);
-      setErroSalvar((e as Error).message);
+      setErroSalvar(mensagemDe(e));
       return;
     }
     gravar();
@@ -513,9 +515,9 @@ export function Revisao({ id }: { id: string }) {
         setEtapa("termos");
         window.scrollTo(0, 0);
       })
-      .catch((e: Error) => {
+      .catch((e: unknown) => {
         setSalvando(false);
-        setErroSalvar(e.message);
+        setErroSalvar(mensagemDe(e));
       });
   }
 
@@ -525,7 +527,7 @@ export function Revisao({ id }: { id: string }) {
         ← {tituloDaReuniao(id, dados?.titulo)}
       </a>
 
-      {erro && <p className="tela-revisao__erro">{erro}</p>}
+      {erro && <p className="tela-revisao__erro">{textoDe(erro)}</p>}
       {!erro && dados === null && (
         <p className="tela-revisao__estado">{t.carregandoReuniao}</p>
       )}
@@ -615,7 +617,7 @@ export function Revisao({ id }: { id: string }) {
               {t.nadaGravadoAteConfirmar}
             </span>
             {erroSalvar && (
-              <span className="tela-revisao__rodape-erro">{erroSalvar}</span>
+              <span className="tela-revisao__rodape-erro">{textoDe(erroSalvar)}</span>
             )}
           </div>
         </>
