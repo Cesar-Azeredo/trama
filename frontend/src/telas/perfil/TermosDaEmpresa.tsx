@@ -1,3 +1,4 @@
+import { tituloDaReuniao } from "../../util/formatarReuniao";
 import { useEffect, useId, useRef, useState } from "react";
 import {
   aplicarCorrecao,
@@ -143,7 +144,8 @@ function AdicionarVariacao({
                 {previa.reunioes.flatMap((r) =>
                   r.ocorrencias.map((o, k) => (
                     <li key={`${r.id}-${k}`}>
-                      <span className="termos__reuniao">{r.titulo}</span> …{o.antes}
+                      <span className="termos__reuniao">{tituloDaReuniao(r.id, r.titulo)}</span> …
+                      {o.antes}
                       <strong>{o.trecho}</strong>
                       {o.depois}…
                     </li>

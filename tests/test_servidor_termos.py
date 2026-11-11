@@ -461,7 +461,8 @@ def test_correcao_previa_conta_onde_trocaria_sem_gravar():
             "Aprovium",
             " não, ChatGPT",
         )
-        assert d["reunioes"][0]["titulo"] == "Reunião 08"
+        # sem titulo dado: None, e a tela monta o padrao no idioma dela
+        assert d["reunioes"][0]["id"] == "reuniao_08" and d["reunioes"][0]["titulo"] is None
         assert (j1.read_bytes(), glossario.CAMINHO.read_bytes()) == antes, "previa gravou"
         r = cliente.post("/api/correcoes/previa", json={"trecho": "Aprovion", "certo": "Aprovion"})
         assert r.status_code == 400 and erro_de(r) == ("trecho_ja_certo", {})

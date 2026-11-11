@@ -1,3 +1,4 @@
+import { tituloDaReuniao } from "../util/formatarReuniao";
 import { Fragment, useEffect, useId, useRef, useState, type KeyboardEvent, type ReactNode } from "react";
 import {
   aplicarCorrecao,
@@ -137,7 +138,7 @@ function VariacoesParecidas({
                     className="numeros"
                     href={`#/reuniao/${o.id}/em/${Math.floor(o.inicio)}`}
                   >
-                    {o.titulo}, {formatarHorario(o.inicio)}
+                    {tituloDaReuniao(o.id, o.titulo)}, {formatarHorario(o.inicio)}
                   </a>{" "}
                   …{o.antes}
                   <strong>{o.trecho}</strong>
@@ -395,7 +396,9 @@ export function PainelCorrecao({
                   <ul>
                     {previa.reunioes.map((r) => (
                       <li key={r.id}>
-                        <span className="painel-correcao__reuniao">{r.titulo}</span>
+                        <span className="painel-correcao__reuniao">
+                          {tituloDaReuniao(r.id, r.titulo)}
+                        </span>
                         <ul>
                           {r.ocorrencias.map((o, k) => (
                             <li key={k}>

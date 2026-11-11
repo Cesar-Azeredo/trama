@@ -23,7 +23,7 @@ import re
 
 from trama import erros, termos
 from trama.erros import ErroDeUsuario
-from trama.servidor import glossario, reunioes, transcricao
+from trama.servidor import glossario, reunioes
 
 TRECHO_MAX_LEN = glossario.MAX_LEN
 CONTEXTO = 60
@@ -155,7 +155,9 @@ def _ocorrencias(regra):
             saida.append(
                 {
                     "id": pasta.name,
-                    "titulo": transcricao.titulo_da_reuniao(pasta.name, dados.get("titulo")),
+                    # so o titulo DADO; sem titulo, None - a tela monta o
+                    # padrao ("Reuniao NN") no idioma dela, pelo id.
+                    "titulo": dados.get("titulo") or None,
                     "ocorrencias": achadas,
                 }
             )
@@ -493,7 +495,7 @@ def sugerir(trecho, certo):
     busca = _Busca(trecho, certo, todas)
     grupos = {}
     for id, dados in todas:
-        titulo = transcricao.titulo_da_reuniao(id, dados.get("titulo"))
+        titulo = dados.get("titulo") or None  # padrao montado na tela, pelo id
         for indice, fala in enumerate(dados.get("falas") or []):
             if "edicao_manual" in fala:
                 continue

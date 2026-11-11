@@ -22,7 +22,9 @@ export interface PreviaCorrecao {
   trecho: string;
   certo: string;
   total: number;
-  reunioes: { id: string; titulo: string; ocorrencias: OcorrenciaCorrecao[] }[];
+  /** titulo: o dado pela pessoa, ou null - a tela monta o padrao
+   * ("Reunião NN"/"Meeting NN") pelo id, no idioma dela. */
+  reunioes: { id: string; titulo: string | null; ocorrencias: OcorrenciaCorrecao[] }[];
   /** So quando a correcao nao pode valer em todo lugar (uma correcao mais
    * geral, ja existente, continua valendo em parte do texto). */
   aviso: string | null;
@@ -56,7 +58,8 @@ export function aplicarCorrecao(corpo: {
 
 export interface OcorrenciaVariacao extends OcorrenciaCorrecao {
   id: string;
-  titulo: string;
+  /** o dado pela pessoa, ou null - padrao montado na tela pelo id */
+  titulo: string | null;
   /** o Whisper marcou duvida nesta palavra */
   baixa_confianca: boolean;
 }
