@@ -233,7 +233,7 @@ def audio_recortado(id: str, inicio: float, fim: float):
 
 
 @app.get("/api/reunioes/{id}/transcricao")
-def baixar_transcricao(id: str):
+def baixar_transcricao(id: str, idioma: str = "pt"):
     """
     A transcricao em .txt, gerada agora a partir do .json (nunca o .txt do
     pipeline, que pode estar desatualizado) - ver servidor/transcricao.py.
@@ -247,8 +247,11 @@ def baixar_transcricao(id: str):
     if "falas" not in dados:
         raise _erro(404, "sem_transcricao_para_baixar")
 
-    texto = transcricao.montar_texto(id, dados, vocabulario=glossario.vocabulario())
-    nome = transcricao.nome_do_arquivo(id, dados)
+    # Idioma da interface (?idioma=pt|en); qualquer outro valor cai no
+    # portugues - nunca erro por isso.
+    idioma = idioma if idioma in transcricao.IDIOMAS else "pt"
+    texto = transcricao.montar_texto(id, dados, vocabulario=glossario.vocabulario(), idioma=idioma)
+    nome = transcricao.nome_do_arquivo(id, dados, idioma=idioma)
     return Response(
         content=texto.encode("utf-8"),
         media_type="text/plain; charset=utf-8",

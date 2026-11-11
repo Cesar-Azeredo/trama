@@ -19,20 +19,83 @@ import unicodedata
 from datetime import datetime
 from urllib.parse import quote
 
-MESES = [
-    "janeiro",
-    "fevereiro",
-    "março",
-    "abril",
-    "maio",
-    "junho",
-    "julho",
-    "agosto",
-    "setembro",
-    "outubro",
-    "novembro",
-    "dezembro",
-]
+# Texto do arquivo por idioma (o da interface, ?idioma= na rota). So o que
+# o arquivo diz SOBRE a reuniao muda de idioma; a fala das pessoas nunca e
+# traduzida.
+TEXTOS = {
+    "pt": {
+        "meses": [
+            "janeiro",
+            "fevereiro",
+            "março",
+            "abril",
+            "maio",
+            "junho",
+            "julho",
+            "agosto",
+            "setembro",
+            "outubro",
+            "novembro",
+            "dezembro",
+        ],
+        "data": lambda dia, mes, ano: f"{dia} de {mes} de {ano}",
+        "titulo_padrao": lambda n: f"Reunião {n}",
+        "nome_arquivo_padrao": "Reunião",
+        "voz_sem_pessoa": "voz não atribuída",
+        "voz_sem_pessoa_n": lambda n: f"voz não atribuída {n}",
+        "rotulo_data": "Data",
+        "data_do_arquivo": lambda data: f"não registrada na gravação (arquivo recebido em {data})",
+        "rotulo_duracao": "Duração",
+        "participantes_pct": "Participantes (parcela do tempo de fala):",
+        "participantes": "Participantes",
+        "titulo_vocabulario": "Vocabulário desta empresa",
+        "instrucao_vocabulario": (
+            "Esta transcrição foi feita automaticamente. Alguns termos podem ter "
+            "sido transcritos errado; use esta lista para interpretar. Antes de "
+            "escrever a ata, liste os termos que parecem errados ou fora de "
+            "contexto e pergunte o que significam."
+        ),
+    },
+    "en": {
+        "meses": [
+            "January",
+            "February",
+            "March",
+            "April",
+            "May",
+            "June",
+            "July",
+            "August",
+            "September",
+            "October",
+            "November",
+            "December",
+        ],
+        "data": lambda dia, mes, ano: f"{mes} {dia}, {ano}",
+        "titulo_padrao": lambda n: f"Meeting {n}",
+        "nome_arquivo_padrao": "Meeting",
+        "voz_sem_pessoa": "unassigned voice",
+        "voz_sem_pessoa_n": lambda n: f"unassigned voice {n}",
+        "rotulo_data": "Date",
+        "data_do_arquivo": lambda data: f"not recorded in the audio (file received on {data})",
+        "rotulo_duracao": "Duration",
+        "participantes_pct": "Participants (share of speaking time):",
+        "participantes": "Participants",
+        "titulo_vocabulario": "This company's vocabulary",
+        "instrucao_vocabulario": (
+            "This transcript was made automatically. Some terms may have been "
+            "transcribed wrong; use this list to interpret them. Before "
+            "writing the minutes, list the terms that look wrong or out of "
+            "context and ask what they mean."
+        ),
+    },
+}
+IDIOMAS = tuple(TEXTOS)
+
+
+def _textos(idioma):
+    return TEXTOS.get(idioma, TEXTOS["pt"])
+
 
 # Recusados em nome de arquivo no Windows (o mais restritivo dos tres) - o
 # arquivo pode ir para um pendrive ou uma pasta compartilhada.
@@ -44,19 +107,20 @@ def eh_voz_sem_pessoa(nome):
     return nome.startswith(("DESCONHECIDO", "IGNORADO"))
 
 
-def rotulos_da_reuniao(nomes):
+def rotulos_da_reuniao(nomes, idioma="pt"):
     """
     Mesma regra de frontend/src/util/falante.ts (rotulosDaReuniao): pessoa
     fica como esta; voz sem pessoa vira "voz não atribuída", numerada na
     ordem do rotulo cru so quando ha mais de uma - o arquivo e a tela
     chamam a mesma voz pelo mesmo nome.
     """
+    t = _textos(idioma)
     sem_pessoa = sorted({n for n in nomes if eh_voz_sem_pessoa(n)})
     mapa = {
-        n: ("voz não atribuída" if len(sem_pessoa) == 1 else f"voz não atribuída {i + 1}")
+        n: (t["voz_sem_pessoa"] if len(sem_pessoa) == 1 else t["voz_sem_pessoa_n"](i + 1))
         for i, n in enumerate(sem_pessoa)
     }
-    return lambda nome: mapa.get(nome) or ("voz não atribuída" if eh_voz_sem_pessoa(nome) else nome)
+    return lambda nome: mapa.get(nome) or (t["voz_sem_pessoa"] if eh_voz_sem_pessoa(nome) else nome)
 
 
 def _todos_os_nomes(dados):
@@ -69,12 +133,12 @@ def _todos_os_nomes(dados):
     return [n for n in nomes if n]
 
 
-def titulo_da_reuniao(id, titulo):
+def titulo_da_reuniao(id, titulo, idioma="pt"):
     """O titulo dado, ou o padrao da tela (formatarTitulo): "Reunião NN"."""
     if titulo:
         return titulo
     m = re.fullmatch(r"reuniao_(\d+)", id)
-    return f"Reunião {m.group(1)}" if m else id
+    return _textos(idioma)["titulo_padrao"](m.group(1)) if m else id
 
 
 def _data_local(data_iso, fuso=None):
@@ -88,8 +152,9 @@ def _data_local(data_iso, fuso=None):
     return d.astimezone(fuso)
 
 
-def _data_por_extenso(d, com_hora):
-    texto = f"{d.day} de {MESES[d.month - 1]} de {d.year}"
+def _data_por_extenso(d, com_hora, idioma="pt"):
+    t = _textos(idioma)
+    texto = t["data"](d.day, t["meses"][d.month - 1], d.year)
     return f"{texto}, {d:%H:%M}" if com_hora else texto
 
 
@@ -114,16 +179,7 @@ def _texto_numa_linha(texto):
     return " ".join((texto or "").split())
 
 
-TITULO_VOCABULARIO = "Vocabulário desta empresa"
-INSTRUCAO_VOCABULARIO = (
-    "Esta transcrição foi feita automaticamente. Alguns termos podem ter "
-    "sido transcritos errado; use esta lista para interpretar. Antes de "
-    "escrever a ata, liste os termos que parecem errados ou fora de "
-    "contexto e pergunte o que significam."
-)
-
-
-def montar_texto(id, dados, fuso=None, vocabulario=None):
+def montar_texto(id, dados, fuso=None, vocabulario=None, idioma="pt"):
     """
     O conteudo do arquivo. `dados` e o que reunioes.carregar devolve: o
     .json com "titulo", "data" e "data_origem" ja resolvidos (inclusive a
@@ -135,29 +191,32 @@ def montar_texto(id, dados, fuso=None, vocabulario=None):
     (glossario.vocabulario) - vira a secao final, para a IA que ler o
     arquivo saber como a empresa escreve os proprios termos. Vazio ou None:
     sem secao.
+
+    `idioma` ("pt" ou "en", o da interface): cabecalho, instrucoes para a
+    IA e titulos saem nele. A fala das pessoas nunca e traduzida.
     """
-    rotulo = rotulos_da_reuniao(_todos_os_nomes(dados))
+    t = _textos(idioma)
+    rotulo = rotulos_da_reuniao(_todos_os_nomes(dados), idioma)
     falas = dados.get("falas") or []
     duracao = max((f["fim"] for f in falas), default=0.0)
 
-    linhas = [titulo_da_reuniao(id, dados.get("titulo"))]
+    linhas = [titulo_da_reuniao(id, dados.get("titulo"), idioma)]
 
     d = _data_local(dados.get("data"), fuso)
     if d and dados.get("data_origem") == "gravacao":
-        linhas.append(f"Data: {_data_por_extenso(d, com_hora=True)}")
+        linhas.append(f"{t['rotulo_data']}: {_data_por_extenso(d, True, idioma)}")
     elif d:
         # Data de modificacao do arquivo, nao da reuniao - a tela diz
         # "chegou em"; aqui tambem nunca se passa por data da reuniao.
         linhas.append(
-            "Data: não registrada na gravação "
-            f"(arquivo recebido em {_data_por_extenso(d, com_hora=False)})"
+            f"{t['rotulo_data']}: {t['data_do_arquivo'](_data_por_extenso(d, False, idioma))}"
         )
     if falas:
-        linhas.append(f"Duração: {_duracao_por_extenso(duracao)}")
+        linhas.append(f"{t['rotulo_duracao']}: {_duracao_por_extenso(duracao)}")
 
     dinamica = dados.get("dinamica") or {}
     if dinamica:
-        linhas.append("Participantes (parcela do tempo de fala):")
+        linhas.append(t["participantes_pct"])
         ordem = sorted(dinamica.items(), key=lambda item: -(item[1].get("fala_pct") or 0))
         for nome, info in ordem:
             pct = info.get("fala_pct")
@@ -167,7 +226,7 @@ def montar_texto(id, dados, fuso=None, vocabulario=None):
         # Reuniao de schema antigo, sem dinamica: quem falou, sem inventar
         # porcentagem.
         vistos = list(dict.fromkeys(rotulo(f["falante"]) for f in falas))
-        linhas.append(f"Participantes: {', '.join(vistos)}")
+        linhas.append(f"{t['participantes']}: {', '.join(vistos)}")
 
     linhas.append("")
     com_hora = duracao >= 3600
@@ -178,7 +237,7 @@ def montar_texto(id, dados, fuso=None, vocabulario=None):
         linhas.append(f"[{_horario(f['inicio'], com_hora)}] {rotulo(f['falante'])}: {texto}")
 
     if vocabulario:
-        linhas += ["", TITULO_VOCABULARIO, INSTRUCAO_VOCABULARIO]
+        linhas += ["", t["titulo_vocabulario"], t["instrucao_vocabulario"]]
         linhas += [
             f"- {termo}: {descricao}" if descricao else f"- {termo}"
             for termo, descricao in vocabulario
@@ -195,16 +254,16 @@ def _nome_limpo(texto):
     return texto.strip(" .")[:NOME_ARQUIVO_MAX].strip(" .")
 
 
-def nome_do_arquivo(id, dados, fuso=None):
+def nome_do_arquivo(id, dados, fuso=None, idioma="pt"):
     """
     "2026-11-04 Reunião 13.txt". Sem data quando a reuniao so tem a data
     do arquivo (data_origem "arquivo"): ela nao e a data da reuniao, e no
     nome do arquivo passaria por uma.
     """
     titulo = (
-        _nome_limpo(titulo_da_reuniao(id, dados.get("titulo")))
+        _nome_limpo(titulo_da_reuniao(id, dados.get("titulo"), idioma))
         or _nome_limpo(titulo_da_reuniao(id, None))
-        or "Reunião"
+        or _textos(idioma)["nome_arquivo_padrao"]
     )
     d = _data_local(dados.get("data"), fuso)
     if d and dados.get("data_origem") == "gravacao":

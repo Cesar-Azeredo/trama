@@ -36,6 +36,7 @@ import {
   rotuloBotaoProcessar,
 } from "../util/formatarReuniao";
 import { numero } from "../util/numeros";
+import { useIdioma } from "../i18n/idioma";
 import { useTextos } from "../i18n/textos";
 import "./Detalhe.css";
 
@@ -513,6 +514,8 @@ interface SelecaoTela {
 
 export function Detalhe({ id, em }: { id: string; em?: number }) {
   const t = useTextos().detalhe;
+  // O .txt sai no idioma da interface (cabecalho e instrucoes; a fala nunca).
+  const idioma = useIdioma();
   const tc = useTextos().comum;
   const [dados, setDados] = useState<DetalheReuniao | null>(null);
   const [erro, setErro] = useState<string | null>(null);
@@ -799,7 +802,7 @@ export function Detalhe({ id, em }: { id: string; em?: number }) {
               )}
               <a
                 className="tela-detalhe__editar-revisao"
-                href={`/api/reunioes/${encodeURIComponent(dados.id)}/transcricao`}
+                href={`/api/reunioes/${encodeURIComponent(dados.id)}/transcricao?idioma=${idioma}`}
                 download
               >
                 {t.baixarTranscricao}

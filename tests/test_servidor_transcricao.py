@@ -473,5 +473,39 @@ def test_listar_traz_interacao_resumida_so_quando_ha_dinamica():
         shutil.rmtree(pasta, ignore_errors=True)
 
 
+def test_transcricao_em_ingles_traduz_o_que_o_arquivo_diz_nunca_a_fala():
+    """?idioma=en: cabecalho, data, vozes sem pessoa, instrucoes para a IA e
+    titulo padrao em ingles; o que as pessoas disseram, igual. Idioma
+    desconhecido cai no portugues, sem erro."""
+    from datetime import timezone
+
+    from trama.servidor import transcricao
+
+    dados = _dados_para_txt()
+    vocab = [("Painel Órbita", "painel interno")]
+    en = transcricao.montar_texto(
+        "reuniao_13", dados, fuso=timezone.utc, vocabulario=vocab, idioma="en"
+    )
+    assert en.startswith("Meeting 13\nDate: November 4, 2026, 11:59\n"), en
+    assert "Duration: " in en and "Participants (share of speaking time):" in en
+    assert "unassigned voice 1" in en and "voz não atribuída" not in en
+    assert "] Clélia: Ação aprovada.\n" in en, "a fala nunca e traduzida"
+    assert "This company's vocabulary\nThis transcript was made automatically." in en
+    assert "- Painel Órbita: painel interno" in en
+    assert transcricao.nome_do_arquivo("reuniao_13", dados, idioma="en").endswith("Meeting 13.txt")
+    pt = transcricao.montar_texto("reuniao_13", dados, fuso=timezone.utc, idioma="pt")
+    assert pt.startswith("Reunião 13\nData: 4 de novembro de 2026, 11:59\n"), pt
+
+    pasta, cliente = _ambiente_temporario()
+    try:
+        _criar_reuniao_completa(reunioes.PASTA_AUDIOS, "reuniao_07")
+        r = cliente.get("/api/reunioes/reuniao_07/transcricao", params={"idioma": "en"})
+        assert r.status_code == 200 and r.text.startswith("Meeting 07"), r.text
+        r = cliente.get("/api/reunioes/reuniao_07/transcricao", params={"idioma": "xx"})
+        assert r.status_code == 200 and r.text.startswith("Reunião 07"), r.text
+    finally:
+        shutil.rmtree(pasta, ignore_errors=True)
+
+
 if __name__ == "__main__":
     sys.exit(rodar_suite(globals()))
