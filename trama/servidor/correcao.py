@@ -21,35 +21,36 @@ Nada daqui vai para o log: trecho e texto das reunioes (CLAUDE.md, regra 3).
 import json
 import re
 
-from trama import termos
+from trama import erros, termos
+from trama.erros import ErroDeUsuario
 from trama.servidor import glossario, reunioes, transcricao
 
 TRECHO_MAX_LEN = glossario.MAX_LEN
 CONTEXTO = 60
 
 
-class CorrecaoInvalida(ValueError):
-    """Mensagem em portugues, pronta para a tela."""
+class CorrecaoInvalida(ErroDeUsuario):
+    """Correcao recusada antes de tocar disco (codigo + parametros, trama/erros.py)."""
 
 
 def validar(trecho, certo):
     trecho = " ".join((trecho or "").split())
     certo = " ".join((certo or "").split())
     if not trecho:
-        raise CorrecaoInvalida("Selecione o trecho que está errado.")
+        raise CorrecaoInvalida("selecione_trecho")
     if not certo:
-        raise CorrecaoInvalida("Escreva como é o certo.")
-    for valor, rotulo in ((trecho, "O trecho"), (certo, "O certo")):
+        raise CorrecaoInvalida("escreva_certo")
+    for valor, campo in ((trecho, "trecho"), (certo, "certo")):
         if len(valor) > TRECHO_MAX_LEN:
-            raise CorrecaoInvalida(f"{rotulo} passa de {TRECHO_MAX_LEN} caracteres.")
+            raise CorrecaoInvalida("correcao_longa_demais", campo=campo, maximo=TRECHO_MAX_LEN)
     if "=>" in trecho or "=>" in certo:
-        raise CorrecaoInvalida("O texto não pode conter =>.")
+        raise CorrecaoInvalida("correcao_com_seta")
     if trecho.startswith("#"):
-        raise CorrecaoInvalida("O trecho não pode começar com #.")
+        raise CorrecaoInvalida("trecho_com_cerquilha")
     if trecho == certo:
-        raise CorrecaoInvalida("O trecho já está escrito assim.")
+        raise CorrecaoInvalida("trecho_ja_certo")
     if not any(c.isalnum() for c in trecho):
-        raise CorrecaoInvalida("Selecione pelo menos uma palavra.")
+        raise CorrecaoInvalida("selecione_palavra")
     return trecho, certo
 
 
@@ -105,10 +106,8 @@ def posicionar(itens, trecho, certo):
         # (nada que ja funcionava para de funcionar), e avisa.
         depois_de = max(especificas)
         conflito = itens[antes_de]
-        aviso = (
-            f"Em parte do texto, a correção já existente de "
-            f'"{conflito["errado"]}" para "{conflito["certo"]}" vai '
-            f"continuar valendo no lugar desta."
+        aviso = erros.aviso(
+            "correcao_existente_prevalece", errado=conflito["errado"], certo=conflito["certo"]
         )
         return itens[: depois_de + 1] + [item] + itens[depois_de + 1 :], aviso
 
@@ -509,7 +508,7 @@ def aplicar_variacoes(certo, formas, assinatura):
     """Cada forma marcada vira uma correcao "em todas", na posicao certa;
     todas aplicadas de uma vez, so se nada mudou desde a sugestao."""
     if not isinstance(formas, list) or not formas:
-        raise CorrecaoInvalida("Marque pelo menos uma.")
+        raise CorrecaoInvalida("marque_pelo_menos_uma")
     pares = [validar(f, certo) for f in formas]
     regras = [termos.compilar(t, c) for t, c in pares]
     atual, resultado = glossario._calcular(regras)
@@ -522,4 +521,4 @@ def aplicar_variacoes(certo, formas, assinatura):
             avisos.append(aviso)
     glossario.escrever(itens, glossario.ler_descricoes())
     gravado = glossario.gravar_reunioes(resultado)
-    return {**gravado, "aviso": " ".join(avisos) or None}
+    return {**gravado, "aviso": avisos[0] if len(avisos) == 1 else (avisos or None)}

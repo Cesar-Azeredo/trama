@@ -22,7 +22,7 @@ from pathlib import Path
 
 import numpy as np
 
-from trama import edicao, interacao, nucleo, termos
+from trama import edicao, erros, interacao, nucleo, termos
 
 DIAR_MODEL = os.environ.get("DIAR_MODEL", "pyannote/speaker-diarization-community-1")
 
@@ -1142,14 +1142,6 @@ def _gravar(saida_json, saida, remapa, reuniao_id):
     nucleo.confirmar_escrita_atomica(tmp_json, caminho_json)
 
 
-AVISO_EDICOES_SEM_FALA = (
-    "{n} correção(ões) feita(s) à mão não encontraram a fala "
-    "correspondente nesta transcrição (o áudio foi dividido de outro "
-    "jeito). O texto delas não se perdeu: ficou guardado no arquivo da "
-    "reunião, e volta sozinho se um reprocessamento futuro achar a fala."
-)
-
-
 def processar(
     audio,
     pessoas=None,
@@ -1215,6 +1207,6 @@ def processar(
     )
     if edicoes_sem_fala:
         saida_json["edicoes_sem_fala"] = edicoes_sem_fala
-        saida_json["avisos"] = [AVISO_EDICOES_SEM_FALA.format(n=len(edicoes_sem_fala))]
+        saida_json["avisos"] = [erros.aviso("edicoes_sem_fala", n=len(edicoes_sem_fala))]
     _gravar(saida_json, saida, remapa, reuniao_id)
     return saida

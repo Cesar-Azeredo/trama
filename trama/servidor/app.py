@@ -48,6 +48,12 @@ from trama.servidor import (
 )
 
 
+def _erro(status, codigo, **parametros):
+    """Resposta de erro para a tela: codigo + parametros, nunca frase pronta
+    - o texto em cada idioma mora no catalogo do frontend (trama/erros.py)."""
+    return HTTPException(status_code=status, detail={"codigo": codigo, "parametros": parametros})
+
+
 @asynccontextmanager
 async def _ciclo_de_vida(app):
     processamento.verificar_marcadores_orfaos(reunioes.PASTA_AUDIOS)
@@ -80,15 +86,15 @@ async def criar_reuniao(arquivo: UploadFile = File(...)):
     try:
         id_novo = await upload.receber_upload(reunioes.PASTA_AUDIOS, arquivo.filename, arquivo)
     except upload.ExtensaoInvalida as exc:
-        raise HTTPException(status_code=400, detail=str(exc))
+        raise HTTPException(status_code=400, detail=exc.para_resposta())
     except upload.ArquivoMuitoGrande as exc:
-        raise HTTPException(status_code=413, detail=str(exc))
+        raise HTTPException(status_code=413, detail=exc.para_resposta())
     except Exception as exc:
         # Nunca a fala das pessoas no log - aqui nem existe ainda, mas a
         # mesma regra vale para qualquer detalhe interno (CLAUDE.md,
         # regra 3): so o tipo da falha.
         print(f"[upload] falha ao salvar audio novo: {type(exc).__name__}")
-        raise HTTPException(status_code=500, detail="Não foi possível salvar o áudio enviado.")
+        raise _erro(500, "falha_salvar_audio")
 
     return reunioes.carregar(id_novo)
 
@@ -98,9 +104,9 @@ def obter_reuniao(id: str):
     try:
         return reunioes.carregar(id)
     except reunioes.IdInvalido:
-        raise HTTPException(status_code=400, detail="Id de reunião inválido.")
+        raise _erro(400, "id_invalido")
     except reunioes.ReuniaoNaoEncontrada:
-        raise HTTPException(status_code=404, detail="Reunião não encontrada.")
+        raise _erro(404, "reuniao_nao_encontrada")
 
 
 class CorpoProcessar(BaseModel):
@@ -121,20 +127,16 @@ def processar_reuniao(id: str, corpo: CorpoProcessar):
         pasta = reunioes.resolver_pasta(id)
         caminho_audio = reunioes.resolver_audio(id)
     except reunioes.IdInvalido:
-        raise HTTPException(status_code=400, detail="Id de reunião inválido.")
+        raise _erro(400, "id_invalido")
     except reunioes.ReuniaoNaoEncontrada:
-        raise HTTPException(status_code=404, detail="Reunião não encontrada.")
+        raise _erro(404, "reuniao_nao_encontrada")
     except reunioes.AudioNaoEncontrado:
-        raise HTTPException(status_code=404, detail="Nenhum áudio encontrado para esta reunião.")
+        raise _erro(404, "sem_audio_para_processar")
 
     try:
         processamento.iniciar(id, pasta, caminho_audio, corpo.pessoas)
     except processamento.JaEmProcessamento as exc:
-        raise HTTPException(
-            status_code=409,
-            detail=f"Já existe uma reunião sendo processada ({exc}). "
-            "Espere terminar antes de iniciar outra.",
-        )
+        raise _erro(409, "ja_processando", id=str(exc))
 
     return {"ok": True, "id": id}
 
@@ -144,14 +146,14 @@ def cancelar_processamento(id: str):
     try:
         reunioes.resolver_pasta(id)
     except reunioes.IdInvalido:
-        raise HTTPException(status_code=400, detail="Id de reunião inválido.")
+        raise _erro(400, "id_invalido")
     except reunioes.ReuniaoNaoEncontrada:
-        raise HTTPException(status_code=404, detail="Reunião não encontrada.")
+        raise _erro(404, "reuniao_nao_encontrada")
 
     try:
         processamento.cancelar(id)
     except processamento.NadaParaCancelar:
-        raise HTTPException(status_code=409, detail="Esta reunião não está sendo processada agora.")
+        raise _erro(409, "nada_para_cancelar")
 
     return {"ok": True}
 
@@ -174,9 +176,9 @@ async def progresso_reuniao(id: str):
     try:
         reunioes.resolver_pasta(id)
     except reunioes.IdInvalido:
-        raise HTTPException(status_code=400, detail="Id de reunião inválido.")
+        raise _erro(400, "id_invalido")
     except reunioes.ReuniaoNaoEncontrada:
-        raise HTTPException(status_code=404, detail="Reunião não encontrada.")
+        raise _erro(404, "reuniao_nao_encontrada")
 
     async def eventos():
         ultimo = None
@@ -200,37 +202,32 @@ def audio_recortado(id: str, inicio: float, fim: float):
     # Validacao pura primeiro (nao toca disco) - um intervalo absurdo e
     # rejeitado antes de gastar uma resolucao de caminho ou um subprocess.
     if inicio < 0 or fim <= inicio:
-        raise HTTPException(
-            status_code=400,
-            detail="Intervalo inválido: 'fim' tem que ser maior que "
-            "'inicio', e 'inicio' não pode ser negativo.",
-        )
+        raise _erro(400, "intervalo_invalido")
     if fim - inicio > DURACAO_MAXIMA_TRECHO_S:
-        raise HTTPException(
-            status_code=400,
-            detail=f"Trecho de {fim - inicio:.0f}s pedido; o máximo para "
-            f"revisão é {DURACAO_MAXIMA_TRECHO_S:.0f}s.",
+        raise _erro(
+            400,
+            "trecho_longo_demais",
+            pedido=round(fim - inicio),
+            maximo=round(DURACAO_MAXIMA_TRECHO_S),
         )
 
     if sistema.DEMONSTRACAO:
-        raise HTTPException(status_code=404, detail=sistema.AVISO_SEM_AUDIO)
+        raise _erro(404, "sem_audio_na_demonstracao")
 
     try:
         caminho = reunioes.resolver_audio(id)
     except reunioes.IdInvalido:
-        raise HTTPException(status_code=400, detail="Id de reunião inválido.")
+        raise _erro(400, "id_invalido")
     except reunioes.ReuniaoNaoEncontrada:
-        raise HTTPException(status_code=404, detail="Reunião não encontrada.")
+        raise _erro(404, "reuniao_nao_encontrada")
     except reunioes.AudioNaoEncontrado:
-        raise HTTPException(
-            status_code=404, detail="Arquivo de áudio não encontrado para esta reunião."
-        )
+        raise _erro(404, "audio_nao_encontrado")
 
     try:
         audio = reunioes.recortar_audio(caminho, inicio, fim)
     except reunioes.FalhaAoRecortarAudio as exc:
         print(f"[audio] falha ao recortar {id}: {type(exc).__name__}")
-        raise HTTPException(status_code=500, detail="Não foi possível recortar o áudio.")
+        raise _erro(500, "falha_recortar_audio")
 
     return Response(content=audio, media_type="audio/wav")
 
@@ -244,14 +241,11 @@ def baixar_transcricao(id: str):
     try:
         dados = reunioes.carregar(id)
     except reunioes.IdInvalido:
-        raise HTTPException(status_code=400, detail="Id de reunião inválido.")
+        raise _erro(400, "id_invalido")
     except reunioes.ReuniaoNaoEncontrada:
-        raise HTTPException(status_code=404, detail="Reunião não encontrada.")
+        raise _erro(404, "reuniao_nao_encontrada")
     if "falas" not in dados:
-        raise HTTPException(
-            status_code=404,
-            detail="Esta reunião ainda não foi processada - não há transcrição para baixar.",
-        )
+        raise _erro(404, "sem_transcricao_para_baixar")
 
     texto = transcricao.montar_texto(id, dados, vocabulario=glossario.vocabulario())
     nome = transcricao.nome_do_arquivo(id, dados)
@@ -271,32 +265,23 @@ class CorpoFala(BaseModel):
     inicio: float
 
 
-_FALA_MUDOU = (
-    "A transcrição mudou desde que a página foi aberta (a reunião "
-    "foi reprocessada). Recarregue a página e corrija de novo."
-)
-
-
 def _alterar_fala_ou_erro(id, funcao):
     try:
         return funcao()
     except edicao.TextoInvalido as exc:
-        raise HTTPException(status_code=400, detail=str(exc))
+        raise HTTPException(status_code=400, detail=exc.para_resposta())
     except reunioes.IdInvalido:
-        raise HTTPException(status_code=400, detail="Id de reunião inválido.")
+        raise _erro(400, "id_invalido")
     except reunioes.ReuniaoNaoEncontrada:
-        raise HTTPException(status_code=404, detail="Reunião não encontrada.")
+        raise _erro(404, "reuniao_nao_encontrada")
     except edicao.FalaNaoEncontrada:
-        raise HTTPException(status_code=404, detail=_FALA_MUDOU)
+        raise _erro(404, "fala_mudou")
     except edicao.FalaMudou:
-        raise HTTPException(status_code=409, detail=_FALA_MUDOU)
+        raise _erro(409, "fala_mudou")
     except Exception as exc:
         # Nunca o texto da fala no log (CLAUDE.md, regra 3).
         print(f"[fala] falha ao gravar {id}: {type(exc).__name__}")
-        raise HTTPException(
-            status_code=500,
-            detail="Não foi possível gravar a correção. O texto anterior continua - tente de novo.",
-        )
+        raise _erro(500, "falha_gravar_correcao_fala")
 
 
 @app.put("/api/reunioes/{id}/falas/{indice}")
@@ -325,17 +310,14 @@ def gravar_titulo(id: str, corpo: CorpoTitulo):
     try:
         titulo = reunioes.gravar_titulo(id, corpo.titulo)
     except reunioes.TituloInvalido as exc:
-        raise HTTPException(status_code=400, detail=str(exc))
+        raise HTTPException(status_code=400, detail=exc.para_resposta())
     except reunioes.IdInvalido:
-        raise HTTPException(status_code=400, detail="Id de reunião inválido.")
+        raise _erro(400, "id_invalido")
     except reunioes.ReuniaoNaoEncontrada:
-        raise HTTPException(status_code=404, detail="Reunião não encontrada.")
+        raise _erro(404, "reuniao_nao_encontrada")
     except Exception as exc:
         print(f"[titulo] falha ao gravar {id}: {type(exc).__name__}")
-        raise HTTPException(
-            status_code=500,
-            detail="Não foi possível gravar o título. O anterior continua - tente de novo.",
-        )
+        raise _erro(500, "falha_gravar_titulo")
     return {"titulo": titulo}
 
 
@@ -348,9 +330,7 @@ def buscar_nas_falas(q: str = ""):
     de uma reuniao. Nunca registra a consulta no log (CLAUDE.md, regra 3).
     """
     if len(q) > busca.MAX_BUSCA_LEN:
-        raise HTTPException(
-            status_code=400, detail=f"A busca passa de {busca.MAX_BUSCA_LEN} caracteres."
-        )
+        raise _erro(400, "busca_longa_demais", maximo=busca.MAX_BUSCA_LEN)
     return {"resultados": busca.buscar(q)}
 
 
@@ -387,17 +367,14 @@ def excluir_pessoa(nome: str):
     """
     nome = nome.strip()
     if not nome or len(nome) > revisao.NOME_MAX_LEN:
-        raise HTTPException(status_code=400, detail="Nome inválido.")
+        raise _erro(400, "nome_invalido")
     try:
         removidos = nucleo.excluir_pessoa(nome)
     except nucleo.PessoaNaoEncontrada:
-        raise HTTPException(status_code=404, detail="Esta pessoa não está na galeria.")
+        raise _erro(404, "pessoa_nao_encontrada")
     except Exception as exc:
         print(f"[pessoas] falha ao excluir perfil: {type(exc).__name__}")
-        raise HTTPException(
-            status_code=500,
-            detail="Não foi possível excluir o perfil. Nada foi apagado - tente de novo.",
-        )
+        raise _erro(500, "falha_excluir_pessoa")
     return {"ok": True, "removidos": removidos}
 
 
@@ -415,15 +392,12 @@ def _json_para_revisar(id):
     try:
         pasta = reunioes.resolver_pasta(id)
     except reunioes.IdInvalido:
-        raise HTTPException(status_code=400, detail="Id de reunião inválido.")
+        raise _erro(400, "id_invalido")
     except reunioes.ReuniaoNaoEncontrada:
-        raise HTTPException(status_code=404, detail="Reunião não encontrada.")
+        raise _erro(404, "reuniao_nao_encontrada")
     caminho_json = pasta / f"{id}.json"
     if not caminho_json.exists():
-        raise HTTPException(
-            status_code=404,
-            detail="Esta reunião ainda não foi processada - não há clusters para revisar.",
-        )
+        raise _erro(404, "sem_clusters_para_revisar")
     return caminho_json
 
 
@@ -438,7 +412,7 @@ def previa_revisao(id: str, corpo: CorpoRevisao):
     try:
         efeitos = revisao.previa(caminho_json, corpo.nomes, corpo.sem_aprender)
     except revisao.NomeInvalido as exc:
-        raise HTTPException(status_code=400, detail=str(exc))
+        raise HTTPException(status_code=400, detail=exc.para_resposta())
     return {"efeitos": efeitos}
 
 
@@ -454,16 +428,12 @@ def revisar_reuniao(id: str, corpo: CorpoRevisao):
     try:
         dados, totais = revisao.aplicar(caminho_json, corpo.nomes, corpo.sem_aprender)
     except revisao.NomeInvalido as exc:
-        raise HTTPException(status_code=400, detail=str(exc))
+        raise HTTPException(status_code=400, detail=exc.para_resposta())
     except Exception as exc:
         # Nunca a fala das pessoas no log - so o id e o tipo da falha
         # (CLAUDE.md, regra 3).
         print(f"[revisao] falha ao gravar {id}: {type(exc).__name__}")
-        raise HTTPException(
-            status_code=500,
-            detail="Não foi possível gravar a revisão. A operação é "
-            "segura para repetir - tente de novo.",
-        )
+        raise _erro(500, "falha_gravar_revisao")
 
     return {
         "ok": True,
@@ -492,14 +462,10 @@ def gravar_termos(corpo: CorpoTermos):
     try:
         itens = glossario.escrever(corpo.itens, corpo.descricoes)
     except glossario.GlossarioInvalido as exc:
-        raise HTTPException(status_code=400, detail=str(exc))
+        raise HTTPException(status_code=400, detail=exc.para_resposta())
     except Exception as exc:
         print(f"[termos] falha ao gravar termos.txt: {type(exc).__name__}")
-        raise HTTPException(
-            status_code=500,
-            detail="Não foi possível gravar o glossário. O arquivo "
-            "anterior continua intacto - tente de novo.",
-        )
+        raise _erro(500, "falha_gravar_glossario")
     return {"itens": itens, "descricoes": glossario.ler_descricoes()}
 
 
@@ -507,13 +473,10 @@ def _termos_ou_erro(funcao):
     try:
         return {"termos": funcao()}
     except glossario.GlossarioInvalido as exc:
-        raise HTTPException(status_code=400, detail=str(exc))
+        raise HTTPException(status_code=400, detail=exc.para_resposta())
     except Exception as exc:
         print(f"[termos] falha: {type(exc).__name__}")
-        raise HTTPException(
-            status_code=500,
-            detail="Não foi possível gravar. Os termos continuam como estavam - tente de novo.",
-        )
+        raise _erro(500, "falha_gravar_termos")
 
 
 @app.get("/api/termos/empresa")
@@ -550,9 +513,9 @@ def termos_para_conferir(id: str):
     try:
         return {"itens": conferir.termos_para_conferir(id)}
     except reunioes.IdInvalido:
-        raise HTTPException(status_code=400, detail="Id de reunião inválido.")
+        raise _erro(400, "id_invalido")
     except reunioes.ReuniaoNaoEncontrada:
-        raise HTTPException(status_code=404, detail="Reunião não encontrada.")
+        raise _erro(404, "reuniao_nao_encontrada")
 
 
 class CorpoRespondido(BaseModel):
@@ -567,12 +530,10 @@ def marcar_termo_respondido(corpo: CorpoRespondido):
         glossario.marcar_respondido(corpo.forma)
         return {"ok": True}
     except glossario.GlossarioInvalido as exc:
-        raise HTTPException(status_code=400, detail=str(exc))
+        raise HTTPException(status_code=400, detail=exc.para_resposta())
     except Exception as exc:
         print(f"[termos] falha ao marcar respondido: {type(exc).__name__}")
-        raise HTTPException(
-            status_code=500, detail="Não foi possível gravar a resposta. Tente de novo."
-        )
+        raise _erro(500, "falha_gravar_resposta")
 
 
 class CorpoDescricao(BaseModel):
@@ -586,12 +547,10 @@ def gravar_descricao_termo(corpo: CorpoDescricao):
     try:
         return {"descricoes": glossario.definir_descricao(corpo.termo, corpo.descricao)}
     except glossario.GlossarioInvalido as exc:
-        raise HTTPException(status_code=400, detail=str(exc))
+        raise HTTPException(status_code=400, detail=exc.para_resposta())
     except Exception as exc:
         print(f"[termos] falha ao gravar descricao: {type(exc).__name__}")
-        raise HTTPException(
-            status_code=500, detail="Não foi possível gravar a descrição. Tente de novo."
-        )
+        raise _erro(500, "falha_gravar_descricao")
 
 
 class CorpoCorrecao(BaseModel):
@@ -609,7 +568,7 @@ def previa_correcao(corpo: CorpoCorrecao):
     try:
         return correcao.previa(corpo.trecho, corpo.certo)
     except correcao.CorrecaoInvalida as exc:
-        raise HTTPException(status_code=400, detail=str(exc))
+        raise HTTPException(status_code=400, detail=exc.para_resposta())
 
 
 @app.post("/api/correcoes")
@@ -619,29 +578,17 @@ def aplicar_correcao(corpo: CorpoCorrecao):
     try:
         return correcao.aplicar(corpo.trecho, corpo.certo, corpo.descricao, corpo.assinatura)
     except correcao.CorrecaoInvalida as exc:
-        raise HTTPException(status_code=400, detail=str(exc))
+        raise HTTPException(status_code=400, detail=exc.para_resposta())
     except glossario.GlossarioInvalido as exc:
-        raise HTTPException(status_code=400, detail=str(exc))
+        raise HTTPException(status_code=400, detail=exc.para_resposta())
     except glossario.GlossarioMudou:
-        raise HTTPException(
-            status_code=409,
-            detail="Alguma reunião mudou desde a conferência. Confira de novo antes de corrigir.",
-        )
+        raise _erro(409, "mudou_desde_conferencia")
     except glossario.FalhaAoReaplicar as exc:
         print(f"[correcao] falha ao gravar: {type(exc.__cause__).__name__}")
-        raise HTTPException(
-            status_code=500,
-            detail="A correção vale para as próximas reuniões, mas não foi "
-            f"aplicada a todas as já processadas ({len(exc.aplicadas)} "
-            'corrigidas). Use "Aplicar às reuniões já processadas" '
-            "em Termos da empresa para terminar.",
-        )
+        raise _erro(500, "correcao_parcial", corrigidas=len(exc.aplicadas))
     except Exception as exc:
         print(f"[correcao] falha: {type(exc).__name__}")
-        raise HTTPException(
-            status_code=500,
-            detail="Não foi possível gravar a correção. Nada foi trocado - tente de novo.",
-        )
+        raise _erro(500, "falha_gravar_correcao")
 
 
 class CorpoVariacoes(BaseModel):
@@ -658,7 +605,7 @@ def sugerir_variacoes(corpo: CorpoVariacoes):
     try:
         return correcao.sugerir(corpo.trecho, corpo.certo)
     except correcao.CorrecaoInvalida as exc:
-        raise HTTPException(status_code=400, detail=str(exc))
+        raise HTTPException(status_code=400, detail=exc.para_resposta())
 
 
 @app.post("/api/correcoes/variacoes/aplicar")
@@ -667,28 +614,15 @@ def aplicar_variacoes(corpo: CorpoVariacoes):
     try:
         return correcao.aplicar_variacoes(corpo.certo, corpo.formas, corpo.assinatura)
     except (correcao.CorrecaoInvalida, glossario.GlossarioInvalido) as exc:
-        raise HTTPException(status_code=400, detail=str(exc))
+        raise HTTPException(status_code=400, detail=exc.para_resposta())
     except glossario.GlossarioMudou:
-        raise HTTPException(
-            status_code=409,
-            detail="Alguma reunião mudou desde a sugestão. Corrija de novo "
-            "para ver as sugestões atualizadas.",
-        )
+        raise _erro(409, "mudou_desde_sugestao")
     except glossario.FalhaAoReaplicar as exc:
         print(f"[variacoes] falha ao gravar: {type(exc.__cause__).__name__}")
-        raise HTTPException(
-            status_code=500,
-            detail="As correções valem para as próximas reuniões, mas não "
-            f"foram aplicadas a todas as já processadas "
-            f'({len(exc.aplicadas)} corrigidas). Use "Aplicar às '
-            'reuniões já processadas" em Termos da empresa para terminar.',
-        )
+        raise _erro(500, "correcoes_parciais", corrigidas=len(exc.aplicadas))
     except Exception as exc:
         print(f"[variacoes] falha: {type(exc).__name__}")
-        raise HTTPException(
-            status_code=500,
-            detail="Não foi possível gravar as correções. Nada foi trocado - tente de novo.",
-        )
+        raise _erro(500, "falha_gravar_correcoes")
 
 
 @app.get("/api/termos/reaplicar")
@@ -708,20 +642,11 @@ def reaplicar_termos(corpo: CorpoReaplicar):
     try:
         return glossario.reaplicar(corpo.assinatura)
     except glossario.GlossarioMudou:
-        raise HTTPException(
-            status_code=409,
-            detail="O glossário ou alguma reunião mudou desde a prévia. "
-            "Confira a prévia de novo antes de aplicar.",
-        )
+        raise _erro(409, "mudou_desde_previa")
     except glossario.FalhaAoReaplicar as exc:
         print(f"[termos] falha ao reaplicar: {type(exc.__cause__).__name__}")
         feitas = ", ".join(exc.aplicadas) or "nenhuma"
-        raise HTTPException(
-            status_code=500,
-            detail="Não foi possível terminar de aplicar o glossário. "
-            f"Já aplicadas: {feitas}. As outras continuam como "
-            "estavam - pode tentar de novo.",
-        )
+        raise _erro(500, "falha_reaplicar", feitas=feitas)
 
 
 @app.get("/api/sistema")

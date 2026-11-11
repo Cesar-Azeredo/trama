@@ -634,7 +634,9 @@ def test_review_arquivo_antigo_sem_turnos_avisa_e_nao_inventa():
 
         _rodar_review(p, ["Ramiro"], sem_aprender=True)
         saida = json.loads(p.read_text(encoding="utf-8"))
-        assert any("turnos" in a for a in saida.get("avisos", [])), saida.get("avisos")
+        assert {"codigo": "arquivo_sem_turnos", "parametros": {}} in saida.get("avisos", []), (
+            saida.get("avisos")
+        )
         assert saida["clusters"]["S0"]["nome"] == "Ramiro"
     finally:
         shutil.rmtree(pasta, ignore_errors=True)

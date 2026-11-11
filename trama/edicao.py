@@ -30,6 +30,8 @@ Nada daqui escreve no log: e conteudo da reuniao (CLAUDE.md, regra 3).
 import re
 from datetime import datetime, timezone
 
+from trama.erros import ErroDeUsuario
+
 CHAVE = "edicao_manual"
 CAMPOS_DE_POSICAO = ("palavras_divergentes", "palavras_baixa_confianca", "palavras_tempo")
 TEXTO_MAX_LEN = 5000
@@ -40,8 +42,8 @@ _CARACTERE_DE_CONTROLE = re.compile(r"[\x00-\x1f\x7f]")
 FRACAO_MIN_CASAMENTO = 0.5
 
 
-class TextoInvalido(ValueError):
-    """Mensagem em portugues, pronta para a tela."""
+class TextoInvalido(ErroDeUsuario):
+    """Texto de fala recusado (codigo + parametros, trama/erros.py)."""
 
 
 class FalaNaoEncontrada(LookupError):
@@ -55,14 +57,11 @@ class FalaMudou(RuntimeError):
 def validar_texto(bruto):
     texto = (bruto or "").strip()
     if not texto:
-        raise TextoInvalido(
-            "O texto da fala não pode ficar vazio. Para voltar ao texto "
-            'transcrito, use "Voltar ao original".'
-        )
+        raise TextoInvalido("fala_vazia")
     if _CARACTERE_DE_CONTROLE.search(texto):
-        raise TextoInvalido("O texto não pode ter quebra de linha nem caractere de controle.")
+        raise TextoInvalido("fala_com_controle")
     if len(texto) > TEXTO_MAX_LEN:
-        raise TextoInvalido(f"O texto tem {len(texto)} caracteres; o máximo é {TEXTO_MAX_LEN}.")
+        raise TextoInvalido("fala_longa_demais", tamanho=len(texto), maximo=TEXTO_MAX_LEN)
     return texto
 
 

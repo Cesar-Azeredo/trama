@@ -17,6 +17,7 @@ from servidor_apoio import (
     _ambiente_temporario,
     _criar_reuniao_completa,
     _criar_reuniao_nao_processada,
+    erro_de,
     rodar_suite,
 )
 
@@ -298,7 +299,7 @@ def test_excluir_pessoa_inexistente_da_404_em_portugues():
     try:
         r = cliente.delete("/api/pessoas/Ninguem")
         assert r.status_code == 404
-        assert r.json()["detail"] == "Esta pessoa não está na galeria."
+        assert erro_de(r) == ("pessoa_nao_encontrada", {})
     finally:
         shutil.rmtree(pasta, ignore_errors=True)
 

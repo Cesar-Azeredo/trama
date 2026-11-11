@@ -21,7 +21,13 @@ import urllib.request
 from pathlib import Path
 
 import servidor_apoio  # noqa: F401 - isola o ambiente e instala os stubs ANTES do projeto
-from servidor_apoio import RAIZ, _ambiente_temporario, _criar_reuniao_nao_processada, rodar_suite
+from servidor_apoio import (
+    RAIZ,
+    _ambiente_temporario,
+    _criar_reuniao_nao_processada,
+    erro_de,
+    rodar_suite,
+)
 
 from trama.servidor import processamento, reunioes
 
@@ -560,7 +566,7 @@ def test_rota_processar_duas_reunioes_ao_mesmo_tempo_recusa_com_409():
 
         r2 = cliente.post("/api/reunioes/reuniao_b/processar", json={"pessoas": []})
         assert r2.status_code == 409
-        assert "reuniao_a" in r2.json()["detail"]
+        assert erro_de(r2) == ("ja_processando", {"id": "reuniao_a"})
     finally:
         del os.environ["FAKE_RUN_ATRASO_S"]
         _limpar_ambiente_processamento(raiz_falsa, reunioes.PASTA_AUDIOS)
@@ -573,7 +579,7 @@ def test_rota_processar_sem_audio_da_404_em_portugues():
         (reunioes.PASTA_AUDIOS / "reuniao_a").mkdir()
         r = cliente.post("/api/reunioes/reuniao_a/processar", json={"pessoas": []})
         assert r.status_code == 404
-        assert "áudio" in r.json()["detail"].lower()
+        assert erro_de(r) == ("sem_audio_para_processar", {})
     finally:
         shutil.rmtree(pasta, ignore_errors=True)
 

@@ -23,10 +23,9 @@ VERSAO = "0.3.0-dev"
 
 # Modo demonstracao (REC_MEET_DEMO=1): os dados de audios-demo/ nao tem
 # audio - sao reunioes ficticias geradas por ferramentas/gerar_demo.py. A
-# tela avisa em vez de tentar tocar, e a rota de audio responde a mesma
-# frase.
+# tela avisa em vez de tentar tocar, e a rota de audio responde o codigo
+# sem_audio_na_demonstracao.
 DEMONSTRACAO = os.environ.get("REC_MEET_DEMO") == "1"
-AVISO_SEM_AUDIO = "Áudio não disponível na demonstração."
 
 
 def licencas():

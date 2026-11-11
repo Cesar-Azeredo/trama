@@ -22,6 +22,7 @@ from servidor_apoio import (
     _criar_reuniao_completa,
     _criar_reuniao_incompleta,
     _criar_reuniao_nao_processada,
+    erro_de,
     rodar_suite,
 )
 
@@ -327,7 +328,7 @@ def test_upload_extensao_nao_suportada_e_rejeitado_em_portugues():
             files={"arquivo": ("video.mp4", b"x", "video/mp4")},
         )
         assert r.status_code == 400
-        assert "Extensão" in r.json()["detail"]
+        assert erro_de(r)[0] == "extensao_invalida" and ".m4a" in erro_de(r)[1]["formatos"]
         assert not any(reunioes.PASTA_AUDIOS.iterdir())
     finally:
         shutil.rmtree(pasta, ignore_errors=True)
@@ -710,7 +711,7 @@ def test_detalhe_reuniao_inexistente_da_404_em_portugues():
     try:
         r = cliente.get("/api/reunioes/reuniao_fantasma")
         assert r.status_code == 404
-        assert "encontrada" in r.json()["detail"].lower()
+        assert erro_de(r) == ("reuniao_nao_encontrada", {})
     finally:
         shutil.rmtree(pasta, ignore_errors=True)
 
@@ -781,7 +782,7 @@ def test_audio_fim_menor_ou_igual_a_inicio_e_rejeitado_em_portugues():
         _criar_reuniao_completa(reunioes.PASTA_AUDIOS, "reuniao_a")
         r = cliente.get("/api/reunioes/reuniao_a/audio?inicio=5&fim=5")
         assert r.status_code == 400
-        assert "inválido" in r.json()["detail"].lower()
+        assert erro_de(r) == ("intervalo_invalido", {})
     finally:
         shutil.rmtree(pasta, ignore_errors=True)
 
@@ -802,7 +803,7 @@ def test_audio_trecho_acima_do_teto_e_rejeitado_sem_chamar_ffmpeg():
         fim = app_mod.DURACAO_MAXIMA_TRECHO_S + 1
         r = cliente.get(f"/api/reunioes/reuniao_a/audio?inicio=0&fim={fim}")
         assert r.status_code == 400
-        assert "trecho" in r.json()["detail"].lower()
+        assert erro_de(r)[0] == "trecho_longo_demais"
         assert not chamado, "ffmpeg nao deveria ter sido chamado para um trecho acima do teto"
     finally:
         reunioes.recortar_audio = original
@@ -833,7 +834,7 @@ def test_audio_reuniao_sem_m4a_da_erro_claro_em_portugues_nao_stacktrace():
 
         r = cliente.get("/api/reunioes/reuniao_sem_audio/audio?inicio=0&fim=3")
         assert r.status_code == 404
-        assert "áudio" in r.json()["detail"].lower()
+        assert erro_de(r) == ("audio_nao_encontrado", {})
     finally:
         shutil.rmtree(pasta, ignore_errors=True)
 
@@ -948,7 +949,7 @@ def test_busca_ve_o_json_regravado_e_recusa_consulta_longa_em_portugues():
         j.write_text(json.dumps(d), encoding="utf-8")
         assert len(cliente.get("/api/busca", params={"q": "chatgpt"}).json()["resultados"]) == 1
         r = cliente.get("/api/busca", params={"q": "x" * 201})
-        assert r.status_code == 400 and "200 caracteres" in r.json()["detail"]
+        assert r.status_code == 400 and erro_de(r) == ("busca_longa_demais", {"maximo": 200})
     finally:
         shutil.rmtree(pasta, ignore_errors=True)
 
@@ -990,7 +991,7 @@ def test_demonstracao_avisa_sem_audio_em_vez_de_procurar_arquivo():
         assert cliente.get("/api/sistema").json()["demonstracao"] is True
         r = cliente.get("/api/reunioes/reuniao_01/audio", params={"inicio": 0, "fim": 2})
         assert r.status_code == 404
-        assert r.json()["detail"] == "Áudio não disponível na demonstração."
+        assert erro_de(r) == ("sem_audio_na_demonstracao", {})
         # intervalo absurdo continua 400, antes de qualquer outra coisa
         r = cliente.get("/api/reunioes/reuniao_01/audio", params={"inicio": 2, "fim": 1})
         assert r.status_code == 400

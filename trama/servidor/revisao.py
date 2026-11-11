@@ -13,12 +13,13 @@ import json
 import re
 
 from trama import revisao
+from trama.erros import ErroDeUsuario
 
 NOME_MAX_LEN = 80
 PADRAO_CARACTERE_DE_CONTROLE = re.compile(r"[\x00-\x1f\x7f]")
 
 
-class NomeInvalido(ValueError):
+class NomeInvalido(ErroDeUsuario):
     """Nome recusado por formato, antes de tocar disco ou banco."""
 
 
@@ -29,9 +30,9 @@ class ReuniaoSemClusters(LookupError):
 
 def validar_nome(nome):
     if len(nome) > NOME_MAX_LEN:
-        raise NomeInvalido(f"Nome tem {len(nome)} caracteres; o máximo é {NOME_MAX_LEN}.")
+        raise NomeInvalido("nome_longo_demais", tamanho=len(nome), maximo=NOME_MAX_LEN)
     if PADRAO_CARACTERE_DE_CONTROLE.search(nome):
-        raise NomeInvalido("Nome contém caractere de controle, não permitido.")
+        raise NomeInvalido("nome_com_controle")
 
 
 def planejar(dados, escolhas, sem_aprender=()):

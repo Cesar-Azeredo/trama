@@ -1,4 +1,9 @@
-import { enviarJson } from "./cliente";
+import { enviarJson, textoDoAviso } from "./cliente";
+
+/** O aviso chega como codigo (ou lista) e vai para a tela como texto. */
+function comAvisoEmTexto<T extends { aviso: unknown }>(r: T): T {
+  return { ...r, aviso: textoDoAviso(r.aviso) };
+}
 
 /** Espelha servidor/correcao.py (ADR 0019): corrigir um trecho em todas as
  * reunioes e nas proximas. */
@@ -25,7 +30,9 @@ export interface PreviaCorrecao {
 }
 
 export function previaCorrecao(trecho: string, certo: string): Promise<PreviaCorrecao> {
-  return enviarJson<PreviaCorrecao>("/api/correcoes/previa", { trecho, certo });
+  return enviarJson<PreviaCorrecao>("/api/correcoes/previa", { trecho, certo }).then(
+    comAvisoEmTexto,
+  );
 }
 
 export interface CorrecaoAplicada {
@@ -42,7 +49,7 @@ export function aplicarCorrecao(corpo: {
   descricao: string;
   assinatura: string;
 }): Promise<CorrecaoAplicada> {
-  return enviarJson<CorrecaoAplicada>("/api/correcoes", corpo);
+  return enviarJson<CorrecaoAplicada>("/api/correcoes", corpo).then(comAvisoEmTexto);
 }
 
 // ---- variacoes parecidas (ADR 0020) ---------------------------------------
@@ -83,5 +90,5 @@ export function aplicarVariacoes(
     certo,
     formas,
     assinatura,
-  });
+  }).then(comAvisoEmTexto);
 }

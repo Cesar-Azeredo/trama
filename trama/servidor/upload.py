@@ -14,6 +14,8 @@ import os
 import re
 from pathlib import Path
 
+from trama.erros import ErroDeUsuario
+
 EXTENSOES_PERMITIDAS = {".m4a", ".mp3", ".wav"}
 
 # iPhone, 72 min = ~37 MB (medido em audios/reuniao_09). 500 MB cobre uma
@@ -27,11 +29,11 @@ TAMANHO_BLOCO = 1024 * 1024  # 1 MB por leitura/escrita - streaming, nunca
 _PADRAO_PASTA_REUNIAO = re.compile(r"^reuniao_(\d+)$")
 
 
-class ExtensaoInvalida(ValueError):
+class ExtensaoInvalida(ErroDeUsuario):
     """Nome do arquivo enviado nao termina numa extensao permitida."""
 
 
-class ArquivoMuitoGrande(ValueError):
+class ArquivoMuitoGrande(ErroDeUsuario):
     """
     Upload excedeu TAMANHO_MAXIMO_BYTES - abortado no MEIO do stream,
     contando bytes efetivamente escritos. Nunca confia so no
@@ -109,9 +111,7 @@ async def receber_upload(pasta_audios, nome_original, arquivo_upload):
     extensao = extensao_permitida(nome_original)
     if extensao is None:
         raise ExtensaoInvalida(
-            "Extensão não suportada. Use um dos formatos: "
-            + ", ".join(sorted(EXTENSOES_PERMITIDAS))
-            + "."
+            "extensao_invalida", formatos=", ".join(sorted(EXTENSOES_PERMITIDAS))
         )
 
     pasta_audios.mkdir(parents=True, exist_ok=True)
@@ -130,7 +130,7 @@ async def receber_upload(pasta_audios, nome_original, arquivo_upload):
                 total += len(bloco)
                 if total > TAMANHO_MAXIMO_BYTES:
                     raise ArquivoMuitoGrande(
-                        f"Arquivo maior que o limite de {TAMANHO_MAXIMO_BYTES // (1024 * 1024)} MB."
+                        "arquivo_grande_demais", maximo_mb=TAMANHO_MAXIMO_BYTES // (1024 * 1024)
                     )
                 f.write(bloco)
         os.replace(destino_temp, destino_final)

@@ -18,6 +18,7 @@ from servidor_apoio import (
     _criar_reuniao_completa,
     _criar_reuniao_incompleta,
     _criar_reuniao_nao_processada,
+    erro_de,
     rodar_suite,
 )
 
@@ -328,16 +329,19 @@ def test_corrigir_fala_recusa_em_portugues_sem_tocar_o_arquivo():
         antes = j.read_bytes()
         url = "/api/reunioes/reuniao_06/falas"
         r = cliente.put(f"{url}/0", json={"texto": "   ", "inicio": 10.0})
-        assert r.status_code == 400 and "não pode ficar vazio" in r.json()["detail"]
+        assert r.status_code == 400 and erro_de(r) == ("fala_vazia", {})
         r = cliente.put(f"{url}/0", json={"texto": "duas\nlinhas", "inicio": 10.0})
-        assert r.status_code == 400 and "quebra de linha" in r.json()["detail"]
+        assert r.status_code == 400 and erro_de(r) == ("fala_com_controle", {})
         r = cliente.put(f"{url}/0", json={"texto": "x" * 5001, "inicio": 10.0})
-        assert r.status_code == 400 and "máximo" in r.json()["detail"]
+        assert r.status_code == 400 and erro_de(r) == (
+            "fala_longa_demais",
+            {"tamanho": 5001, "maximo": 5000},
+        )
         # a fala daquele indice nao e mais a que a tela mostrava
         r = cliente.put(f"{url}/0", json={"texto": "ok", "inicio": 99.0})
-        assert r.status_code == 409 and "Recarregue" in r.json()["detail"]
+        assert r.status_code == 409 and erro_de(r) == ("fala_mudou", {})
         r = cliente.put(f"{url}/7", json={"texto": "ok", "inicio": 10.0})
-        assert r.status_code == 404 and "Recarregue" in r.json()["detail"]
+        assert r.status_code == 404 and erro_de(r) == ("fala_mudou", {})
         r = cliente.put("/api/reunioes/Reuniao.A/falas/0", json={"texto": "ok", "inicio": 10.0})
         assert r.status_code == 400
         assert j.read_bytes() == antes, "recusa mexeu no .json"
@@ -386,13 +390,13 @@ def test_transcricao_rota_nao_processada_ou_id_invalido_responde_em_portugues():
         _criar_reuniao_nao_processada(reunioes.PASTA_AUDIOS, "reuniao_a")
         r = cliente.get("/api/reunioes/reuniao_a/transcricao")
         assert r.status_code == 404
-        assert "não há transcrição para baixar" in r.json()["detail"]
+        assert erro_de(r) == ("sem_transcricao_para_baixar", {})
 
         assert cliente.get("/api/reunioes/reuniao_zz/transcricao").status_code == 404
         r = cliente.get("/api/reunioes/..%2Fvozes/transcricao")
         assert r.status_code in (400, 404), r.status_code
         r = cliente.get("/api/reunioes/Reuniao.A/transcricao")
-        assert r.status_code == 400 and r.json()["detail"] == "Id de reunião inválido."
+        assert r.status_code == 400 and erro_de(r) == ("id_invalido", {})
     finally:
         shutil.rmtree(pasta, ignore_errors=True)
 
@@ -421,13 +425,13 @@ def test_titulo_invalido_rejeitado_em_portugues_sem_tocar_o_arquivo():
         p = _criar_reuniao_completa(reunioes.PASTA_AUDIOS, "reuniao_a")
         antes = (p / "reuniao_a.json").read_bytes()
         for ruim, trecho in (
-            ("a" * 121, "máximo é 120"),
-            ("linha\nquebrada", "caractere de controle"),
-            ("tab\taqui", "caractere de controle"),
+            ("a" * 121, ("titulo_longo_demais", {"tamanho": 121, "maximo": 120})),
+            ("linha\nquebrada", ("titulo_com_controle", {})),
+            ("tab\taqui", ("titulo_com_controle", {})),
         ):
             r = cliente.put("/api/reunioes/reuniao_a/titulo", json={"titulo": ruim})
             assert r.status_code == 400, (ruim, r.text)
-            assert trecho in r.json()["detail"], r.json()
+            assert erro_de(r) == trecho, r.json()
         assert (
             cliente.put("/api/reunioes/reuniao_a/titulo", json={"titulo": "a" * 120}).status_code
             == 200

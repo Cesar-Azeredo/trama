@@ -4,7 +4,8 @@
  * ausentes (null), que nunca sao inventados como 0 ou lista vazia.
  */
 
-import { buscarJson, enviarJson, mensagemDeErro } from "./cliente";
+import { buscarJson, enviarJson, mensagemDeErro, textoDoAviso } from "./cliente";
+import { textosAtuais } from "../i18n/textos";
 
 /** "processando"/"interrompido" so existem por causa do marco 2 (upload +
  * processamento pelo servidor, ver ARCHITECTURE.md) - "interrompido" e o
@@ -244,8 +245,16 @@ export function temResultadoProcessado(
   return dados.estado === "completa" || dados.estado === "incompleta";
 }
 
-export function carregarReuniao(id: string): Promise<DetalheReuniao> {
-  return buscarJson<DetalheReuniao>(`/api/reunioes/${encodeURIComponent(id)}`);
+export async function carregarReuniao(id: string): Promise<DetalheReuniao> {
+  const dados = await buscarJson<DetalheReuniao>(`/api/reunioes/${encodeURIComponent(id)}`);
+  // avisos gravados no .json: codigo (servidor atual) ou texto (.json de
+  // antes) - a tela recebe sempre texto, no idioma escolhido.
+  if ("avisos" in dados && Array.isArray(dados.avisos)) {
+    dados.avisos = dados.avisos
+      .map((a: unknown) => textoDoAviso(a))
+      .filter((a): a is string => !!a);
+  }
+  return dados;
 }
 
 // ---- GET /api/reunioes/{id}/audio ----------------------------------------
@@ -359,11 +368,11 @@ export function enviarAudio(
       }
       reject(
         new Error(
-          mensagemDeErro(xhr.status, corpo, `Falha ao enviar o áudio (${xhr.status}).`),
+          mensagemDeErro(xhr.status, corpo, textosAtuais().erros.falhaComServidor(xhr.status)),
         ),
       );
     };
-    xhr.onerror = () => reject(new Error("Falha de rede ao enviar o áudio."));
+    xhr.onerror = () => reject(new Error(textosAtuais().erros.falhaDeRedeNoEnvio));
     xhr.send(forma);
   });
 }

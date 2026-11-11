@@ -5,6 +5,7 @@
  * Um arquivo por área da interface.
  */
 import { comum } from "./comum";
+import { erros } from "./erros";
 import { formatos } from "./formatos";
 import { perfil } from "./perfil";
 import { detalhe } from "./detalhe";
@@ -20,6 +21,7 @@ import { termos } from "./termos";
 export const pt = {
   comum,
   formatos,
+  erros,
   perfil,
   detalhe,
   correcao,

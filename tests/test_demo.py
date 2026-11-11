@@ -93,7 +93,7 @@ def test_demo_audio_indisponivel_avisa():
     try:
         r = cliente.get("/api/reunioes/reuniao_01/audio", params={"inicio": 0, "fim": 3})
         assert r.status_code == 404
-        assert r.json()["detail"] == "Áudio não disponível na demonstração."
+        assert r.json()["detail"]["codigo"] == "sem_audio_na_demonstracao"
     finally:
         sistema.DEMONSTRACAO = False
         shutil.rmtree(pasta, ignore_errors=True)

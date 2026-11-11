@@ -1450,7 +1450,7 @@ def test_correcao_sem_fala_correspondente_fica_guardada_e_volta_depois():
         d = json.loads(j.read_text(encoding="utf-8"))
         assert not any("edicao_manual" in f for f in d["falas"])
         assert [e["texto"] for e in d["edicoes_sem_fala"]] == ["Correção feita à mão."]
-        assert "à mão" in d["avisos"][0]
+        assert d["avisos"][0] == {"codigo": "edicoes_sem_fala", "parametros": {"n": 1}}, d["avisos"]
 
         # um reprocessamento que acha a fala de novo devolve a correcao
         _rodar_run_main(audio, db, turnos, mapa, palavras)

@@ -31,6 +31,7 @@ import os
 from pathlib import Path
 
 from trama import nucleo
+from trama.erros import ErroDeUsuario
 
 RAIZ = Path(__file__).resolve().parents[2]
 CAMINHO = Path(os.environ.get("REC_MEET_TERMOS", str(RAIZ / "termos.txt")))
@@ -55,8 +56,8 @@ CABECALHO_DESCRICOES = (
 )
 
 
-class GlossarioInvalido(ValueError):
-    """Mensagem ja em portugues, pronta para o detail da resposta HTTP."""
+class GlossarioInvalido(ErroDeUsuario):
+    """Glossario recusado antes de tocar o arquivo (codigo + parametros, trama/erros.py)."""
 
 
 def _como_regra(linha):
@@ -190,7 +191,7 @@ def marcar_respondido(forma):
     """Guarda que a forma ja foi respondida - nunca mais perguntada."""
     forma = " ".join((forma or "").split())
     if not forma or len(forma) > MAX_LEN:
-        raise GlossarioInvalido("Forma inválida.")
+        raise GlossarioInvalido("forma_invalida")
     respondidos = ler_respondidos()
     if not any(_mesmo(r, forma) for r in respondidos):
         respondidos.append(forma)
@@ -229,46 +230,43 @@ def ler():
     return itens
 
 
-def _validar_campo(valor, rotulo, posicao):
+def _validar_campo(valor, campo, posicao):
     if not isinstance(valor, str):
-        raise GlossarioInvalido(f"Linha {posicao}: {rotulo} precisa ser texto.")
+        raise GlossarioInvalido("linha_nao_texto", linha=posicao, campo=campo)
     if "\n" in valor or "\r" in valor:
-        raise GlossarioInvalido(f"Linha {posicao}: {rotulo} não pode ter quebra de linha.")
+        raise GlossarioInvalido("linha_com_quebra", linha=posicao, campo=campo)
     if len(valor) > MAX_LEN:
-        raise GlossarioInvalido(f"Linha {posicao}: {rotulo} passa de {MAX_LEN} caracteres.")
+        raise GlossarioInvalido("linha_longa_demais", linha=posicao, campo=campo, maximo=MAX_LEN)
 
 
 def _linha_de(item, posicao):
     if not isinstance(item, dict):
-        raise GlossarioInvalido(f"Linha {posicao}: formato inválido.")
+        raise GlossarioInvalido("linha_formato_invalido", linha=posicao)
     tipo = item.get("tipo")
 
     if tipo == "regra":
         errado, certo = item.get("errado"), item.get("certo")
-        _validar_campo(errado, "o termo errado", posicao)
-        _validar_campo(certo, "o termo certo", posicao)
+        _validar_campo(errado, "errado", posicao)
+        _validar_campo(certo, "certo", posicao)
         errado, certo = errado.strip(), certo.strip()
         if not errado:
-            raise GlossarioInvalido(f"Linha {posicao}: o termo errado não pode ficar vazio.")
+            raise GlossarioInvalido("errado_vazio", linha=posicao)
         if errado.startswith("#"):
-            raise GlossarioInvalido(
-                f"Linha {posicao}: o termo errado não pode começar com # "
-                "(a linha viraria comentário)."
-            )
+            raise GlossarioInvalido("errado_com_cerquilha", linha=posicao)
         if "=>" in errado:
-            raise GlossarioInvalido(f"Linha {posicao}: o termo errado não pode conter =>.")
+            raise GlossarioInvalido("errado_com_seta", linha=posicao)
         return f"{errado} => {certo}"
 
     if tipo == "texto":
         texto = item.get("texto")
-        _validar_campo(texto, "o comentário", posicao)
+        _validar_campo(texto, "comentario", posicao)
         # Um "texto" que o pipeline.py leria como regra seria uma regra entrando
         # escondida, sem aparecer como regra na tela.
         if _como_regra(texto):
-            raise GlossarioInvalido(f"Linha {posicao}: comentário com => seria lido como regra.")
+            raise GlossarioInvalido("comentario_com_seta", linha=posicao)
         return texto
 
-    raise GlossarioInvalido(f"Linha {posicao}: tipo desconhecido.")
+    raise GlossarioInvalido("linha_tipo_desconhecido", linha=posicao)
 
 
 def _validar_descricoes(descricoes):
@@ -276,30 +274,25 @@ def _validar_descricoes(descricoes):
     Termo sem regra e valido: entra so no vocabulario. Tirar um termo e
     tirar a chave (remover_termo)."""
     if not isinstance(descricoes, dict):
-        raise GlossarioInvalido("Formato inválido das descrições.")
+        raise GlossarioInvalido("descricoes_formato_invalido")
     limpas = {}
     for termo, descricao in descricoes.items():
         if not isinstance(descricao, str):
-            raise GlossarioInvalido(f"A descrição de {termo} precisa ser texto.")
+            raise GlossarioInvalido("descricao_nao_texto", termo=termo)
         # A chave e o termo como o vocabulario o ve ("o Claude" -> "Claude").
         termo, descricao = termo_do_vocabulario(termo), descricao.strip()
         if not termo:
-            raise GlossarioInvalido("Uma descrição ficou sem o termo.")
+            raise GlossarioInvalido("descricao_sem_termo")
         if any(c in termo for c in "\n\r\t") or len(termo) > MAX_LEN:
-            raise GlossarioInvalido(
-                f"O termo {termo[:40]} não pode ter quebra de linha nem passar "
-                f"de {MAX_LEN} caracteres."
-            )
+            raise GlossarioInvalido("termo_invalido", termo=termo[:40], maximo=MAX_LEN)
         if termo.lower() in {t.lower() for t in limpas}:
-            raise GlossarioInvalido(f"O termo {termo} aparece duas vezes.")
+            raise GlossarioInvalido("termo_repetido", termo=termo)
         if any(c in descricao for c in "\n\r\t"):
-            raise GlossarioInvalido(f"A descrição de {termo} não pode ter quebra de linha.")
+            raise GlossarioInvalido("descricao_com_quebra", termo=termo)
         if len(descricao) > DESCRICAO_MAX_LEN:
-            raise GlossarioInvalido(
-                f"A descrição de {termo} passa de {DESCRICAO_MAX_LEN} caracteres."
-            )
+            raise GlossarioInvalido("descricao_longa_demais", termo=termo, maximo=DESCRICAO_MAX_LEN)
         if SEPARADOR_DESCRICAO.strip() in termo:
-            raise GlossarioInvalido(f"O termo {termo} tem => e não pode receber descrição.")
+            raise GlossarioInvalido("termo_com_seta", termo=termo)
         limpas[termo] = descricao
     return limpas
 
@@ -314,9 +307,9 @@ def escrever(itens, descricoes=None, respondidos=None):
     e sem descricao vira "#= termo". Sem nenhuma linha, a secao nao
     existe - o arquivo fica como era."""
     if not isinstance(itens, list):
-        raise GlossarioInvalido("Formato inválido.")
+        raise GlossarioInvalido("glossario_formato_invalido")
     if len(itens) > MAX_ITENS:
-        raise GlossarioInvalido(f"O glossário passa de {MAX_ITENS} linhas.")
+        raise GlossarioInvalido("glossario_longo_demais", maximo=MAX_ITENS)
     linhas = [_linha_de(item, i) for i, item in enumerate(itens, 1)]
     # O que vem da tela e o arquivo SEM a secao (ler() ja a tira); um item
     # "texto" que imitasse a secao viraria descricao escondida.
@@ -477,7 +470,7 @@ def definir_descricao(termo, descricao):
     descricoes gravadas."""
     termo = termo_do_vocabulario(termo or "")
     if not termo:
-        raise GlossarioInvalido("O termo não pode ficar vazio.")
+        raise GlossarioInvalido("termo_vazio")
     descricoes = ler_descricoes()
     descricoes[termo] = descricao or ""
     escrever(ler(), descricoes)
@@ -529,7 +522,7 @@ def adicionar_termo(termo, descricao=""):
     certo" da revisao). Termo que ja existe: so atualiza a descricao."""
     termo = " ".join((termo or "").split())
     if not termo:
-        raise GlossarioInvalido("Escreva o nome do termo.")
+        raise GlossarioInvalido("escreva_nome_do_termo")
     descricoes = ler_descricoes()
     existente = next((t for t in descricoes if t.lower() == termo.lower()), None)
     das_regras = next(

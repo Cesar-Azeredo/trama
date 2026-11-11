@@ -23,7 +23,7 @@ import uuid
 
 import numpy as np
 
-from trama import interacao, nucleo, pipeline
+from trama import erros, interacao, nucleo, pipeline
 
 DURACAO_MIN_TRECHO = 4.0  # segundos
 DURACAO_MAX_TRECHO = 15.0  # segundos
@@ -350,13 +350,7 @@ def aplicar_e_gravar(caminho, dados, reuniao_id, renomear, aprender, retirar=(),
         dados["eventos"] = analise["eventos"]
         dados["regioes_sobrepostas"] = analise["regioes_sobrepostas"]
     else:
-        dados.setdefault("avisos", []).append(
-            "Arquivo sem 'turnos' brutos (gerado por uma versao antiga do "
-            "pipeline.py) - dinamica, matriz de interrupcoes, eventos e regioes "
-            "sobrepostas NAO puderam ser recalculados com os nomes "
-            "corrigidos e podem estar desatualizados. Nada foi inventado: "
-            "os valores antigos foram mantidos como estavam."
-        )
+        dados.setdefault("avisos", []).append(erros.aviso("arquivo_sem_turnos"))
 
     # Reaproveita o exportador de TXT do pipeline.py (marcadores de "<- conferir"
     # e "[vozes sobrepostas]" inclusive) em vez de reescrever um TXT simples

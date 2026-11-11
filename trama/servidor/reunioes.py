@@ -36,6 +36,7 @@ import subprocess
 from pathlib import Path
 
 from trama import edicao, nucleo, pipeline
+from trama.erros import ErroDeUsuario
 from trama.servidor import processamento
 
 PASTA_AUDIOS = Path(os.environ.get("REC_MEET_AUDIOS", "audios"))
@@ -535,23 +536,20 @@ TITULO_MAX_LEN = 120
 _CARACTERE_DE_CONTROLE = re.compile(r"[\x00-\x1f\x7f]")
 
 
-class TituloInvalido(ValueError):
-    """Mensagem ja em portugues, pronta para o detail da resposta HTTP."""
+class TituloInvalido(ErroDeUsuario):
+    """Titulo recusado (codigo + parametros, trama/erros.py)."""
 
 
 def validar_titulo(bruto):
     """Titulo limpo, ou None para voltar ao padrao ("Reuniao NN") - campo
     vazio (ou so espaco) e a forma de tirar o titulo."""
     if not isinstance(bruto, str):
-        raise TituloInvalido("O título precisa ser texto.")
+        raise TituloInvalido("titulo_nao_texto")
     titulo = bruto.strip()
     if _CARACTERE_DE_CONTROLE.search(titulo):
-        raise TituloInvalido(
-            "O título tem um caractere de controle (quebra de linha, "
-            "tabulação...), que não é permitido."
-        )
+        raise TituloInvalido("titulo_com_controle")
     if len(titulo) > TITULO_MAX_LEN:
-        raise TituloInvalido(f"O título tem {len(titulo)} caracteres; o máximo é {TITULO_MAX_LEN}.")
+        raise TituloInvalido("titulo_longo_demais", tamanho=len(titulo), maximo=TITULO_MAX_LEN)
     return titulo or None
 
 

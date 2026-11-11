@@ -18,6 +18,7 @@ from servidor_apoio import (
     _ambiente_temporario,
     _criar_reuniao_completa,
     _criar_reuniao_nao_processada,
+    erro_de,
     rodar_suite,
 )
 
@@ -252,7 +253,7 @@ def test_revisao_nome_com_caractere_de_controle_e_rejeitado_antes_do_banco():
 
         r = cliente.post("/api/reunioes/reuniao_a/revisao", json={"nomes": {"S0": "Ramiro\x07"}})
         assert r.status_code == 400
-        assert "controle" in r.json()["detail"].lower()
+        assert erro_de(r) == ("nome_com_controle", {})
         assert nucleo.listar_pessoas() == []
         assert (pasta_reuniao / "reuniao_a.json").read_text() == original
     finally:
@@ -265,7 +266,7 @@ def test_revisao_nome_acima_do_tamanho_maximo_e_rejeitado():
         _criar_reuniao_completa(reunioes.PASTA_AUDIOS, "reuniao_a")
         r = cliente.post("/api/reunioes/reuniao_a/revisao", json={"nomes": {"S0": "X" * 200}})
         assert r.status_code == 400
-        assert "80" in r.json()["detail"]
+        assert erro_de(r) == ("nome_longo_demais", {"tamanho": 200, "maximo": 80})
         assert nucleo.listar_pessoas() == []
     finally:
         shutil.rmtree(pasta, ignore_errors=True)
@@ -432,7 +433,7 @@ def test_revisao_reuniao_nao_processada_da_404_em_portugues():
         _criar_reuniao_nao_processada(reunioes.PASTA_AUDIOS, "reuniao_b")
         r = cliente.post("/api/reunioes/reuniao_b/revisao", json={"nomes": {"S0": "Ramiro"}})
         assert r.status_code == 404
-        assert "processada" in r.json()["detail"].lower()
+        assert erro_de(r) == ("sem_clusters_para_revisar", {})
     finally:
         shutil.rmtree(pasta, ignore_errors=True)
 

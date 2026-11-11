@@ -165,6 +165,13 @@ def _criar_reuniao_nao_processada(pasta_audios, id, tamanho_bytes=1000):
     return pasta
 
 
+def erro_de(resposta):
+    """(codigo, parametros) de uma resposta de erro da API - o servidor
+    nunca manda frase pronta; o texto mora no catalogo do frontend."""
+    detalhe = resposta.json()["detail"]
+    return detalhe["codigo"], detalhe["parametros"]
+
+
 def rodar_suite(escopo):
     """Runner das suites sem pytest: roda cada test_* de `escopo`."""
     testes = [(n, f) for n, f in sorted(escopo.items()) if n.startswith("test_") and callable(f)]

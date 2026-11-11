@@ -31,8 +31,12 @@ O valor está em **quem falou o quê**. Não em gravar, não em resumir.
    `vozes.db`.
 7. **Nenhuma migração de schema sem arquivo de migração versionado.**
    Ver ADR 0006.
-8. **Erro para o usuário é mensagem em português.** Stack trace vai para o
-   log local, nunca para a tela.
+8. **Erro para o usuário é código, não frase.** O servidor responde
+   `{"codigo", "parametros"}` (`trama/erros.py`); o texto, em português e
+   em inglês, mora nos catálogos do frontend (`frontend/src/i18n/*/erros.ts`).
+   Código novo no servidor sem texto nos dois catálogos derruba
+   `tests/test_codigos_de_erro.py`. Stack trace vai para o log local, nunca
+   para a tela.
 9. **Nunca `dangerouslySetInnerHTML`.** O transcript é texto.
 
 ## Regras de estilo
@@ -41,9 +45,8 @@ O valor está em **quem falou o quê**. Não em gravar, não em resumir.
   acento e sem cedilha nos identificadores (`interacao`, `sobreposicao`).
   Isso vale só para o IDENTIFICADOR (nome de variável, função, arquivo).
   Qualquer string que o usuário lê leva acentuação normal — texto de
-  interface, mensagem de erro de API (`detail=` de `HTTPException`,
-  qualquer exceção que vira resposta HTTP), texto que sai no terminal
-  para quem roda a CLI. "Sem acento no identificador" nunca é desculpa
+  interface (nos catálogos de `frontend/src/i18n/`), texto que sai no
+  terminal para quem roda a CLI. "Sem acento no identificador" nunca é desculpa
   para "sem acento no conteúdo da string" - já vazou pra tela por engano
   (mensagem de erro do servidor sem acento nenhum, replicando o nome do
   identificador em vez do texto que o usuário deveria ler).

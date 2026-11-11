@@ -17,6 +17,7 @@ from servidor_apoio import (
     _ambiente_temporario,
     _criar_reuniao_completa,
     _criar_reuniao_nao_processada,
+    erro_de,
     rodar_suite,
 )
 
@@ -208,9 +209,12 @@ def test_descricao_invalida_e_recusada_em_portugues_sem_tocar_o_arquivo():
     try:
         glossario.CAMINHO.write_text(TERMOS_EXEMPLO, encoding="utf-8")
         itens = cliente.get("/api/termos").json()["itens"]
-        for desc, trecho in [("x" * 121, "passa de 120"), ("duas\nlinhas", "quebra de linha")]:
+        for desc, trecho in [
+            ("x" * 121, ("descricao_longa_demais", {"termo": "ChatGPT", "maximo": 120})),
+            ("duas\nlinhas", ("descricao_com_quebra", {"termo": "ChatGPT"})),
+        ]:
             r = cliente.put("/api/termos", json={"itens": itens, "descricoes": {"ChatGPT": desc}})
-            assert r.status_code == 400 and trecho in r.json()["detail"], r.text
+            assert r.status_code == 400 and erro_de(r) == trecho, r.text
         assert glossario.CAMINHO.read_text(encoding="utf-8") == TERMOS_EXEMPLO
     finally:
         shutil.rmtree(pasta, ignore_errors=True)
@@ -312,7 +316,7 @@ def test_termos_put_invalido_rejeita_em_portugues_sem_tocar_o_arquivo():
             itens = [{"tipo": "regra", "errado": "ok", "certo": "OK"}, ruim]
             r = cliente.put("/api/termos", json={"itens": itens})
             assert r.status_code == 400, (ruim, r.text)
-            assert r.json()["detail"].startswith("Linha 2"), r.json()
+            assert erro_de(r)[1].get("linha") == 2, r.json()
             assert glossario.CAMINHO.read_text(encoding="utf-8") == TERMOS_EXEMPLO
     finally:
         shutil.rmtree(pasta, ignore_errors=True)
@@ -332,7 +336,7 @@ def test_termos_put_falha_na_escrita_mantem_o_arquivo_anterior():
             "/api/termos", json={"itens": [{"tipo": "regra", "errado": "a", "certo": "b"}]}
         )
         assert r.status_code == 500
-        assert "intacto" in r.json()["detail"]
+        assert erro_de(r) == ("falha_gravar_glossario", {})
         assert glossario.CAMINHO.read_text(encoding="utf-8") == TERMOS_EXEMPLO
         sobras = [f for f in pasta.iterdir() if f.name != "termos.txt" and f.name != "audios"]
         assert not sobras, f"temporario orfao: {sobras}"
@@ -411,7 +415,10 @@ def test_correcao_sem_lugar_que_respeite_tudo_avisa_e_nao_quebra_o_que_existe():
         "Tabela à Vista",
     )
     assert _errados(itens) == ["tabula", "do tabula da vista", "tabula da vista"]
-    assert aviso and "tabula" in aviso and "regra" not in aviso.lower()
+    assert aviso == {
+        "codigo": "correcao_existente_prevalece",
+        "parametros": {"errado": "tabula", "certo": "T"},
+    }
 
 
 def _reuniao_para_correcao(id, textos, editada=None):
@@ -457,9 +464,9 @@ def test_correcao_previa_conta_onde_trocaria_sem_gravar():
         assert d["reunioes"][0]["titulo"] == "Reunião 08"
         assert (j1.read_bytes(), glossario.CAMINHO.read_bytes()) == antes, "previa gravou"
         r = cliente.post("/api/correcoes/previa", json={"trecho": "Aprovion", "certo": "Aprovion"})
-        assert r.status_code == 400 and "já está escrito assim" in r.json()["detail"]
+        assert r.status_code == 400 and erro_de(r) == ("trecho_ja_certo", {})
         r = cliente.post("/api/correcoes/previa", json={"trecho": "  ", "certo": "x"})
-        assert r.status_code == 400 and "Selecione" in r.json()["detail"]
+        assert r.status_code == 400 and erro_de(r)[0].startswith("selecione_")
     finally:
         shutil.rmtree(pasta, ignore_errors=True)
 
@@ -516,7 +523,7 @@ def test_correcao_recusa_se_algo_mudou_desde_a_previa():
             "/api/correcoes",
             json={"trecho": "aprovium", "certo": "Aprovion", "assinatura": previa["assinatura"]},
         )
-        assert r.status_code == 409 and "Confira de novo" in r.json()["detail"]
+        assert r.status_code == 409 and erro_de(r) == ("mudou_desde_conferencia", {})
         assert glossario.CAMINHO.read_bytes() == antes
         assert "aprovium" in j.read_text(encoding="utf-8")
     finally:
@@ -611,7 +618,7 @@ def test_variacoes_marcadas_viram_correcao_em_todas_e_as_outras_nao():
             "/api/correcoes/variacoes/aplicar",
             json={"certo": "Aprovion", "formas": [], "assinatura": s["assinatura"]},
         )
-        assert r.status_code == 400 and "Marque" in r.json()["detail"]
+        assert r.status_code == 400 and erro_de(r) == ("marque_pelo_menos_uma", {})
         r = cliente.post(
             "/api/correcoes/variacoes/aplicar",
             json={"certo": "Aprovion", "formas": ["aprovio"], "assinatura": s["assinatura"]},
@@ -699,7 +706,7 @@ def test_adicionar_termo_sem_descricao_e_so_vocabulario_sem_mudar_regras():
         aprovion = [x for x in r.json()["termos"] if x["termo"] == "Aprovion"]
         assert len(aprovion) == 1 and aprovion[0]["descricao"] == "ferramenta"
         r = cliente.post("/api/termos/empresa", json={"termo": "  ", "descricao": "x"})
-        assert r.status_code == 400 and "nome do termo" in r.json()["detail"]
+        assert r.status_code == 400 and erro_de(r) == ("escreva_nome_do_termo", {})
     finally:
         shutil.rmtree(pasta, ignore_errors=True)
 
@@ -969,7 +976,7 @@ def test_reaplicar_recusa_se_algo_mudou_desde_a_previa():
         antes = j.read_bytes()
         r = cliente.post("/api/termos/reaplicar", json={"assinatura": assinatura})
         assert r.status_code == 409
-        assert "mudou desde a prévia" in r.json()["detail"]
+        assert erro_de(r) == ("mudou_desde_previa", {})
         assert j.read_bytes() == antes
     finally:
         shutil.rmtree(pasta, ignore_errors=True)
