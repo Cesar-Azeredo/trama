@@ -222,8 +222,9 @@ Todas configuráveis por variável de ambiente. Recalibração é offline:
 Uma máquina só: MacBook Pro M3 Max, 64 GB, MPS + mlx-whisper.
 
 - Reunião de 70 min: cerca de 6 min de processamento, do começo ao fim.
-- Embedding de voz no processador (`--device cpu`): 21 vezes mais lento
-  que no MPS, na mesma máquina.
+- Embedding de voz, áudio de 70 min: 18 s no MPS contra 6 min 28 s no
+  processador (`--device cpu`), 21× mais lento, na mesma máquina. Fonte:
+  relatório do projeto de 5 de setembro de 2026, seção de performance.
 - Ata local (`experimental/ata.py`, fora do produto), `reuniao_08`, 70 min,
   4 falantes: `llama3.1:8b` 2,4 min (qualidade insuficiente);
   `qwen3.8:27b-mlx` 19,6 min, ~18 GB de memória (qualidade boa). Detalhes

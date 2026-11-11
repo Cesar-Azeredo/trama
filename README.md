@@ -172,8 +172,9 @@ with CPU only have **not** been tested. The code runs on CPU
 (`--device cpu`, faster-whisper is chosen automatically when Apple Silicon
 is not available), but there are no measurements for it.
 
-**Why the GPU matters.** Computing the voice embeddings on the CPU was
-measured at **21 times slower** than on MPS on the same machine. Expect
+**Why the GPU matters.** On the same machine and a 70-minute recording,
+computing the voice embeddings took **18 s on MPS and 6 min 28 s on the
+CPU — 21 times slower**. Expect
 processing time on a CPU-only machine to be a multiple of the figure
 above, not a small increase.
 
