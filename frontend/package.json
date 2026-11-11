@@ -10,7 +10,8 @@
     "preview": "vite preview",
     "test": "vitest run",
     "cobertura": "vitest run --coverage",
-    "capturas": "node ferramentas/capturas.mjs"
+    "capturas": "node ferramentas/capturas.mjs",
+    "textos": "node ferramentas/listar-textos.mjs"
   },
   "dependencies": {
     "react": "^19.2.8",
