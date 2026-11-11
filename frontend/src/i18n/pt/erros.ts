@@ -33,7 +33,7 @@ export const erros = {
     busca_longa_demais: (p: Parametros) => `A busca passa de ${p.maximo} caracteres.`,
     nome_invalido: () => "Nome inválido.",
     sem_clusters_para_revisar: () =>
-      "Esta reunião ainda não foi processada - não há clusters para revisar.",
+      "Esta reunião ainda não foi processada - não há grupos de voz para revisar.",
     falha_salvar_audio: () => "Não foi possível salvar o áudio enviado.",
     id_invalido: () => "Id de reunião inválido.",
     reuniao_nao_encontrada: () => "Reunião não encontrada.",

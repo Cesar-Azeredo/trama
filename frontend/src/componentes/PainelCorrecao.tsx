@@ -1,7 +1,8 @@
+import { preencher } from "../util/preencher";
 import { mensagemDe, textoDoAviso } from "../api/cliente";
 import { mensagem, useMensagem, type Mensagem } from "../i18n/mensagem";
 import { tituloDaReuniao } from "../util/formatarReuniao";
-import { Fragment, useEffect, useId, useRef, useState, type KeyboardEvent, type ReactNode } from "react";
+import { useEffect, useId, useRef, useState, type KeyboardEvent } from "react";
 import {
   aplicarCorrecao,
   aplicarVariacoes,
@@ -21,24 +22,6 @@ function formatarHorario(segundos: number): string {
   const m = Math.floor((s % 3600) / 60);
   const par = (n: number) => String(n).padStart(2, "0");
   return h > 0 ? `${h}:${par(m)}:${par(s % 60)}` : `${par(m)}:${par(s % 60)}`;
-}
-
-/**
- * Frase do catalogo com {marcador}: cada marcador vira o elemento dado
- * (numero ou trecho com estilo proprio), o resto continua texto. A frase
- * inteira vem do catalogo, na ordem do idioma - nunca pedacos colados.
- */
-function preencher(modelo: string, partes: Record<string, ReactNode>): ReactNode[] {
-  return modelo
-    .split(/(\{[a-z]+\})/)
-    .map((pedaco, i) => {
-      const chave = pedaco.match(/^\{([a-z]+)\}$/)?.[1];
-      return chave !== undefined && chave in partes ? (
-        <Fragment key={i}>{partes[chave]}</Fragment>
-      ) : (
-        pedaco
-      );
-    });
 }
 
 /**

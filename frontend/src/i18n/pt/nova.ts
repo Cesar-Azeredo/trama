@@ -6,7 +6,7 @@ export const nova = {
   escolhaUmArquivo: "escolha um arquivo",
   formatosAceitos: (extensoes: string, mb: string) => `${extensoes} — até ${mb} MB`,
   explicacaoPessoas:
-    "É o maior ganho de precisão que existe: fixa quantos falantes procurar e restringe a comparação a quem estava lá. Sem marcar ninguém, o pipeline funciona igual, só que pior.",
+    "É o maior ganho de precisão que existe: fixa quantos falantes procurar e restringe a comparação a quem estava lá. Sem marcar ninguém, tudo funciona igual, só que com menos precisão.",
   carregandoPessoas: "Carregando pessoas…",
   pessoaNova: "+ Pessoa nova",
   nomeDaPessoaNova: "Nome da pessoa nova",

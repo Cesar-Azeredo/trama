@@ -12,22 +12,22 @@ const REAPLICAR = 'Use "Apply to meetings already processed" in Company terms to
 export const erros: Catalogo["erros"] = {
   servidorDesatualizado: "The server is out of date. Restart the server and reload the page.",
   dadosRecusados: "The server rejected the data sent. Reload the page and try again.",
-  falhaComServidor: (status) => `Could not reach the server (${status}).`,
+  falhaComServidor: (status) => `The server returned an error (${status}).`,
   falhaDeRedeNoEnvio: "Network error while uploading the audio.",
   codigoDesconhecido: (codigo) => `Server error (${codigo}).`,
 
   porCodigo: {
     intervalo_invalido: () =>
-      "Invalid range: 'fim' must be greater than 'inicio', and 'inicio' cannot be negative.",
+      "Invalid range: the end must be after the start, and the start can't be negative.",
     trecho_longo_demais: (p: Parametros) =>
-      `A ${p.pedido}s passage was requested; the maximum for review is ${p.maximo}s.`,
+      `A ${p.pedido}s clip was requested; the maximum for review is ${p.maximo}s.`,
     sem_audio_na_demonstracao: () => "Audio is not available in the demo.",
     sem_transcricao_para_baixar: () =>
-      "This meeting hasn't been processed yet - there is no transcript to download.",
+      "This meeting hasn't been processed yet — there is no transcript to download.",
     busca_longa_demais: (p: Parametros) => `The search is longer than ${p.maximo} characters.`,
     nome_invalido: () => "Invalid name.",
     sem_clusters_para_revisar: () =>
-      "This meeting hasn't been processed yet - there are no clusters to review.",
+      "This meeting hasn't been processed yet — there are no voice groups to review.",
     falha_salvar_audio: () => "Could not save the uploaded audio.",
     id_invalido: () => "Invalid meeting id.",
     reuniao_nao_encontrada: () => "Meeting not found.",
@@ -40,30 +40,30 @@ export const erros: Catalogo["erros"] = {
     fala_mudou: () =>
       "The transcript changed since the page was opened (the meeting was reprocessed). Reload the page and correct it again.",
     falha_gravar_correcao_fala: () =>
-      "Could not save the correction. The previous text is still there - try again.",
-    falha_gravar_titulo: () => "Could not save the title. The previous one is still there - try again.",
+      "Could not save the correction. The previous text is still there — try again.",
+    falha_gravar_titulo: () => "Could not save the title. The previous one is still there — try again.",
     pessoa_nao_encontrada: () => "This person is not in the gallery.",
-    falha_excluir_pessoa: () => "Could not delete the profile. Nothing was removed - try again.",
-    falha_gravar_revisao: () => "Could not save the review. It is safe to repeat - try again.",
+    falha_excluir_pessoa: () => "Could not delete the profile. Nothing was removed — try again.",
+    falha_gravar_revisao: () => "Could not save the review. It is safe to repeat — try again.",
     falha_gravar_glossario: () =>
-      "Could not save the glossary. The previous file is still intact - try again.",
-    falha_gravar_termos: () => "Could not save. The terms are as they were - try again.",
+      "Could not save the glossary. The previous file is still intact — try again.",
+    falha_gravar_termos: () => "Could not save. The terms are as they were — try again.",
     falha_gravar_resposta: () => "Could not save the answer. Try again.",
     falha_gravar_descricao: () => "Could not save the description. Try again.",
     mudou_desde_conferencia: () =>
       "A meeting changed since the check. Check again before correcting.",
     correcao_parcial: (p: Parametros) =>
       `The correction applies to future meetings, but it was not applied to all the processed ones (${p.corrigidas} corrected). ${REAPLICAR}`,
-    falha_gravar_correcao: () => "Could not save the correction. Nothing was changed - try again.",
+    falha_gravar_correcao: () => "Could not save the correction. Nothing was changed — try again.",
     mudou_desde_sugestao: () =>
       "A meeting changed since the suggestion. Correct it again to see the updated suggestions.",
     correcoes_parciais: (p: Parametros) =>
       `The corrections apply to future meetings, but they were not applied to all the processed ones (${p.corrigidas} corrected). ${REAPLICAR}`,
-    falha_gravar_correcoes: () => "Could not save the corrections. Nothing was changed - try again.",
+    falha_gravar_correcoes: () => "Could not save the corrections. Nothing was changed — try again.",
     mudou_desde_previa: () =>
       "The glossary or a meeting changed since the preview. Check the preview again before applying.",
     falha_reaplicar: (p: Parametros) =>
-      `Could not finish applying the glossary. Already applied: ${p.feitas}. The others are as they were - you can try again.`,
+      `Could not finish applying the glossary. Already applied: ${p.feitas}. The others are as they were — you can try again.`,
     extensao_invalida: (p: Parametros) => `Unsupported extension. Use one of these formats: ${p.formatos}.`,
     arquivo_grande_demais: (p: Parametros) => `The file is larger than the ${p.maximo_mb} MB limit.`,
     selecione_trecho: () => "Select the passage that is wrong.",
@@ -81,7 +81,7 @@ export const erros: Catalogo["erros"] = {
     titulo_longo_demais: (p: Parametros) =>
       `The title has ${p.tamanho} characters; the maximum is ${p.maximo}.`,
     fala_vazia: () =>
-      'The utterance text cannot be empty. To go back to the transcribed text, use "Back to original".',
+      'The segment text cannot be empty. To go back to the transcribed text, use "Revert to original".',
     fala_com_controle: () => "The text cannot have a line break or a control character.",
     fala_longa_demais: (p: Parametros) =>
       `The text has ${p.tamanho} characters; the maximum is ${p.maximo}.`,
@@ -119,14 +119,16 @@ export const erros: Catalogo["erros"] = {
     motivo_ja_processando: () =>
       "This meeting is being processed right now.",
     motivo_interrompida: () =>
-      "The previous processing was interrupted (the server restarted midway). The audio is still saved - you can try again.",
+      "The previous processing was interrupted (the server restarted midway). The audio is still saved — you can try again.",
     processamento_falhou: () =>
       "Processing failed. Check the server log for details and try again.",
     correcao_existente_prevalece: (p: Parametros) =>
       `In part of the text, the existing correction from "${p.errado}" to "${p.certo}" will keep applying instead of this one.`,
     edicoes_sem_fala: (p: Parametros) =>
-      `${p.n} hand correction(s) did not find the matching utterance in this transcript (the audio was split differently). Their text was not lost: it is saved in the meeting file, and comes back on its own if a future reprocessing finds the utterance.`,
+      Number(p.n) === 1
+        ? "1 hand correction couldn't find its segment in this transcript (the audio was split differently). Its text was not lost: it is saved in the meeting file, and comes back on its own if a future reprocessing finds the segment."
+        : `${p.n} hand corrections couldn't find their segments in this transcript (the audio was split differently). Their text was not lost: it is saved in the meeting file, and comes back on its own if a future reprocessing finds the segments.`,
     arquivo_sem_turnos: () =>
-      "File without the raw turns (made by an older version of the pipeline): dynamics, interruption matrix, events and overlap regions could NOT be recalculated with the corrected names and may be out of date. Nothing was made up: the old values were kept as they were.",
+      "File without the raw turns (made by an older version of the pipeline): dynamics, interruption matrix, events and overlap regions could NOT be recalculated with the corrected names and may be out of date. No values were guessed: the old values were kept as they were.",
   },
 };

@@ -8,7 +8,7 @@ export const perfil: Catalogo["perfil"] = {
   voceNaGaleria: "You in the voice gallery (optional)",
   nenhuma: "None",
   foraDaGaleria: (nome) => `${nome} (not in the gallery)`,
-  notaLocal: "Saved only in this browser. There's no login: the app has one user, on this machine.",
+  notaLocal: "Saved only in this browser. There's no login — the app has a single user, on this machine.",
   configuracoes: "Settings",
   aparencia: "Appearance",
   tema: {
@@ -20,7 +20,7 @@ export const perfil: Catalogo["perfil"] = {
   processamento: "Processing",
   dispositivo: "Device",
   motorDeTranscricao: "Transcription engine",
-  notaProcessamento: "Detected on this machine for each transcription. There's nothing to choose here.",
+  notaProcessamento: "Detected automatically on this machine. Nothing to configure.",
   dadosEPrivacidade: "Data and privacy",
   audiosETranscricoes: "Audio and transcripts",
   bancoDeVozes: "Voice database",

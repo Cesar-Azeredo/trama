@@ -18,7 +18,7 @@ export const pessoas = {
   cancelar: "Cancelar",
   legenda: "Legenda",
   legendaConfirmada: "presença confirmada na revisão",
-  legendaNaSala: "estava na sala, não confirmada (ainda não revisada, ou cluster ignorado)",
+  legendaNaSala: "estava na sala, não confirmada (ainda não revisada, ou grupo de voz ignorado)",
   legendaAusente: "ausente",
   legendaSemDados: "reunião ainda não processada",
   vozExcluida: (nome: string) => `A voz de ${nome} foi excluída.`,

@@ -3,11 +3,11 @@ import type { Catalogo } from "../textos";
 export const nova: Catalogo["nova"] = {
   formatoNaoAceito: (extensoes) => `Format not accepted. Use ${extensoes}.`,
   maiorQueLimite: (mb) => `File is larger than the ${mb} MB limit.`,
-  arrasteAqui: "Drag the meeting audio file here, or",
+  arrasteAqui: "Drop the meeting audio here, or",
   escolhaUmArquivo: "choose a file",
   formatosAceitos: (extensoes, mb) => `${extensoes} — up to ${mb} MB`,
   explicacaoPessoas:
-    "It's the biggest accuracy gain there is: it fixes how many speakers to look for and limits the comparison to who was there. Without marking anyone, the pipeline works the same, only worse.",
+    "This is the single biggest accuracy boost: it tells the system how many speakers to look for, and only compares voices against these people. If you skip it, everything still works — just less accurately.",
   carregandoPessoas: "Loading people…",
   pessoaNova: "+ New person",
   nomeDaPessoaNova: "New person's name",
@@ -17,7 +17,7 @@ export const nova: Catalogo["nova"] = {
   caractereDeControle:
     "The title has a control character (line break, tab...), which isn't allowed.",
   tituloNaoSalvo: (erro) =>
-    `The audio was uploaded, but the title wasn't saved: ${erro} The meeting is in the queue, not processed - you can set the title in its details.`,
+    `The audio was uploaded, but the title wasn't saved: ${erro} The meeting is in the queue, not processed — you can set the title in its details.`,
   passoAudio: "The audio",
   trocarArquivo: "Change file",
   passoPessoas: "Who was in the room",

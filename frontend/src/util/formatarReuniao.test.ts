@@ -76,7 +76,7 @@ describe("em inglês", () => {
   it("título padrão, data, 'chegou em' e tamanho no idioma escolhido", () => {
     expect(formatarTitulo("reuniao_07")).toBe("Meeting 07");
     expect(formatarDataReuniao("2026-11-03T13:00:00Z", "gravacao")).toContain("Nov 3, 2026");
-    expect(formatarDataReuniao("2026-08-31T15:00:00Z", "arquivo")!.startsWith("arrived on ")).toBe(true);
+    expect(formatarDataReuniao("2026-08-31T15:00:00Z", "arquivo")!.startsWith("file received ")).toBe(true);
     expect(formatarTamanhoArquivo(1.5 * 1024 * 1024)).toBe("1.5 MB");
     expect(rotuloBotaoProcessar("interrompido")).toBe("Try again");
   });

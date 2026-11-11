@@ -12,9 +12,9 @@ export const revisao = {
         "O nome vai para o transcript, mas o perfil de voz de ninguém muda. Use quando a voz é quase toda de uma pessoa, com trechos de outras.",
     },
     ignorar: {
-      rotulo: "Ignorar este cluster",
+      rotulo: "Ignorar este grupo de voz",
       explicacao:
-        "O nome não é gravado e o perfil de voz de ninguém é atualizado com este cluster. Use quando a voz estiver misturada demais para ter um nome.",
+        "O nome não é gravado e o perfil de voz de ninguém é atualizado com este grupo. Use quando o grupo estiver misturado demais para ter um nome.",
     },
   },
   abaixoDoLimiar: "abaixo do limiar",
@@ -39,7 +39,7 @@ export const revisao = {
   confirmarESalvar: "Confirmar e salvar",
   voltarERever: "Voltar e rever",
   carregandoReuniao: "Carregando reunião…",
-  naoProcessada: "Esta reunião ainda não foi processada - não há clusters para revisar.",
+  naoProcessada: "Esta reunião ainda não foi processada - não há grupos de voz para revisar.",
   titulo: (reuniao: string) => `Revisar ${reuniao}`,
   avisoLimiarAntigo: (simMin: string) =>
     `Esta reunião foi processada antes de o limiar ser gravado por reunião. O limiar marcado abaixo é o de hoje (SIM_MIN = ${simMin}), não necessariamente o que estava em vigor quando ela foi processada.`,

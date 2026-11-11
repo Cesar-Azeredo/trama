@@ -3,7 +3,7 @@ import { numero } from "../../util/numeros";
 
 export const termos: Catalogo["termos"] = {
   explicacao:
-    "Company names, acronyms and products, spelled the right way. The wrong spellings under each one are fixed automatically in every new transcript. What each term means goes along with the downloaded transcript (.txt), so whoever reads it understands.",
+    "Company names, acronyms and products, spelled correctly. The misspellings listed under each one are fixed automatically in every new transcript. Descriptions go along with the downloaded transcript (.txt), so anyone — or any AI — reading it has context.",
   carregandoTermos: "Loading terms…",
   removerTermo: "Remove term",
   removerOTermo: (termo) => `Remove the term ${termo}`,
@@ -45,7 +45,7 @@ export const termos: Catalogo["termos"] = {
   cancelar: "Cancel",
 
   aplicarNasProcessadas: "Apply to meetings already processed",
-  salveAntes: "Save first - the fix uses what is saved.",
+  salveAntes: "Save first — the fix uses what is saved.",
   mostraAntes:
     "Shows first how many replacements would be made, and in which meetings. Nothing changes until you confirm.",
   nadaFoiAlterado: "Nothing was changed.",
@@ -58,7 +58,7 @@ export const termos: Catalogo["termos"] = {
     ` ${reunioes === 1 ? "meeting" : "meetings"}`,
   ],
   notaReescreve:
-    "Rewrites the text (.json and .txt) of these meetings. The position markers (word hint, low confidence, segment with no text) move along with the fix.",
+    "Rewrites the transcript of these meetings (.json and .txt). Highlights and markers stay in the right place.",
   aplicando: "Applying…",
   aplicar: "Apply",
 };

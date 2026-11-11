@@ -131,7 +131,7 @@ describe("grupos em inglês", () => {
       reuniao("reuniao_02", { revisada: false }),
       reuniao("reuniao_01", { data: "2026-11-03T13:00:00Z", data_origem: "gravacao" }),
     ]);
-    expect(g.map((x) => x.rotulo)).toEqual(["To review", "November 2026"]);
+    expect(g.map((x) => x.rotulo)).toEqual(["Needs review", "November 2026"]);
     expect(textoPessoas(reuniao("r", { pessoas: ["Ana", "IGNORADO_S1"] }))).toBe("Ana, 1 unassigned voice");
   });
 });
