@@ -581,8 +581,8 @@
 }
 
 /* Acima de 1440px: Configuracoes em duas colunas no container fluido
-   (ADR 0015). Aparencia, Processamento, Dados e Sobre (curtas) na
-   esquerda; Glossario (longo) na direita, ocupando as quatro linhas. A
+   (ADR 0015). Aparencia, Idioma, Processamento, Dados e Sobre (curtas) na
+   esquerda; Glossario (longo) na direita, ocupando as cinco linhas. A
    ultima linha e 1fr: a altura que o Glossario tem a mais sobra embaixo
    das curtas, nunca abre espaco entre elas. Cada secao continua em ate
    640px - e a medida de leitura do texto delas. */
@@ -596,7 +596,7 @@
   .perfil__configuracoes {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    grid-template-rows: auto auto auto 1fr;
+    grid-template-rows: auto auto auto auto 1fr;
     column-gap: 64px;
     align-items: start;
   }
@@ -607,7 +607,7 @@
 
   .perfil__configuracoes > .perfil__secao--glossario {
     grid-column: 2;
-    grid-row: 1 / span 4;
+    grid-row: 1 / span 5;
   }
 }
 

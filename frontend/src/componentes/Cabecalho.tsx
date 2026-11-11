@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { secaoDaRota, type Rota, type Secao } from "../tema/useRota";
+import { useTextos } from "../i18n/textos";
 import { Marca } from "./Marca";
 import "./Cabecalho.css";
 
@@ -48,6 +49,7 @@ function ItemNav({
  */
 export function Cabecalho({ rota }: { rota: Rota }) {
   const secao = secaoDaRota(rota);
+  const t = useTextos().comum;
 
   return (
     <header className="cabecalho">
@@ -55,21 +57,21 @@ export function Cabecalho({ rota }: { rota: Rota }) {
         <a className="cabecalho__marca" href="#/">
           <Marca />
         </a>
-        <nav className="cabecalho__nav" aria-label="Seções">
+        <nav className="cabecalho__nav" aria-label={t.secoes}>
           <ItemNav href="#/" secao="nova" atual={secao}>
-            Nova reunião
+            {t.novaReuniao}
           </ItemNav>
           <ItemNav href="#/reunioes" secao="reunioes" atual={secao}>
-            Reuniões
+            {t.reunioes}
           </ItemNav>
           <ItemNav href="#/pessoas" secao="pessoas" atual={secao}>
-            Pessoas
+            {t.pessoas}
           </ItemNav>
         </nav>
       </div>
       <div className="cabecalho__direita">
         <ItemNav href="#/perfil" secao="perfil" atual={secao}>
-          Perfil
+          {t.perfil}
         </ItemNav>
       </div>
     </header>

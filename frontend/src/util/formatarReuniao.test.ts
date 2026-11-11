@@ -1,4 +1,7 @@
-import { describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it } from "vitest";
+import { definirIdioma } from "../i18n/idioma";
+
+beforeEach(() => definirIdioma("pt"));
 import {
   formatarDataReuniao,
   formatarDuracao,
@@ -57,12 +60,29 @@ describe("titulo e numero", () => {
 
 describe("rotulos", () => {
   it("tamanho em MB com uma casa", () => {
-    expect(formatarTamanhoArquivo(37 * 1024 * 1024)).toBe("37.0 MB");
+    expect(formatarTamanhoArquivo(37 * 1024 * 1024)).toBe("37,0 MB");
   });
 
   it("o botao de processar diz o que vai acontecer", () => {
     expect(rotuloBotaoProcessar("nao_processada")).toBe("Processar");
     expect(rotuloBotaoProcessar("processando")).toBe("Processando…");
     expect(rotuloBotaoProcessar("interrompido")).toBe("Tentar novamente");
+  });
+});
+
+describe("em inglês", () => {
+  beforeEach(() => definirIdioma("en"));
+
+  it("título padrão, data, 'chegou em' e tamanho no idioma escolhido", () => {
+    expect(formatarTitulo("reuniao_07")).toBe("Meeting 07");
+    expect(formatarDataReuniao("2026-11-03T13:00:00Z", "gravacao")).toContain("Nov 3, 2026");
+    expect(formatarDataReuniao("2026-08-31T15:00:00Z", "arquivo")!.startsWith("arrived on ")).toBe(true);
+    expect(formatarTamanhoArquivo(1.5 * 1024 * 1024)).toBe("1.5 MB");
+    expect(rotuloBotaoProcessar("interrompido")).toBe("Try again");
+  });
+
+  it("em português o decimal é com vírgula", () => {
+    definirIdioma("pt");
+    expect(formatarTamanhoArquivo(1.5 * 1024 * 1024)).toBe("1,5 MB");
   });
 });

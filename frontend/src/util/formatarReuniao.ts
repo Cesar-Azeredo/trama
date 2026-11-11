@@ -1,3 +1,7 @@
+import { localeAtual } from "../i18n/idioma";
+import { textosAtuais } from "../i18n/textos";
+import { numero } from "./numeros";
+
 /** Compartilhado entre Lista e Detalhe - o id da pasta e a unica fonte do
  * numero/titulo exibido, nunca duas implementacoes que podem divergir. */
 
@@ -8,11 +12,11 @@ export function numeroDaReuniao(id: string): string {
 
 export function formatarTitulo(id: string): string {
   const m = id.match(/^reuniao_(\d+)$/);
-  return m ? `Reunião ${m[1]}` : id;
+  return m ? textosAtuais().formatos.tituloPadrao(m[1]) : id;
 }
 
 export function formatarTamanhoArquivo(bytes: number): string {
-  return `${(bytes / 1024 / 1024).toFixed(1)} MB`;
+  return `${numero(bytes / 1024 / 1024, 1)} MB`;
 }
 
 /** Rotulo do botao/link "Processar" varia com o estado - "Processar" numa
@@ -23,9 +27,10 @@ export function formatarTamanhoArquivo(bytes: number): string {
 export function rotuloBotaoProcessar(
   estado: "nao_processada" | "processando" | "interrompido",
 ): string {
-  if (estado === "processando") return "Processando…";
-  if (estado === "interrompido") return "Tentar novamente";
-  return "Processar";
+  const t = textosAtuais().formatos;
+  if (estado === "processando") return t.processando;
+  if (estado === "interrompido") return t.tentarNovamente;
+  return t.processar;
 }
 
 export function formatarDuracao(segundos: number): string {
@@ -54,7 +59,7 @@ export function formatarDataReuniao(
   const d = new Date(data);
   if (Number.isNaN(d.getTime())) return null;
   if (origem === "gravacao") {
-    return new Intl.DateTimeFormat("pt-BR", {
+    return new Intl.DateTimeFormat(localeAtual(), {
       weekday: "short",
       day: "numeric",
       month: "short",
@@ -63,11 +68,11 @@ export function formatarDataReuniao(
       minute: "2-digit",
     }).format(d);
   }
-  return `chegou em ${new Intl.DateTimeFormat("pt-BR", {
+  return textosAtuais().formatos.chegouEm(new Intl.DateTimeFormat(localeAtual(), {
     day: "numeric",
     month: "short",
     year: "numeric",
-  }).format(d)}`;
+  }).format(d));
 }
 
 /** O titulo que a pessoa deu, ou o padrao "Reuniao NN" - nunca string

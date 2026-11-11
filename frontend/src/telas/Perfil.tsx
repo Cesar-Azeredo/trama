@@ -9,6 +9,8 @@ import {
   type PreferenciaTema,
 } from "../tema/useTema";
 import { TermosDaEmpresa } from "./perfil/TermosDaEmpresa";
+import { definirIdioma, IDIOMAS, NOME_DO_IDIOMA, useIdioma } from "../i18n/idioma";
+import { useTextos } from "../i18n/textos";
 import "./Perfil.css";
 
 function Secao({
@@ -156,6 +158,38 @@ function Aparencia() {
   );
 }
 
+/**
+ * Idioma da interface (i18n/idioma.ts): mesmo grupo de opcoes da Aparencia.
+ * O nome de cada idioma aparece nele mesmo ("English" tambem na interface
+ * em portugues) - e o que a pessoa procura quando nao entende a tela.
+ */
+function Idioma() {
+  const atual = useIdioma();
+  return (
+    <div className="perfil__opcoes" role="radiogroup" aria-labelledby="perfil-idioma">
+      {IDIOMAS.map((idioma) => (
+        <label
+          key={idioma}
+          lang={idioma === "pt" ? "pt-BR" : "en"}
+          className={"perfil__opcao" + (atual === idioma ? " perfil__opcao--selecionada" : "")}
+        >
+          <input
+            type="radio"
+            name="idioma"
+            className="so-leitor-de-tela"
+            value={idioma}
+            checked={atual === idioma}
+            onChange={() => definirIdioma(idioma)}
+          />
+          <span className="perfil__opcao-texto" data-texto={NOME_DO_IDIOMA[idioma]}>
+            {NOME_DO_IDIOMA[idioma]}
+          </span>
+        </label>
+      ))}
+    </div>
+  );
+}
+
 const NOME_DEVICE: Record<string, string> = {
   mps: "Apple Silicon (MPS)",
   cpu: "CPU",
@@ -203,6 +237,7 @@ function useSistema(): { dados: Sistema | null; erro: string | null } {
 
 export function Perfil() {
   const { dados: sistema, erro: erroSistema } = useSistema();
+  const t = useTextos().perfil;
 
   const carregandoSistema = !sistema && !erroSistema && (
     <p className="perfil__vazio">Carregando…</p>
@@ -225,6 +260,11 @@ export function Perfil() {
       <div className="perfil__configuracoes">
       <Secao id="perfil-aparencia" rotulo="Aparência">
         <Aparencia />
+      </Secao>
+
+      <Secao id="perfil-idioma" rotulo={t.idioma}>
+        <Idioma />
+        <p className="perfil__nota">{t.idiomaNota}</p>
       </Secao>
 
       <Secao id="perfil-termos" rotulo="Termos da empresa" classe="perfil__secao--glossario">

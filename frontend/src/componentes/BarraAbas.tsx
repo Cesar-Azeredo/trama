@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { secaoDaRota, type Rota, type Secao } from "../tema/useRota";
+import { useTextos } from "../i18n/textos";
 import "./BarraAbas.css";
 
 /**
@@ -33,11 +34,13 @@ function Icone({ children }: { children: ReactNode }) {
   );
 }
 
-const ABAS: { secao: Secao; href: string; rotulo: string; icone: ReactNode }[] = [
+type ChaveDaAba = "novaCurta" | "reunioes" | "pessoas" | "perfil";
+
+const ABAS: { secao: Secao; href: string; rotulo: ChaveDaAba; icone: ReactNode }[] = [
   {
     secao: "nova",
     href: "#/",
-    rotulo: "Nova",
+    rotulo: "novaCurta",
     icone: (
       <Icone>
         <circle cx="11" cy="11" r="8" />
@@ -48,7 +51,7 @@ const ABAS: { secao: Secao; href: string; rotulo: string; icone: ReactNode }[] =
   {
     secao: "reunioes",
     href: "#/reunioes",
-    rotulo: "Reuniões",
+    rotulo: "reunioes",
     icone: (
       <Icone>
         <path d="M8 6h10M8 11h10M8 16h10" />
@@ -59,7 +62,7 @@ const ABAS: { secao: Secao; href: string; rotulo: string; icone: ReactNode }[] =
   {
     secao: "pessoas",
     href: "#/pessoas",
-    rotulo: "Pessoas",
+    rotulo: "pessoas",
     icone: (
       <Icone>
         <circle cx="8" cy="8" r="3" />
@@ -72,7 +75,7 @@ const ABAS: { secao: Secao; href: string; rotulo: string; icone: ReactNode }[] =
   {
     secao: "perfil",
     href: "#/perfil",
-    rotulo: "Perfil",
+    rotulo: "perfil",
     icone: (
       <Icone>
         <circle cx="11" cy="11" r="8.5" />
@@ -85,8 +88,9 @@ const ABAS: { secao: Secao; href: string; rotulo: string; icone: ReactNode }[] =
 
 export function BarraAbas({ rota }: { rota: Rota }) {
   const atual = secaoDaRota(rota);
+  const t = useTextos().comum;
   return (
-    <nav className="barra-abas" aria-label="Seções">
+    <nav className="barra-abas" aria-label={t.secoes}>
       {ABAS.map((aba) => {
         const ativa = aba.secao === atual;
         return (
@@ -97,7 +101,7 @@ export function BarraAbas({ rota }: { rota: Rota }) {
             aria-current={ativa ? "page" : undefined}
           >
             {aba.icone}
-            <span className="barra-abas__rotulo">{aba.rotulo}</span>
+            <span className="barra-abas__rotulo">{t[aba.rotulo]}</span>
           </a>
         );
       })}

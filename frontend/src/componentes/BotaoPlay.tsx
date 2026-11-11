@@ -1,3 +1,4 @@
+import { useTextos } from "../i18n/textos";
 import "./BotaoPlay.css";
 
 /**
@@ -13,12 +14,13 @@ export function BotaoPlay({
   aoClicar: () => void;
   rotulo: string;
 }) {
+  const t = useTextos().comum;
   return (
     <button
       type="button"
       className="botao-play"
       onClick={aoClicar}
-      aria-label={tocando ? `Pausar ${rotulo}` : `Tocar ${rotulo}`}
+      aria-label={tocando ? t.pausar(rotulo) : t.tocar(rotulo)}
       aria-pressed={tocando}
     >
       {tocando ? (

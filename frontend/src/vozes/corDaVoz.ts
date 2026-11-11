@@ -41,6 +41,8 @@ export function construirIndiceGaleria(
     p.primeira_aparicao ?? "9999";
   const ordenadas = [...pessoas].sort(
     (a, b) =>
+      // pt-BR fixo, nunca o idioma da interface: trocar de idioma nao pode
+      // mudar a ordem e, com ela, a cor de ninguem.
       chave(a).localeCompare(chave(b)) || a.nome.localeCompare(b.nome, "pt-BR"),
   );
   const mapa = new Map<string, number>();

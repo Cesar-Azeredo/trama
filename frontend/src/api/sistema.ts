@@ -36,6 +36,3 @@ export function emDemonstracao(): Promise<boolean> {
     .catch(() => false);
   return demonstracao;
 }
-
-/** Espelha servidor/sistema.py:AVISO_SEM_AUDIO. */
-export const AVISO_SEM_AUDIO = "Áudio não disponível na demonstração.";

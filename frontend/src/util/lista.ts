@@ -4,6 +4,8 @@
  * testada em util/lista.test.ts.
  */
 import type { ResumoReuniao } from "../api/reunioes";
+import { localeAtual } from "../i18n/idioma";
+import { textosAtuais } from "../i18n/textos";
 import { ehVozSemPessoa, ordemDaBarra, textoVozesSemPessoa } from "./falante";
 import { formatarTitulo, tituloDaReuniao } from "./formatarReuniao";
 
@@ -36,7 +38,10 @@ export function ehPendente(reuniao: ResumoReuniao): boolean {
   );
 }
 
-const NOME_MES = new Intl.DateTimeFormat("pt-BR", { month: "long", year: "numeric" });
+/** Mes por extenso no idioma escolhido ("novembro de 2026", "November 2026"). */
+function nomeDoMes(d: Date): string {
+  return new Intl.DateTimeFormat(localeAtual(), { month: "long", year: "numeric" }).format(d);
+}
 
 /**
  * "Na fila" (sem .json: nao processada, processando, interrompida) e "A
@@ -65,16 +70,17 @@ export function grupos(reunioes: ResumoReuniao[]) {
     const chave = `mes-${d.getFullYear()}-${d.getMonth()}`;
     let grupo = meses.find((m) => m.chave === chave);
     if (!grupo) {
-      grupo = { chave, rotulo: NOME_MES.format(d), itens: [] };
+      grupo = { chave, rotulo: nomeDoMes(d), itens: [] };
       meses.push(grupo);
     }
     grupo.itens.push(r);
   }
+  const t = textosAtuais().formatos;
   return [
-    { chave: "fila", rotulo: "Na fila", itens: fila },
-    { chave: "a-revisar", rotulo: "A revisar", itens: aRevisar },
+    { chave: "fila", rotulo: t.grupoFila, itens: fila },
+    { chave: "a-revisar", rotulo: t.grupoARevisar, itens: aRevisar },
     ...meses,
-    { chave: "sem-data", rotulo: "Sem data da gravação", itens: semData },
+    { chave: "sem-data", rotulo: t.grupoSemData, itens: semData },
   ].filter((g) => g.itens.length > 0);
 }
 

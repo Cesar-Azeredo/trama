@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { AVISO_SEM_AUDIO, emDemonstracao } from "../api/sistema";
+import { emDemonstracao } from "../api/sistema";
+import { textosAtuais } from "../i18n/textos";
 import { avisar } from "../util/avisos";
 
 /**
@@ -38,13 +39,13 @@ export function useReprodutor() {
       if (demonstracaoRef.current) {
         audioRef.current = null;
         setUrlTocando(null);
-        avisar(AVISO_SEM_AUDIO);
+        avisar(textosAtuais().comum.semAudioNaDemonstracao);
         return;
       }
       const falhou = () => {
         setUrlTocando(null);
         void emDemonstracao().then((demo) => {
-          if (demo) avisar(AVISO_SEM_AUDIO);
+          if (demo) avisar(textosAtuais().comum.semAudioNaDemonstracao);
         });
       };
       const audio = new Audio(url);

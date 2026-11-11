@@ -1,4 +1,7 @@
-import { describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it } from "vitest";
+import { definirIdioma } from "../i18n/idioma";
+
+beforeEach(() => definirIdioma("pt"));
 import type { ResumoReuniao } from "../api/reunioes";
 import { casaBusca, ehPendente, grupos, normalizar, textoPessoas } from "./lista";
 
@@ -118,5 +121,17 @@ describe("rotulosDaReuniao (falante.ts)", () => {
     const duas = rotulosDaReuniao(["IGNORADO_SPEAKER_02", "Ana", "DESCONHECIDO_SPEAKER_00"]);
     expect(duas("DESCONHECIDO_SPEAKER_00")).toBe("voz não atribuída 1");
     expect(duas("IGNORADO_SPEAKER_02")).toBe("voz não atribuída 2");
+  });
+});
+
+describe("grupos em inglês", () => {
+  it("rótulos e mês no idioma escolhido", () => {
+    definirIdioma("en");
+    const g = grupos([
+      reuniao("reuniao_02", { revisada: false }),
+      reuniao("reuniao_01", { data: "2026-11-03T13:00:00Z", data_origem: "gravacao" }),
+    ]);
+    expect(g.map((x) => x.rotulo)).toEqual(["To review", "November 2026"]);
+    expect(textoPessoas(reuniao("r", { pessoas: ["Ana", "IGNORADO_S1"] }))).toBe("Ana, 1 unassigned voice");
   });
 });

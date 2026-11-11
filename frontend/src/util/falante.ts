@@ -1,4 +1,5 @@
 import type { FalaPorPessoa } from "../api/reunioes";
+import { textosAtuais } from "../i18n/textos";
 
 /**
  * Rotulos de maquina que nao sao uma pessoa: DESCONHECIDO_* (ninguem
@@ -11,7 +12,7 @@ export function ehVozSemPessoa(nome: string): boolean {
 }
 
 export function textoVozesSemPessoa(n: number): string {
-  return n === 1 ? "1 voz não atribuída" : `${n} vozes não atribuídas`;
+  return textosAtuais().formatos.vozesSemPessoa(n);
 }
 
 /**
@@ -35,12 +36,13 @@ export function ordemDaBarra(dinamica: FalaPorPessoa[]): FalaPorPessoa[] {
  * do rotulo cru (SPEAKER_00 antes de SPEAKER_02), estavel entre telas.
  */
 export function rotulosDaReuniao(nomes: Iterable<string>): (nome: string) => string {
+  const t = textosAtuais().formatos;
   const semPessoa = [...new Set(nomes)].filter(ehVozSemPessoa).sort();
   const mapa = new Map<string, string>();
   semPessoa.forEach((n, i) =>
-    mapa.set(n, semPessoa.length === 1 ? "voz não atribuída" : `voz não atribuída ${i + 1}`),
+    mapa.set(n, semPessoa.length === 1 ? t.vozSemPessoa : t.vozSemPessoaNumerada(i + 1)),
   );
   return (nome: string) =>
-    mapa.get(nome) ?? (ehVozSemPessoa(nome) ? "voz não atribuída" : nome);
+    mapa.get(nome) ?? (ehVozSemPessoa(nome) ? t.vozSemPessoa : nome);
 }
 
