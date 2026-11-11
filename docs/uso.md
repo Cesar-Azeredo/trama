@@ -117,6 +117,10 @@ genericos (`SPEAKER_XX`) no lugar dos nomes.
 
 ## Aplicativo (servidor + frontend)
 
+**Idioma:** a interface fala português ou inglês - Perfil > Configurações >
+Idioma. Sem escolha, segue o idioma do navegador. A transcrição baixada
+(.txt) sai no idioma escolhido; a fala das pessoas nunca é traduzida.
+
 Marco 1: ler e revisar reunioes ja processadas pela tela, em vez da linha
 de comando. Precisa de **duas abas de terminal** abertas ao mesmo tempo,
 uma para o servidor e outra para o frontend - nenhuma delas fecha

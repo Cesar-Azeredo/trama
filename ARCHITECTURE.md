@@ -533,6 +533,22 @@ Sem suporte no navegador ou com `prefers-reduced-motion`, a troca volta a ser in
 `aplicar()` de sempre, nunca um segundo caminho "modo reduzido" pra
 manter.
 
+### Idioma da interface (ADR 0026)
+
+Português e inglês. `frontend/src/i18n/idioma.ts` guarda a escolha
+(`localStorage`, padrão = idioma do navegador) e dá o `locale` do `Intl`;
+`i18n/textos.ts` entrega o catálogo do idioma atual (`useTextos()` no
+React, `textosAtuais()` fora dele). Catálogos em `i18n/pt/<area>.ts` e
+`i18n/en/<area>.ts`, um por área da interface; o de português é a
+referência do tipo, e `i18n/catalogos.test.ts` confere a paridade.
+
+Erros e avisos do servidor chegam como `{"codigo", "parametros"}`
+(`trama/erros.py`); `api/cliente.ts` (`mensagemDeErro`, `textoDoAviso`)
+devolve o texto de `i18n/<idioma>/erros.ts`. Aviso gravado como texto num
+`.json` antigo aparece como está. `tests/test_codigos_de_erro.py` liga os
+dois lados. A transcrição baixada recebe `?idioma=` (`servidor/transcricao.py`,
+`TEXTOS`); a fala nunca é traduzida.
+
 ### Telas
 
 1. **Nova reunião** (`#/`, tela inicial) — coluna única de 640px com
