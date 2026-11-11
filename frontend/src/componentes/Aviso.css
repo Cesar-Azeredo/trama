@@ -1,0 +1,44 @@
+/* Aviso curto (Aviso.tsx). Superficie retangular sem sombra (SKILL.md):
+   separada do conteudo por borda de 1px e pelo tom de --superficie, raio
+   de 2px. Fixo acima da barra de abas do celular (--altura-abas, base.css)
+   - fora de .area-conteudo__rolagem, entao nao rola nem estica nada.
+   Movimento: so opacidade (apple-design: feedback causal, sem efeito
+   vestibular); com movimento reduzido, aparece e some sem transicao. */
+.aviso {
+  position: fixed;
+  left: 50%;
+  bottom: calc(24px + var(--altura-abas));
+  z-index: 30;
+  max-width: calc(100vw - 32px);
+  margin: 0;
+  padding: 10px 14px;
+  border: 1px solid var(--borda);
+  border-radius: 2px;
+  background: var(--superficie);
+  color: var(--tinta-corpo);
+  font-family: var(--fonte-interface);
+  font-size: 13px;
+  line-height: 1.4;
+  transform: translateX(-50%);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition:
+    opacity 0.15s ease,
+    visibility 0s linear 0.15s;
+}
+
+.aviso--visivel {
+  opacity: 1;
+  visibility: visible;
+  transition:
+    opacity 0.15s ease,
+    visibility 0s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .aviso,
+  .aviso--visivel {
+    transition: none;
+  }
+}

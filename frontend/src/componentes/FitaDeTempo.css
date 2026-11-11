@@ -1,0 +1,46 @@
+.fita-de-tempo {
+  position: sticky;
+  top: 24px;
+  flex-shrink: 0;
+  width: 30px;
+  /* 100vh menos o cabecalho fixo (base.css: o conteudo rola dentro do
+     proprio espaco, nao a pagina inteira) menos o padding vertical da
+     tela de detalhe. */
+  height: calc(100vh - var(--altura-cabecalho) - var(--altura-abas) - 48px);
+  min-height: 320px;
+  background: var(--trilho);
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  display: block;
+}
+
+/* Excecao a resposta generica de button:active (base.css): encolher 3% uma
+   coluna do tamanho da tela inteira nao leria como um botao respondendo,
+   leria como a pagina tremendo. O trilho escurece em vez de encolher -
+   mesma ideia (resposta instantanea no toque), tamanho certo pro elemento.
+   --escala-pressao: 1 desliga o scale() sem competir em especificidade
+   com o seletor global (ver base.css). */
+.fita-de-tempo {
+  --escala-pressao: 1;
+}
+
+.fita-de-tempo:active {
+  background: var(--borda);
+}
+
+.fita-de-tempo__segmento {
+  position: absolute;
+  left: 0;
+  width: 100%;
+  pointer-events: none;
+}
+
+.fita-de-tempo__disputa {
+  position: absolute;
+  left: -4px;
+  width: calc(100% + 8px);
+  height: 2px;
+  background: var(--alerta);
+  pointer-events: none;
+}

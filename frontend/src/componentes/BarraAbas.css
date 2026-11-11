@@ -1,0 +1,97 @@
+/*
+  Barra de abas do celular - a UNICA superficie flutuante do app, e por
+  isso a unica com material translucido (ADR 0014, excecao ao ADR 0012).
+  Da skill apple-design, secao 12, entra so o essencial: fundo
+  semitransparente + desfoque, com o conteudo rolando por baixo. Fica de
+  fora o resto da secao:
+  - sombra: a identidade proibe em qualquer forma, e a excecao nao a cobre;
+  - saturate() do exemplo da skill: avivaria as cores de voz que passam
+    por baixo, e a paleta de voz e dessaturada de proposito;
+  - borda clara "de luz": a regua de 1px em --linha e o vocabulario da
+    identidade para separar regioes.
+
+  Abaixo de 720px so. No desktop a barra nao existe (display: none) e a
+  nav de texto do cabecalho continua sendo a navegacao.
+*/
+
+.barra-abas {
+  display: none;
+}
+
+@media (max-width: 719.98px) {
+  .barra-abas {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 10;
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    padding: 2px 8px env(safe-area-inset-bottom);
+    border-top: 1px solid var(--linha);
+    /* Fallback opaco: sem backdrop-filter, texto sobre conteudo passando
+       por baixo ficaria ilegivel - melhor uma barra solida. */
+    background: var(--fundo);
+    view-transition-name: abas;
+  }
+
+  @supports ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+    .barra-abas {
+      background: color-mix(in srgb, var(--fundo) 78%, transparent);
+      -webkit-backdrop-filter: blur(20px);
+      backdrop-filter: blur(20px);
+    }
+  }
+
+  /* Quem pediu menos transparencia no sistema recebe a barra solida. */
+  @media (prefers-reduced-transparency: reduce) {
+    .barra-abas {
+      background: var(--fundo);
+      -webkit-backdrop-filter: none;
+      backdrop-filter: none;
+    }
+  }
+}
+
+/* Estado atual como no cabecalho: cor (--tinta cheio vs. o tom de
+   repouso) + regua de 2px em --acento, aqui em cima da aba (a barra encosta na borda
+   de baixo da tela). Nunca fundo nem pilula (SKILL.md regra 2).
+
+   Repouso em --tinta-media, nao --tinta-fraca: sobre material
+   translucido o fundo muda conforme o conteudo passa por baixo (skill
+   apple-design, "vibrancy"), entao o texto de repouso precisa de folga
+   de contraste que o --tinta-fraca (4,80:1 sobre o papel liso) nao tem. */
+.barra-abas__aba {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  min-height: 52px;
+  padding-top: 4px;
+  border-top: 2px solid transparent;
+  color: var(--tinta-media);
+  text-decoration: none;
+}
+
+.barra-abas__aba--ativa {
+  color: var(--tinta);
+  border-top-color: var(--acento);
+}
+
+.barra-abas__icone {
+  flex-shrink: 0;
+}
+
+.barra-abas__rotulo {
+  font-family: var(--fonte-interface);
+  font-size: 11px;
+  line-height: 1.2;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+}
+
+.barra-abas__aba:focus-visible {
+  outline: 2px solid var(--acento);
+  outline-offset: -2px;
+}

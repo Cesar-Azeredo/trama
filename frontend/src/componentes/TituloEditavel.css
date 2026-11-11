@@ -1,0 +1,71 @@
+/* Mesma escala do titulo de tela (SKILL.md: 34px Literata 600) - editar
+   nao muda o tamanho do texto, so troca o elemento. */
+.titulo-editavel {
+  margin: 0;
+}
+
+.titulo-editavel__botao,
+.titulo-editavel__campo {
+  font-family: var(--fonte-corpo);
+  font-weight: 600;
+  font-size: 34px;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  color: var(--tinta);
+}
+
+/* overflow-wrap: anywhere - o botao encolhe ate o texto, e titulo sem
+   espaco (id cru) teria largura minima maior que a tela do celular. */
+.titulo-editavel__botao {
+  display: inline;
+  overflow-wrap: anywhere;
+  padding: 0;
+  border: none;
+  background: none;
+  text-align: left;
+  cursor: text;
+  /* Encolher 3% (base.css, :active) um titulo de 34px pareceria a tela
+     tremendo, nao um botao respondendo. */
+  --escala-pressao: 1;
+}
+
+.titulo-editavel__botao:hover {
+  text-decoration: underline dotted var(--tinta-tenue);
+  text-underline-offset: 6px;
+  text-decoration-thickness: 1px;
+}
+
+.titulo-editavel__edicao {
+  flex: 1;
+  min-width: 0;
+}
+
+.titulo-editavel__campo {
+  width: 100%;
+  padding: 0 0 2px;
+  border: none;
+  border-bottom: 1px solid var(--borda);
+  border-radius: 0;
+  background: transparent;
+}
+
+.titulo-editavel__campo:focus-visible {
+  outline: 2px solid var(--acento);
+  outline-offset: 2px;
+}
+
+.titulo-editavel__campo[aria-invalid="true"] {
+  border-bottom-color: var(--alerta);
+}
+
+.titulo-editavel__ajuda {
+  margin: 6px 0 0;
+  font-family: var(--fonte-interface);
+  font-size: 12px;
+  color: var(--tinta-fraca);
+}
+
+.titulo-editavel__campo[aria-invalid="true"] + .titulo-editavel__ajuda {
+  color: var(--alerta);
+}
+

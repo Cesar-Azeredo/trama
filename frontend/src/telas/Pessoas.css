@@ -1,0 +1,433 @@
+.tela-pessoas {
+  max-width: var(--medida-conteudo);
+  margin: 0 auto;
+  padding: 32px 16px 96px;
+}
+
+.tela-pessoas__titulo {
+  font-family: var(--fonte-corpo);
+  font-weight: 600;
+  font-size: 34px;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  color: var(--tinta);
+  margin: 0 0 28px;
+}
+
+.tela-pessoas__estado,
+.tela-pessoas__erro,
+.tela-pessoas__aviso {
+  font-family: var(--fonte-interface);
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--tinta-fraca);
+}
+
+.tela-pessoas__erro {
+  color: var(--alerta);
+}
+
+.tela-pessoas__aviso {
+  color: var(--tinta-media);
+  margin: 0 0 20px;
+}
+
+.tela-pessoas__explicacao {
+  max-width: 60ch;
+  margin: 40px 0 0;
+  font-family: var(--fonte-interface);
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--tinta-media);
+}
+
+/* Tabela de verdade (<table>): leitor de tela anuncia "Pessoa, Voz
+   aprendida..." ao andar pelas celulas. Hierarquia por peso e regua de
+   1px entre linhas, nunca caixa (SKILL.md, Composicao). Com muitas
+   reunioes, a grade passa da largura - a tabela rola na horizontal
+   dentro do proprio bloco, nunca a pagina inteira. */
+.tabela-pessoas__rolagem {
+  overflow-x: auto;
+}
+
+.tabela-pessoas {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.tabela-pessoas__th {
+  padding: 0 16px 10px 0;
+  border-bottom: 1px solid var(--linha);
+  font-family: var(--fonte-numeros);
+  font-weight: 400;
+  font-size: 10.5px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--tinta-fraca);
+  text-align: left;
+  vertical-align: bottom;
+  white-space: nowrap;
+}
+
+.tabela-pessoas__linha > * {
+  padding: 16px 16px 16px 0;
+  border-bottom: 1px solid var(--linha);
+  vertical-align: middle;
+}
+
+.tabela-pessoas__pessoa {
+  text-align: left;
+  font-weight: 400;
+  min-width: 160px;
+}
+
+/* Titulo de linha (SKILL.md, escala): Literata 19px 600. */
+.tabela-pessoas__nome {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--fonte-corpo);
+  font-weight: 600;
+  font-size: 19px;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+  color: var(--tinta-corpo);
+  white-space: nowrap;
+}
+
+.tabela-pessoas__cor {
+  flex-shrink: 0;
+  width: 3px;
+  height: 18px;
+}
+
+.tabela-pessoas__formacao {
+  display: block;
+  margin: 4px 0 0 13px;
+  font-family: var(--fonte-interface);
+  font-size: 11.5px;
+  color: var(--tinta-fraca);
+}
+
+.tabela-pessoas__voz {
+  min-width: 120px;
+  font-size: 13px;
+  color: var(--tinta-corpo);
+}
+
+/* Barra fina proporcional a maior voz da galeria. Neutra de proposito: a
+   cor da pessoa ja esta na barrinha ao lado do nome e na grade - uma
+   terceira aparicao so repetiria. */
+.barra-voz {
+  display: block;
+  width: 100%;
+  max-width: 120px;
+  height: 2px;
+  margin-top: 6px;
+  background: var(--trilho);
+}
+
+.barra-voz__preenchido {
+  display: block;
+  height: 100%;
+  background: var(--tinta-media);
+}
+
+/* grade de participacao: celula de 24px, 4px entre elas; o cabecalho
+   numerico usa a MESMA grade, para cada numero ficar em cima da sua
+   celula. */
+.grade {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 24px;
+  gap: 4px;
+}
+
+/* Copia dos numeros dentro de cada bloco: so existe no celular (abaixo). */
+.grade--numeros-bloco {
+  display: none;
+}
+
+.grade__numero {
+  font-size: 10px;
+  letter-spacing: 0;
+  text-align: center;
+  text-transform: none;
+  color: var(--tinta-fraca);
+}
+
+.celula {
+  display: inline-block;
+  width: 24px;
+  height: 24px;
+  border: 1.5px solid transparent;
+  border-radius: 2px;
+}
+
+.celula--ausente {
+  background: var(--superficie);
+}
+
+.celula--sem_dados {
+  border: 1px dashed var(--borda);
+}
+
+/* Na legenda nao ha pessoa - confirmada/na_sala usam tinta. */
+.celula--legenda.celula--confirmada {
+  background: var(--tinta-media);
+}
+
+.celula--legenda.celula--na_sala {
+  border-color: var(--tinta-media);
+}
+
+.tabela-pessoas__reunioes {
+  font-family: var(--fonte-interface);
+  font-size: 13px;
+  color: var(--tinta-media);
+  white-space: nowrap;
+}
+
+.tabela-pessoas__link {
+  color: var(--tinta-corpo);
+}
+
+.tabela-pessoas__link:hover {
+  color: var(--tinta);
+}
+
+.tabela-pessoas__acao {
+  text-align: right;
+}
+
+.tabela-pessoas__excluir {
+  min-height: 44px;
+  padding: 0;
+  border: none;
+  background: none;
+  font-family: var(--fonte-interface);
+  font-size: 12px;
+  color: var(--tinta-fraca);
+  cursor: pointer;
+}
+
+.tabela-pessoas__excluir:hover {
+  color: var(--alerta);
+}
+
+/* confirmacao de exclusao - irreversivel e biometrico, entao explicita e
+   na propria tela (nunca um window.confirm de uma linha). Regua de 2px
+   em --alerta em cima: e a unica acao destrutiva do app. */
+.confirmar-exclusao {
+  max-width: 640px;
+  margin-top: 24px;
+  padding: 20px 0 0;
+  border-top: 2px solid var(--alerta);
+}
+
+.confirmar-exclusao__titulo {
+  margin: 0 0 8px;
+  font-family: var(--fonte-corpo);
+  font-weight: 600;
+  font-size: 19px;
+  line-height: 1.2;
+  color: var(--tinta-corpo);
+}
+
+.confirmar-exclusao__texto {
+  margin: 0 0 10px;
+  font-family: var(--fonte-interface);
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--tinta-media);
+}
+
+.confirmar-exclusao__acoes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  align-items: center;
+  margin-top: 16px;
+}
+
+.confirmar-exclusao__sim {
+  min-height: 44px;
+  padding: 0 18px;
+  border: 1px solid var(--alerta);
+  border-radius: 2px;
+  background: var(--alerta);
+  color: var(--fundo);
+  font-family: var(--fonte-interface);
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.confirmar-exclusao__sim:hover:not(:disabled) {
+  background: var(--alerta-fundo);
+  border-color: var(--alerta-fundo);
+}
+
+.confirmar-exclusao__sim:disabled,
+.confirmar-exclusao__nao:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.confirmar-exclusao__nao {
+  min-height: 44px;
+  padding: 0 4px;
+  border: none;
+  background: none;
+  font-family: var(--fonte-interface);
+  font-size: 13px;
+  color: var(--tinta-media);
+  cursor: pointer;
+}
+
+.confirmar-exclusao__nao:hover:not(:disabled) {
+  color: var(--tinta);
+}
+
+.confirmar-exclusao__erro {
+  margin: 12px 0 0;
+  font-family: var(--fonte-interface);
+  font-size: 13px;
+  color: var(--alerta);
+}
+
+.legenda-participacao {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 24px;
+  margin: 20px 0 0;
+  padding: 0;
+  list-style: none;
+  font-family: var(--fonte-interface);
+  font-size: 12px;
+  color: var(--tinta-fraca);
+}
+
+.legenda-participacao li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.legenda-participacao .celula {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+}
+
+/* Celular: a tabela deixa de ser tabela na tela. Cada pessoa vira um
+   bloco - nome e voz aprendida em cima, a grade de participacao embaixo,
+   reunioes e Excluir no pe. Com cinco colunas lado a lado a linha passava
+   de 600px e empurrava a pagina inteira para o lado. Aqui a grade e a
+   UNICA coisa que pode passar da largura, e rola dentro da propria celula,
+   nunca a pagina.
+   display:block/grid em <table>/<tr> faz o Safari descartar a semantica de
+   tabela - por isso os role="table"/"row"/"cell" explicitos no Pessoas.tsx,
+   que a devolvem ao leitor de tela. */
+@media (max-width: 719.98px) {
+  .tabela-pessoas__rolagem {
+    overflow-x: visible;
+  }
+
+  .tabela-pessoas,
+  .tabela-pessoas tbody {
+    display: block;
+  }
+
+  /* Cabecalho some da tela, fica para o leitor de tela (mesmo recorte de
+     .so-leitor-de-tela, base.css). Os numeros de reuniao vao para dentro de
+     cada bloco (.grade--numeros-bloco). */
+  .tabela-pessoas__cabecalho {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+  }
+
+  .tabela-pessoas__linha {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas:
+      "pessoa   voz"
+      "grade    grade"
+      "reunioes acao";
+    column-gap: 16px;
+    padding-top: 16px;
+    border-bottom: 1px solid var(--linha);
+  }
+
+  .tabela-pessoas__linha > * {
+    padding: 0;
+    border-bottom: none;
+  }
+
+  .tabela-pessoas__pessoa {
+    grid-area: pessoa;
+    min-width: 0;
+  }
+
+  /* Nome comprido quebra em vez de alargar o bloco. */
+  .tabela-pessoas__nome {
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+
+  .tabela-pessoas__voz {
+    grid-area: voz;
+    min-width: 0;
+    width: 96px;
+  }
+
+  /* min-width: 0 e o que deixa a celula ficar MENOR que a grade dentro
+     dela (item de grid tem min-width: auto = largura do conteudo). Sem
+     isso a coluna cresceria ate caber a grade e o bloco passaria da
+     tela. overscroll-behavior-x: contain - chegar ao fim da grade nao
+     passa o gesto adiante para a pagina. */
+  .tabela-pessoas__grade {
+    grid-area: grade;
+    min-width: 0;
+    margin-top: 14px;
+    padding-bottom: 4px;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+  }
+
+  .grade--numeros-bloco {
+    display: grid;
+    margin-bottom: 4px;
+  }
+
+  .tabela-pessoas__reunioes {
+    grid-area: reunioes;
+    align-self: center;
+    min-width: 0;
+    white-space: normal;
+  }
+
+  .tabela-pessoas__acao {
+    grid-area: acao;
+  }
+}
+
+/* Acima de 1440px: tabela na largura toda do container fluido (ADR 0015)
+   - o espaco a mais vai para a grade de participacao, que cresce em
+   numero de reunioes visiveis sem rolar, nunca para linha de texto. O
+   paragrafo explicativo continua em 60ch. */
+@media (width > 1440px) {
+  .tela-pessoas {
+    max-width: calc(var(--largura-fluida-max) + 2 * var(--margem-fluida));
+    padding-left: var(--margem-fluida);
+    padding-right: var(--margem-fluida);
+  }
+
+  .grade {
+    gap: 6px;
+  }
+}
+

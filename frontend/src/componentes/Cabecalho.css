@@ -1,0 +1,82 @@
+/* Casca do app - sempre 100% da largura (nunca --medida-conteudo nem
+   --medida-leitura, ver tokens.css e identidade-rec-meet/SKILL.md). Isso
+   e o que separa cabecalho/nav de ser "conteudo". */
+.cabecalho {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 10px 24px;
+  border-bottom: 2px solid var(--linha-forte);
+}
+
+.cabecalho__esquerda,
+.cabecalho__direita {
+  display: flex;
+  align-items: center;
+  gap: 28px;
+}
+
+.cabecalho__marca {
+  display: flex;
+  align-items: center;
+  height: 44px;
+  text-decoration: none;
+  color: inherit;
+}
+
+.cabecalho__nav {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+
+/* Celular: no topo so a marca. A navegacao inteira vai para a barra de
+   abas embaixo (BarraAbas.tsx) - com quatro itens de texto aqui, "Nova
+   reuniao" quebrava em duas linhas e a ultima aba saia da tela. Mesmo
+   corte de BarraAbas.css (abaixo de 720px), nunca dois numeros. */
+@media (max-width: 719.98px) {
+  .cabecalho {
+    padding: 10px 16px;
+  }
+
+  .cabecalho__nav,
+  .cabecalho__direita {
+    display: none;
+  }
+}
+
+/* Item de secao (Nova reunião/Reuniões/Pessoas/Perfil) - texto,
+   nunca aba com fundo (SKILL.md, Composicao). Estado atual e peso +
+   regua de 2px embaixo em --acento (o Verde, ADR 0023), nunca etiqueta colorida (regra 2 da
+   identidade). border-bottom transparente nos dois estados para o item
+   nao pular de altura quando fica ativo.
+
+   "Peso" aqui e SO cor (--tinta vs --tinta-fraca), nunca
+   font-weight - o cabecalho tem view-transition-name proprio e nunca
+   deveria animar (estilos/transicoes.css), mas um font-weight: 600 no
+   item ativo muda a largura do texto renderizado, entao o cabecalho
+   "antes" e "depois" da troca de secao nao sao pixel-identicos - a
+   pessoa via os links da nav se deslocando durante a transicao, porque
+   a largura mudava junto com a secao. Cor sozinha nao tem esse
+   problema: mesma metrica de texto sempre. */
+.cabecalho__item {
+  display: inline-flex;
+  align-items: center;
+  height: 44px;
+  font-family: var(--fonte-interface);
+  font-size: 13px;
+  color: var(--tinta-fraca);
+  text-decoration: none;
+  border-bottom: 2px solid transparent;
+}
+
+.cabecalho__item:hover {
+  color: var(--tinta);
+}
+
+.cabecalho__item--ativo {
+  color: var(--tinta);
+  border-bottom-color: var(--acento);
+}

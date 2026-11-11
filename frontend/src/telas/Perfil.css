@@ -1,0 +1,647 @@
+/* Perfil e Configuracoes - formulario, entao --medida-conteudo (SKILL.md,
+   "duas larguras"). O conteudo de cada secao fica em ate 640px: linhas de
+   formulario e texto explicativo nao melhoram esticados por 1040px. */
+.tela-perfil {
+  max-width: var(--medida-conteudo);
+  margin: 0 auto;
+  padding: 32px 16px 96px;
+}
+
+.tela-perfil__titulo {
+  font-family: var(--fonte-corpo);
+  font-weight: 600;
+  font-size: 34px;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  color: var(--tinta);
+  margin: 0 0 32px;
+}
+
+.tela-perfil__subtitulo {
+  margin: 64px 0 0;
+  padding-bottom: 12px;
+  border-bottom: 2px solid var(--linha-forte);
+  font-family: var(--fonte-corpo);
+  font-weight: 600;
+  font-size: 26px;
+  line-height: 1.15;
+  letter-spacing: -0.015em;
+  color: var(--tinta);
+}
+
+.perfil__secao {
+  max-width: 640px;
+  margin-top: 40px;
+}
+
+/* Rotulo de secao (SKILL.md, escala: Plex Mono 10-11px, +0.14em, caixa
+   alta) com regua de 1px embaixo. */
+.perfil__rotulo {
+  margin: 0 0 16px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--linha);
+  font-family: var(--fonte-numeros);
+  font-weight: 400;
+  font-size: 10.5px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--tinta-fraca);
+}
+
+.perfil__texto,
+.perfil__nota,
+.perfil__vazio,
+.perfil__erro {
+  margin: 0 0 12px;
+  font-family: var(--fonte-interface);
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--tinta-media);
+}
+
+.perfil__nota,
+.perfil__vazio {
+  color: var(--tinta-fraca);
+}
+
+.perfil__erro {
+  color: var(--alerta);
+}
+
+/* voce */
+
+.perfil__campos {
+  display: grid;
+  gap: 16px;
+}
+
+.perfil__rotulo-campo {
+  display: block;
+  margin-bottom: 6px;
+  font-family: var(--fonte-interface);
+  font-size: 12px;
+  color: var(--tinta-fraca);
+}
+
+.perfil__input {
+  width: 100%;
+  max-width: 360px;
+  min-height: 44px;
+  padding: 0 12px;
+  border: 1px solid var(--borda);
+  border-radius: 2px;
+  background: var(--fundo);
+  color: var(--tinta-corpo);
+  font-family: var(--fonte-interface);
+  font-size: 14px;
+}
+
+.perfil__input:focus-visible {
+  outline: 2px solid var(--acento);
+  outline-offset: 2px;
+}
+
+/* aparencia - mesmo visual do botao de alternar da Nova reuniao */
+
+.perfil__opcoes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  border: none;
+}
+
+.perfil__opcao {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0 14px;
+  border: 1px solid var(--borda);
+  border-radius: 2px;
+  color: var(--tinta-corpo);
+  font-family: var(--fonte-interface);
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.perfil__opcao:hover {
+  border-color: var(--tinta-fraca);
+}
+
+.perfil__opcao--selecionada,
+.perfil__opcao--selecionada:hover {
+  background: var(--trilho);
+  border-color: var(--tinta);
+}
+
+.perfil__opcao--selecionada .perfil__opcao-texto {
+  font-weight: 600;
+}
+
+.perfil__opcao:focus-within {
+  outline: 2px solid var(--acento);
+  outline-offset: 2px;
+}
+
+/* Mesma reserva de largura em 600 do botao-pessoa (NovaReuniao.css): o
+   rotulo selecionado nao alarga a opcao nem empurra as vizinhas. */
+.perfil__opcao-texto {
+  display: inline-flex;
+  flex-direction: column;
+}
+
+.perfil__opcao-texto::after {
+  content: attr(data-texto);
+  content: attr(data-texto) / "";
+  height: 0;
+  overflow: hidden;
+  visibility: hidden;
+  font-weight: 600;
+  user-select: none;
+  pointer-events: none;
+}
+
+/* glossario */
+
+.glossario__lista {
+  list-style: none;
+  margin: 0 0 8px;
+  padding: 0;
+}
+
+.glossario__regra {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px;
+  border-bottom: 1px solid var(--linha);
+  padding: 2px 0;
+}
+
+.glossario__campo {
+  min-width: 0;
+  min-height: 44px;
+  padding: 0 8px;
+  border: 1px solid transparent;
+  border-radius: 2px;
+  background: transparent;
+  color: var(--tinta-corpo);
+  font-family: var(--fonte-interface);
+  font-size: 14px;
+}
+
+/* Na propria linha: sem borda ate a pessoa passar o mouse ou entrar no
+   campo - a lista le como lista, nao como um formulario de 24 caixas. */
+.glossario__campo:hover {
+  border-color: var(--borda);
+}
+
+.glossario__campo:focus-visible {
+  border-color: var(--borda);
+  background: var(--fundo);
+  outline: 2px solid var(--acento);
+  outline-offset: 2px;
+}
+
+.glossario__campo::placeholder {
+  color: var(--tinta-fraca);
+}
+
+.glossario__regra--invalida .glossario__campo:first-child {
+  border-color: var(--alerta);
+}
+
+.glossario__seta {
+  color: var(--tinta-fraca);
+  font-family: var(--fonte-interface);
+  font-size: 13px;
+}
+
+.glossario__remover,
+.glossario__adicionar,
+.perfil__botao-discreto {
+  min-height: 44px;
+  padding: 0 4px;
+  border: none;
+  background: none;
+  font-family: var(--fonte-interface);
+  font-size: 12px;
+  color: var(--tinta-fraca);
+  cursor: pointer;
+}
+
+.glossario__remover:hover,
+.perfil__botao-discreto:hover {
+  color: var(--tinta);
+}
+
+.glossario__adicionar {
+  font-size: 13px;
+  color: var(--acento);
+  padding: 0;
+}
+
+.glossario__adicionar:hover {
+  color: var(--acento-fundo);
+}
+
+.perfil__acoes {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 16px;
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--linha);
+}
+
+.perfil__botao-primario {
+  min-height: 44px;
+  padding: 0 20px;
+  border: 1px solid var(--acento);
+  border-radius: 2px;
+  background: var(--acento);
+  color: var(--fundo);
+  font-family: var(--fonte-interface);
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.perfil__botao-primario:hover:not(:disabled) {
+  background: var(--acento-fundo);
+  border-color: var(--acento-fundo);
+}
+
+.perfil__botao-primario:disabled {
+  cursor: default;
+  opacity: 0.6;
+}
+
+.perfil__status {
+  font-family: var(--fonte-interface);
+  font-size: 12px;
+  color: var(--tinta-fraca);
+}
+
+.perfil__status--erro {
+  color: var(--alerta);
+}
+
+/* descricao de cada termo certo: o termo como rotulo (nao editavel aqui -
+   muda-se na regra), a descricao no mesmo campo de linha das regras. */
+.glossario__descricoes {
+  margin-top: 32px;
+}
+
+.glossario__descricao {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
+  align-items: center;
+  gap: 8px;
+  border-bottom: 1px solid var(--linha);
+  padding: 2px 0;
+}
+
+.glossario__termo {
+  overflow-wrap: anywhere;
+  padding-left: 8px;
+  font-family: var(--fonte-interface);
+  font-size: 14px;
+  color: var(--tinta-corpo);
+}
+
+@media (max-width: 560px) {
+  .glossario__descricao {
+    grid-template-columns: minmax(0, 1fr);
+    row-gap: 0;
+    padding-top: 8px;
+  }
+}
+
+/* termos da empresa (TermosDaEmpresa.tsx, ADR 0021): um termo por linha -
+   nome, o que e, e as formas erradas que ele corrige. Lista le como lista:
+   regua de 1px entre os termos, nenhuma caixa. */
+.termos__lista {
+  list-style: none;
+  margin: 0 0 24px;
+  padding: 0;
+}
+
+.termos__item {
+  padding: 12px 0;
+  border-bottom: 1px solid var(--linha);
+}
+
+.termos__cabeca {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.termos__nome {
+  font-family: var(--fonte-corpo);
+  font-weight: 600;
+  font-size: 16px;
+  color: var(--tinta);
+  overflow-wrap: anywhere;
+}
+
+.termos__descricao {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 12px;
+}
+
+.termos__campo-descricao {
+  flex: 1;
+  min-width: 0;
+  margin-left: -8px;
+}
+
+/* Termo sem descricao: so um link, em tinta fraca - discreto o bastante
+   para nao parecer que o app pergunta o que e cada termo, e abaixo do
+   "+ Adicionar variacao" em peso (esse e em acento: e o que importa). */
+.termos__adicionar-descricao {
+  min-height: 44px;
+  padding: 0;
+  border: none;
+  background: none;
+  font-family: var(--fonte-interface);
+  font-size: 12px;
+  color: var(--tinta-fraca);
+  cursor: pointer;
+}
+
+.termos__adicionar-descricao:hover {
+  color: var(--tinta);
+}
+
+.termos__adicionar-descricao:focus-visible {
+  outline: 2px solid var(--acento);
+  outline-offset: 2px;
+}
+
+.termos__variacoes {
+  margin: 4px 0 0;
+  font-family: var(--fonte-interface);
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--tinta-media);
+  overflow-wrap: anywhere;
+}
+
+.termos__rotulo-variacoes,
+.termos__certo-contexto {
+  color: var(--tinta-fraca);
+}
+
+/* x de 44px de alvo sem engordar a linha (mesmo truque do lapis da fala). */
+.termos__remover-variacao {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 44px;
+  margin: -12px -6px -12px -4px;
+  vertical-align: middle;
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--tinta-fraca);
+  font-size: 15px;
+  cursor: pointer;
+}
+
+.termos__remover-variacao:hover {
+  color: var(--alerta);
+}
+
+.termos__remover-variacao:focus-visible {
+  outline: 2px solid var(--acento);
+  outline-offset: -2px;
+}
+
+.termos__variacao-nova,
+.termos__novo {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.termos__previa details summary {
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  font-family: var(--fonte-interface);
+  font-size: 13px;
+  color: var(--tinta);
+  cursor: pointer;
+}
+
+.termos__previa ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  max-height: 200px;
+  overflow-y: auto;
+  font-family: var(--fonte-interface);
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: var(--tinta-media);
+}
+
+.termos__previa strong {
+  color: var(--tinta);
+}
+
+.termos__reuniao {
+  color: var(--tinta-fraca);
+}
+
+/* reaplicar o glossario nas reunioes ja processadas */
+
+.reaplicar {
+  margin-top: 24px;
+}
+
+.perfil__botao-secundario {
+  min-height: 44px;
+  padding: 0 16px;
+  border: 1px solid var(--borda);
+  border-radius: 2px;
+  background: var(--superficie);
+  color: var(--tinta-corpo);
+  font-family: var(--fonte-interface);
+  font-size: 13px;
+  cursor: pointer;
+  margin-bottom: 8px;
+}
+
+.perfil__botao-secundario:hover:not(:disabled) {
+  border-color: var(--tinta-fraca);
+}
+
+.perfil__botao-secundario:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.reaplicar__previa {
+  padding-top: 16px;
+  border-top: 1px solid var(--linha);
+}
+
+.reaplicar__titulo {
+  margin: 0 0 10px;
+  font-family: var(--fonte-corpo);
+  font-weight: 600;
+  font-size: 19px;
+  line-height: 1.2;
+  color: var(--tinta-corpo);
+}
+
+.reaplicar__lista {
+  margin: 0 0 12px;
+  padding: 0;
+  list-style: none;
+  font-family: var(--fonte-interface);
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--tinta-media);
+}
+
+.reaplicar__reuniao {
+  color: var(--tinta-corpo);
+}
+
+.perfil__acoes--sem-regua {
+  border-top: none;
+  padding-top: 0;
+  margin-top: 8px;
+}
+
+/* processamento, dados, sobre */
+
+.perfil__dl {
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr);
+  gap: 8px 20px;
+  margin: 0 0 12px;
+}
+
+.perfil__dt {
+  font-family: var(--fonte-interface);
+  font-size: 12px;
+  color: var(--tinta-fraca);
+}
+
+.perfil__dd {
+  margin: 0;
+  font-family: var(--fonte-interface);
+  font-size: 13px;
+  color: var(--tinta-corpo);
+  min-width: 0;
+}
+
+.perfil__caminho {
+  font-size: 12px;
+  color: var(--tinta-media);
+  overflow-wrap: anywhere;
+}
+
+.perfil__licencas {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.perfil__licenca {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--linha);
+}
+
+.perfil__licenca-nome {
+  font-family: var(--fonte-interface);
+  font-weight: 600;
+  font-size: 13px;
+  color: var(--tinta-corpo);
+}
+
+.perfil__licenca-texto {
+  font-family: var(--fonte-interface);
+  font-size: 13px;
+  color: var(--tinta-media);
+}
+
+/* Acima de 1440px: Configuracoes em duas colunas no container fluido
+   (ADR 0015). Aparencia, Processamento, Dados e Sobre (curtas) na
+   esquerda; Glossario (longo) na direita, ocupando as quatro linhas. A
+   ultima linha e 1fr: a altura que o Glossario tem a mais sobra embaixo
+   das curtas, nunca abre espaco entre elas. Cada secao continua em ate
+   640px - e a medida de leitura do texto delas. */
+@media (width > 1440px) {
+  .tela-perfil {
+    max-width: calc(var(--largura-fluida-max) + 2 * var(--margem-fluida));
+    padding-left: var(--margem-fluida);
+    padding-right: var(--margem-fluida);
+  }
+
+  .perfil__configuracoes {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-rows: auto auto auto 1fr;
+    column-gap: 64px;
+    align-items: start;
+  }
+
+  .perfil__configuracoes > .perfil__secao {
+    grid-column: 1;
+  }
+
+  .perfil__configuracoes > .perfil__secao--glossario {
+    grid-column: 2;
+    grid-row: 1 / span 4;
+  }
+}
+
+@media (max-width: 560px) {
+  .perfil__dl {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 2px;
+  }
+
+  .perfil__dd + .perfil__dt {
+    margin-top: 10px;
+  }
+
+  /* errado em cima, certo embaixo, Remover ao lado dos dois - lado a
+     lado, dois campos de 1fr ficariam estreitos demais pra ler. */
+  .glossario__regra {
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas: "errado remover" "certo remover";
+    row-gap: 0;
+  }
+
+  .glossario__campo:nth-of-type(1) {
+    grid-area: errado;
+  }
+
+  .glossario__campo:nth-of-type(2) {
+    grid-area: certo;
+  }
+
+  .glossario__remover {
+    grid-area: remover;
+  }
+
+  .glossario__seta {
+    display: none;
+  }
+}

@@ -1,0 +1,179 @@
+/* "Termos para conferir" (ConferirTermos.tsx, ADR 0022). Mesma familia dos
+   cartoes de voz da revisao, mas mais leve: um item por linha, regua de
+   1px entre eles, sem caixa - e uma lista de perguntas rapidas. */
+
+.conferir__titulo {
+  margin: 0 0 8px;
+  font-family: var(--fonte-corpo);
+  font-weight: 600;
+  font-size: 24px;
+  line-height: 1.2;
+  color: var(--tinta);
+}
+
+.conferir__nota,
+.conferir__feito,
+.conferir__erro {
+  margin: 0 0 16px;
+  font-family: var(--fonte-interface);
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--tinta-fraca);
+}
+
+.conferir__feito {
+  color: var(--tinta);
+}
+
+.conferir__erro {
+  color: var(--alerta);
+}
+
+.conferir__lista {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border-top: 1px solid var(--linha);
+}
+
+.conferir__item {
+  padding: 16px 0;
+  border-bottom: 1px solid var(--linha);
+}
+
+.conferir__cabeca {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.conferir__cabeca > div {
+  min-width: 0;
+}
+
+.conferir__forma {
+  margin: 8px 0 4px;
+  font-family: var(--fonte-corpo);
+  font-weight: 600;
+  font-size: 18px;
+  color: var(--tinta);
+}
+
+.conferir__vezes {
+  font-family: var(--fonte-interface);
+  font-weight: 400;
+  font-size: 12px;
+  color: var(--tinta-fraca);
+}
+
+.conferir__contexto {
+  margin: 0;
+  font-family: var(--fonte-corpo);
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--tinta-corpo);
+  overflow-wrap: anywhere;
+}
+
+.conferir__contexto strong {
+  font-weight: 600;
+  color: var(--tinta);
+  border-bottom: 1px dotted var(--tinta-fraca);
+}
+
+.conferir__respostas {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+  margin-top: 12px;
+  padding-left: 56px;
+}
+
+.conferir__certo {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 12px;
+  padding-left: 56px;
+}
+
+.conferir__certo .conferir__respostas {
+  padding-left: 0;
+}
+
+@media (max-width: 559.98px) {
+  .conferir__respostas,
+  .conferir__certo {
+    padding-left: 0;
+  }
+}
+
+.conferir__botao {
+  min-height: 44px;
+  padding: 0 16px;
+  border: 1px solid var(--borda);
+  border-radius: 2px;
+  background: transparent;
+  color: var(--tinta);
+  font-family: var(--fonte-interface);
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.conferir__botao:hover:not(:disabled) {
+  border-color: var(--tinta);
+}
+
+.conferir__botao:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.conferir__discreto {
+  min-height: 44px;
+  padding: 0 4px;
+  border: none;
+  background: none;
+  color: var(--tinta-fraca);
+  font-family: var(--fonte-interface);
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.conferir__discreto:hover {
+  color: var(--tinta);
+}
+
+.conferir__botao:focus-visible,
+.conferir__discreto:focus-visible,
+.conferir__campo:focus-visible {
+  outline: 2px solid var(--acento);
+  outline-offset: 2px;
+}
+
+.conferir__rotulo {
+  font-family: var(--fonte-interface);
+  font-size: 12px;
+  color: var(--tinta-fraca);
+}
+
+.conferir__opcional {
+  font-style: italic;
+}
+
+.conferir__campo {
+  min-height: 44px;
+  max-width: 420px;
+  padding: 0 8px;
+  border: 1px solid var(--borda);
+  border-radius: 2px;
+  background: var(--fundo);
+  color: var(--tinta-corpo);
+  font-family: var(--fonte-interface);
+  font-size: 14px;
+}
+
+.conferir__rodape {
+  margin-top: 24px;
+}

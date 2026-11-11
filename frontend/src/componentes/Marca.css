@@ -1,0 +1,21 @@
+/* Marca Trama: ver Marca.tsx. Largura sai do viewBox (842x256) e da
+   altura de 32px - nunca esticar (guia da marca). */
+.marca {
+  display: block;
+  width: calc(32px * 842 / 256);
+  height: 32px;
+  flex-shrink: 0;
+  fill: var(--cor-marca);
+}
+
+.marca__desenho--escuro {
+  display: none;
+}
+
+:root[data-tema="escuro"] .marca__desenho--claro {
+  display: none;
+}
+
+:root[data-tema="escuro"] .marca__desenho--escuro {
+  display: inline;
+}

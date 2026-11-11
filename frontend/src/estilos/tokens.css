@@ -1,0 +1,145 @@
+/*
+  Paleta Trama (.claude/skills/identidade-rec-meet/SKILL.md, ADR 0023).
+  Normativo, nao sugestao (ADR 0005). Nunca hex solto no componente.
+
+  Papeis de cor (ADR 0023):
+  - --acento: Verde Trama. Foco, regua da navegacao, botao principal,
+    acao em texto, estado ativo (play).
+  - --alerta: vermelho FUNCIONAL, fora da paleta da marca. Erro, campo
+    invalido, disputa, acao destrutiva. Nunca acao comum.
+  - --destaque: Fio (ocre). So FUNDO, com texto em tinta por cima. Nunca
+    cor de voz; no claro nunca linha nem texto (1,93:1 sobre o Linho).
+
+  O escuro NAO e o claro invertido - os dois modos tem valores proprios na
+  skill. data-tema e definido em runtime (segue o sistema por padrao, ou a
+  escolha guardada em localStorage) - ver src/tema/.
+*/
+
+:root {
+  /* Superficies: Linho e o Linho misturado (em Lab) a Tinta. */
+  --fundo: #f4f0e6;
+  --superficie: #faf8f4;
+  --trilho: #dbd9cf;
+
+  /* Tinta e a Tinta misturada ao Linho ate o limiar de cada tom:
+     fraca 4,80:1, tenue 3,60:1, apagada 3,21:1 sobre o --fundo. */
+  --tinta: #14201c;
+  --tinta-corpo: #1b2723;
+  --tinta-media: #36403b;
+  --tinta-fraca: #656b65;
+  --tinta-tenue: #797f78;
+  --tinta-apagada: #838780;
+
+  --linha: #d6d4cb;
+  --linha-forte: #14201c;
+  --borda: #c2c2b9;
+
+  --acento: #0e5a4a;
+  --acento-fundo: #164237;
+
+  --alerta: #a1331f;
+  --alerta-fundo: #76311f;
+
+  --destaque: #e3a33b;
+
+  /* Cor do logotipo (Marca.tsx): Verde Trama sobre o Linho; no escuro, o
+     Linho sobre a Tinta - as duas combinacoes aprovadas no guia. Nunca o
+     --acento, que no escuro e um verde derivado. */
+  --cor-marca: #0e5a4a;
+
+  /* O Fio nunca entra cheio sob texto: misturado ao --fundo, opaco, para
+     o texto do proprio modo continuar por cima (trecho tocando, busca,
+     selecao). 40% no claro - abaixo disso ele se confunde com a faixa da
+     voz castanha; 25% no escuro - acima disso o corpo perde o 7:1. Ver
+     tests/test_paleta.py. */
+  --opacidade-destaque: 40%;
+  --destaque-fundo: color-mix(in srgb, var(--destaque) var(--opacidade-destaque), var(--fundo));
+
+  /* Cores de voz: ver identidade-rec-meet/SKILL.md ("Cores de falante") e
+     tests/test_paleta.py, que trava a distancia minima entre elas e a
+     dos tres papeis acima. */
+  --voz-1: #835e62;
+  --voz-2: #744d19;
+  --voz-3: #59553b;
+  --voz-4: #5a7234;
+  --voz-5: #3c7384;
+  --voz-6: #1a5790;
+  --voz-7: #6765a1;
+  --voz-8: #7c406d;
+
+  --fonte-corpo: "Literata", serif;
+  --fonte-interface: "Figtree", sans-serif;
+  --fonte-numeros: "IBM Plex Mono", monospace;
+
+  /* Larguras (identidade-rec-meet/SKILL.md, Composicao; ADR 0015).
+     --medida-leitura e a do TEXTO CORRIDO (o transcript) e nunca muda com
+     a janela - texto longo em linha larga nao se le. --medida-conteudo e
+     o teto das telas de lista e formulario entre 720px e 1440px de
+     janela. Acima de 1440px, telas de DADOS viram container fluido
+     (--margem-fluida de cada lado, teto --largura-fluida-max) e ganham
+     colunas - nunca linha de texto mais longa. O cabecalho/nav e sempre
+     100% da largura. */
+  --medida-leitura: 640px;
+  --medida-conteudo: 1040px;
+  --largura-fluida-max: 1680px;
+
+  /* Faixa de sobreposicao no transcript (Detalhe.css). 20%: visivel sobre
+     o papel (dE2000 >= 5 nos dois modos) e o texto do transcript em cima
+     segue acima de 8:1 - ver tests/test_paleta.py. */
+  --opacidade-sobreposicao: 20%;
+  --margem-fluida: 48px;
+
+  /* Altura real do cabecalho (Cabecalho.css: 10px de padding em cima e
+     embaixo + 44px de alvo de toque + 2px de regua = 66px). Nomeado
+     porque quem calcula altura relativa ao viewport MENOS o cabecalho
+     (FitaDeTempo.css) precisa do mesmo numero - nunca dois lugares
+     each repetindo "66px" por conta propria, que diverge na primeira
+     mudanca de padding. */
+  --altura-cabecalho: 66px;
+}
+
+:root[data-tema="escuro"] {
+  /* Todo o escuro e DERIVADO, a validar com o designer (ADR 0023): o
+     guia da marca so define o claro. Fundo na Tinta; superficies sao a
+     Tinta misturada (em Lab) ao Linho. */
+  --fundo: #14201c;
+  --superficie: #1c2823;
+  --trilho: #2a3530;
+
+  /* Texto e o Linho misturado a Tinta ate o limiar de cada tom, medido
+     no PIOR dos dois fundos (a superficie): media 7,21:1, fraca 4,88:1,
+     tenue 3,92:1;
+     apagada 3,59:1 sobre o --fundo, o unico onde aparece. */
+  --tinta: #ece9df;
+  --tinta-corpo: #e0ddd4;
+  --tinta-media: #b2b3ab;
+  --tinta-fraca: #8f938b;
+  --tinta-tenue: #7d837b;
+  --tinta-apagada: #6f766f;
+
+  --linha: #2a3530;
+  --linha-forte: #ece9df;
+  --borda: #36403b;
+
+  /* Derivado, a validar com o designer (ADR 0023): o Verde Trama da
+     2,06:1 sobre a Tinta; este e o mesmo matiz, clareado. */
+  --acento: #599d8b;
+  --acento-fundo: #7daf9e;
+
+  --alerta: #e06a4f;
+  --alerta-fundo: #e88369;
+
+  --destaque: #e3a33b;
+  --opacidade-destaque: 25%;
+
+  --cor-marca: #f4f0e6;
+
+  --voz-1: #cc7c93;
+  --voz-2: #d0aa9e;
+  --voz-3: #97904f;
+  --voz-4: #9dc17f;
+  --voz-5: #43a3c8;
+  --voz-6: #8fb7fa;
+  --voz-7: #888eac;
+  --voz-8: #ccabd5;
+}

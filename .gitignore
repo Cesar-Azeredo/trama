@@ -1,0 +1,42 @@
+.venv/
+venv/
+__pycache__/
+*.pyc
+.DS_Store
+
+# banco local de perfis de voz (dados biometricos, nao versionar)
+vozes.db
+vozes.db.bak-*
+
+# glossario real: vocabulario da empresa, dado do usuario. Versionado so o
+# exemplo (termos.exemplo.txt).
+/termos.txt
+
+# saidas de reunioes processadas
+audios/
+*_fase0/
+
+modelos/
+
+# symlink por agente criado pela ferramenta `skills` (regenera com o
+# comando em CLAUDE.md) - o conteudo canonico fica em .agents/skills/,
+# versionado
+.claude/skills/apple-design
+
+# zips soltos (exportacoes) nunca entram
+*.zip
+
+# kit da marca Trama (docs/marca/): so o guia de uso e os SVGs mestres
+# vao para o git. PNG, PDF, apresentacao, zip e as demais exportacoes
+# ficam na pasta, fora do git. Lista do que ENTRA, e presa a docs/marca/:
+# um *.png global bloquearia as capturas do README (docs/capturas/).
+# A segunda linha reabre os diretorios - sem ela o git nem desce neles e
+# nenhuma excecao abaixo vale.
+/docs/marca/**
+!/docs/marca/**/
+!/docs/marca/kit/guia-de-uso.md
+!/docs/marca/kit/01-mestres/*.svg
+
+# empacotamento (pip install -e .)
+*.egg-info/
+build/

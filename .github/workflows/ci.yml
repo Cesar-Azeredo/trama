@@ -1,0 +1,62 @@
+# Testes e build a cada push. Nenhum teste baixa modelo nem toca audio real:
+# as suites usam stubs de torch/pyannote onde o modelo seria carregado, e
+# audio sintetico (ffmpeg lavfi) onde precisam de um arquivo.
+name: ci
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  python:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: pyproject.toml
+      - name: ffmpeg
+        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends ffmpeg
+      - name: Dependencias (torch so de CPU)
+        # torch e torchaudio do MESMO indice de CPU: so o torch daqui, e o
+        # pyannote puxa um torchaudio do PyPI compilado para CUDA, que nao
+        # carrega sem libcudart.
+        run: |
+          python -m pip install --upgrade pip
+          pip install torch torchaudio --index-url https://download.pytorch.org/whl/cpu
+          pip install -e ".[dev]"
+      - name: Lint e formatacao
+        run: |
+          ruff check .
+          ruff format --check .
+      - name: Suites (cada arquivo sozinho, como no dia a dia)
+        run: |
+          falhou=0
+          for f in tests/test_*.py; do
+            if python "$f" > saida.txt 2>&1; then tail -1 saida.txt; else cat saida.txt; falhou=1; fi
+          done
+          exit $falhou
+      - name: Suites com pytest
+        run: pytest -q
+
+  frontend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: "24"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm ci
+      - run: npx oxlint
+      - run: npm test
+      - run: npm run build

@@ -1,0 +1,322 @@
+/* "Corrigir" um trecho do transcript (PainelCorrecao.tsx). Superficie
+   retangular, sem sombra (SKILL.md): separada do texto por borda e pelo
+   tom de --superficie. Controles com raio de 2px e alvo de 44px. */
+
+.painel-correcao {
+  position: absolute;
+  left: 0;
+  right: 0;
+  z-index: 20;
+  max-width: 480px;
+  margin-top: 8px;
+  padding: 16px;
+  border: 1px solid var(--borda);
+  background: var(--superficie);
+  font-family: var(--fonte-interface);
+  font-size: 13px;
+  color: var(--tinta-media);
+}
+
+/* Celular: folha que sobe de baixo, na largura da tela, acima da barra de
+   abas - presa a selecao ela sairia da tela ou cobriria o teclado. */
+@media (max-width: 719.98px) {
+  .painel-correcao {
+    position: fixed;
+    top: auto !important;
+    bottom: 0;
+    max-width: none;
+    max-height: 80vh;
+    overflow-y: auto;
+    margin: 0;
+    border-width: 1px 0 0;
+    padding-bottom: calc(16px + env(safe-area-inset-bottom));
+  }
+}
+
+/* Na revisao de termos, o painel fica no fluxo do item, em qualquer
+   largura - nao ha selecao para se prender. */
+.painel-correcao.painel-correcao--embutido {
+  position: static;
+  max-width: none;
+  max-height: none;
+  margin-top: 12px;
+  border-width: 1px;
+  padding-bottom: 16px;
+}
+
+.painel-correcao__titulo {
+  margin: 0 0 12px;
+  font-size: 14px;
+  color: var(--tinta);
+}
+
+.painel-correcao__trecho {
+  font-family: var(--fonte-corpo);
+}
+
+.painel-correcao form {
+  display: flex;
+  flex-direction: column;
+}
+
+.painel-correcao__rotulo {
+  margin: 12px 0 4px;
+  padding: 0;
+  font-size: 12px;
+  color: var(--tinta-fraca);
+}
+
+.painel-correcao__opcional {
+  color: var(--tinta-fraca);
+  font-style: italic;
+}
+
+.painel-correcao__campo {
+  min-height: 44px;
+  padding: 0 8px;
+  border: 1px solid var(--borda);
+  border-radius: 2px;
+  background: var(--fundo);
+  color: var(--tinta-corpo);
+  font-family: var(--fonte-interface);
+  font-size: 14px;
+}
+
+.painel-correcao__campo:focus-visible,
+.painel-correcao__opcao input:focus-visible,
+.painel-correcao__primario:focus-visible,
+.painel-correcao__discreto:focus-visible,
+.painel-correcao__onde summary:focus-visible {
+  outline: 2px solid var(--acento);
+  outline-offset: 2px;
+}
+
+.painel-correcao__alcance {
+  margin: 0;
+  padding: 0;
+  border: none;
+}
+
+.painel-correcao__opcao {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  font-size: 14px;
+  color: var(--tinta-corpo);
+  cursor: pointer;
+}
+
+.painel-correcao__opcao input {
+  accent-color: var(--tinta);
+  margin: 0;
+}
+
+.painel-correcao__previa {
+  margin-top: 4px;
+}
+
+.painel-correcao__nota,
+.painel-correcao__feito,
+.painel-correcao__erro {
+  margin: 8px 0 0;
+  line-height: 1.5;
+}
+
+.painel-correcao__feito {
+  color: var(--tinta);
+}
+
+.painel-correcao__erro {
+  color: var(--alerta);
+}
+
+.painel-correcao__onde summary {
+  display: flex;
+  align-items: center;
+  min-height: 44px;
+  color: var(--tinta);
+  cursor: pointer;
+}
+
+.painel-correcao__onde ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.painel-correcao__onde > ul {
+  max-height: 240px;
+  overflow-y: auto;
+  border-top: 1px solid var(--linha);
+}
+
+.painel-correcao__onde li li {
+  padding: 4px 0;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+.painel-correcao__onde strong {
+  font-weight: 600;
+  color: var(--tinta);
+}
+
+.painel-correcao__onde a {
+  color: var(--tinta-fraca);
+}
+
+.painel-correcao__reuniao {
+  display: block;
+  margin-top: 8px;
+  font-weight: 600;
+  color: var(--tinta);
+}
+
+.painel-correcao__acoes {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 16px;
+  margin-top: 16px;
+}
+
+.painel-correcao__primario {
+  min-height: 44px;
+  padding: 0 20px;
+  border: 1px solid var(--acento);
+  border-radius: 2px;
+  background: var(--acento);
+  color: var(--fundo);
+  font-family: var(--fonte-interface);
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.painel-correcao__primario:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.painel-correcao__discreto {
+  min-height: 44px;
+  padding: 0 4px;
+  border: none;
+  background: none;
+  font-family: var(--fonte-interface);
+  font-size: 13px;
+  color: var(--tinta-fraca);
+  cursor: pointer;
+}
+
+.painel-correcao__discreto:hover {
+  color: var(--tinta);
+}
+
+/* Botao "Corrigir" que aparece sobre a selecao (Detalhe.tsx). No celular
+   vai para baixo dela: em cima fica o menu nativo de copiar. */
+.botao-corrigir-selecao {
+  position: absolute;
+  top: var(--sel-topo);
+  z-index: 19;
+  min-height: 44px;
+  padding: 0 14px;
+  border: 1px solid var(--acento);
+  border-radius: 2px;
+  background: var(--acento);
+  color: var(--fundo);
+  font-family: var(--fonte-interface);
+  font-size: 13px;
+  cursor: pointer;
+  /* translate, nao transform: o :active do base.css aplica transform:
+     scale() - com transform aqui, apertar o botao o tiraria do lugar. As
+     duas propriedades se compoem. */
+  translate: -50% calc(-100% - 6px);
+}
+
+.botao-corrigir-selecao:focus-visible {
+  outline: 2px solid var(--acento);
+  outline-offset: 2px;
+}
+
+@media (max-width: 719.98px) {
+  .botao-corrigir-selecao {
+    top: var(--sel-base);
+    translate: -50% 6px;
+  }
+}
+
+/* Variacoes parecidas (ADR 0020): lista de caixas, cada uma com o trecho
+   em volta - a pessoa decide olhando o contexto, nunca so a palavra. */
+.painel-correcao__variacoes {
+  margin: 16px 0 0;
+  padding: 12px 0 0;
+  border: none;
+  border-top: 1px solid var(--linha);
+}
+
+.painel-correcao__variacoes legend {
+  padding: 0;
+}
+
+.painel-correcao__variacoes > ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  max-height: 320px;
+  overflow-y: auto;
+}
+
+.painel-correcao__variacoes > ul > li + li {
+  border-top: 1px solid var(--linha);
+}
+
+.painel-correcao__variacao {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  cursor: pointer;
+}
+
+.painel-correcao__variacao input {
+  accent-color: var(--tinta);
+  margin: 0;
+}
+
+.painel-correcao__variacao input:focus-visible {
+  outline: 2px solid var(--acento);
+  outline-offset: 2px;
+}
+
+.painel-correcao__forma {
+  font-family: var(--fonte-corpo);
+  font-size: 15px;
+  color: var(--tinta);
+}
+
+.painel-correcao__nota-inline {
+  font-size: 12px;
+  color: var(--tinta-fraca);
+}
+
+.painel-correcao__contextos {
+  margin: 0 0 8px 24px;
+  padding: 0;
+  list-style: none;
+}
+
+.painel-correcao__contextos li {
+  padding: 2px 0;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+.painel-correcao__contextos a {
+  color: var(--tinta-fraca);
+}
+
+.painel-correcao__contextos strong {
+  font-weight: 600;
+  color: var(--tinta);
+}

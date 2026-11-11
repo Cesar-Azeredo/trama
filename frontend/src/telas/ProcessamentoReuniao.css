@@ -1,0 +1,168 @@
+.tela-processamento {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 32px 16px 96px;
+}
+
+.tela-processamento__voltar {
+  display: inline-block;
+  margin-bottom: 24px;
+  font-size: 13px;
+  color: var(--tinta-fraca);
+  text-decoration: none;
+}
+
+.tela-processamento__voltar:hover {
+  color: var(--tinta);
+}
+
+.tela-processamento__titulo {
+  font-family: var(--fonte-corpo);
+  font-weight: 600;
+  font-size: 34px;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  color: var(--tinta);
+  margin: 0 0 28px;
+}
+
+.tela-processamento__estado {
+  font-family: var(--fonte-interface);
+  font-size: 14px;
+  color: var(--tinta-media);
+}
+
+/* lista das cinco etapas - sem barra de porcentagem (as etapas nao tem
+   duracao igual, uma barra linear mentiria sobre quanto falta). Estado
+   por PESO e ICONE, nunca so por cor: concluida ganha o tracinho de
+   check, atual ganha peso cheio + a atividade ao vivo do pipeline.py, as
+   demais ficam apagadas no numero. */
+
+.lista-etapas {
+  list-style: none;
+  margin: 0 0 28px;
+  padding: 0;
+  border-top: 2px solid var(--linha-forte);
+}
+
+.lista-etapas__item {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--linha);
+}
+
+.lista-etapas__marca {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  margin-top: 1px;
+  font-family: var(--fonte-numeros);
+  font-size: 12px;
+  color: var(--tinta-fraca);
+}
+
+.lista-etapas__item--atual .lista-etapas__marca {
+  color: var(--tinta);
+}
+
+/* Pendente e concluida no mesmo tom: --tinta-fraca e o mais fraco que
+   passa 4,5:1 em texto de 14px. A diferenca entre as duas e a marca ao
+   lado (check ou numero), nunca um tom mais apagado - o --tinta-apagada
+   so passa 3:1 e e so para o numero de 30px da lista (SKILL.md). */
+.lista-etapas__texto {
+  font-family: var(--fonte-interface);
+  font-size: 14px;
+  line-height: 1.4;
+  color: var(--tinta-fraca);
+}
+
+.lista-etapas__item--atual .lista-etapas__texto {
+  color: var(--tinta-corpo);
+  font-weight: 600;
+}
+
+.lista-etapas__ao-vivo {
+  display: block;
+  margin-top: 3px;
+  font-family: var(--fonte-numeros);
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--tinta-media);
+}
+
+.tela-processamento__decorrido {
+  margin: 0 0 24px;
+  font-size: 13px;
+  color: var(--tinta-media);
+}
+
+.tela-processamento__rodape {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding-top: 20px;
+  border-top: 1px solid var(--linha);
+}
+
+.botao-cancelar {
+  min-height: 44px;
+  padding: 0 20px;
+  border: 1px solid var(--borda);
+  border-radius: 2px;
+  background: var(--superficie);
+  color: var(--tinta-corpo);
+  font-family: var(--fonte-interface);
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.botao-cancelar:hover:not(:disabled) {
+  border-color: var(--tinta-fraca);
+}
+
+.botao-cancelar:disabled {
+  cursor: default;
+  opacity: 0.6;
+}
+
+.tela-processamento__legenda-cancelar {
+  font-family: var(--fonte-interface);
+  font-size: 12px;
+  color: var(--tinta-fraca);
+}
+
+.tela-processamento__erro {
+  margin: 12px 0 0;
+  font-size: 13px;
+  color: var(--alerta);
+}
+
+.tela-processamento__aviso {
+  padding-top: 20px;
+  border-top: 2px solid var(--linha-forte);
+}
+
+.tela-processamento__aviso p {
+  margin: 0 0 16px;
+  font-family: var(--fonte-interface);
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--tinta-corpo);
+  max-width: 52ch;
+}
+
+.tela-processamento__aviso--erro p {
+  color: var(--alerta);
+}
+
+.tela-processamento__link {
+  font-family: var(--fonte-interface);
+  font-size: 13px;
+  color: var(--acento);
+  text-decoration: underline;
+}

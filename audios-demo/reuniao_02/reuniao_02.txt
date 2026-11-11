@@ -1,0 +1,16 @@
+[00:00:00] Diego: Pessoal, conversei com os seis clientes da lista da Helena. Cinco querem a exportação em planilha, um quer em PDF.
+[00:00:09] Paula: Do lado do design, planilha é mais simples. O PDF exige pensar em paginação, cabeçalho, logotipo do cliente.
+[00:00:18] Tiago: E na engenharia também. A planilha sai direto da consulta que já existe no Painel Órbita.
+[00:00:26] Beatriz: Então começamos pela planilha e o PDF vira uma segunda etapa.
+[00:00:31] Helena: Só um cuidado: o cliente que pediu PDF é o maior da carteira. Vale avisar ele antes, para não parecer que a gente ignorou.
+[00:00:41] Diego: Eu ligo para ele amanhã. E aproveito para mostrar o protótipo da planilha, se a Paula tiver alguma coisa até lá.
+[00:00:51] Paula: Tenho um rascunho. Não está bonito, mas mostra as colunas e o filtro por período, que foi o que mais apareceu nas conversas.
+[00:01:03] Tiago: Sobre o tempo de carregamento: medi ontem. O relatório de um ano leva onze segundos no painel da orbita. A meta que eu proponho é três segundos.
+[00:01:15] Beatriz: Três segundos é factível?
+[00:01:17] Tiago: Com um índice novo no banco e cache do resultado, sim. Eu já testei o índice numa cópia e caiu para quatro.
+[00:01:27] Helena: Isso muda muito o suporte. Lentidão é a reclamação número um nas notas baixas do NPS.
+[00:01:35] Paula: Eu queria propor uma coisa na tela também: enquanto carrega, mostrar o que já chegou em vez de uma tela vazia.
+[00:01:44] Tiago: Dá, mas aumenta o escopo. Eu deixaria para depois do índice. Primeiro a consulta rápida, depois a gente vê se ainda precisa do carregamento parcial.
+[00:01:56] Beatriz: Combinado. Tiago fica com o índice e o cache, Paula fecha o protótipo, Diego liga para o cliente do PDF.
+[00:02:05] Helena: E eu atualizo a base de conhecimento do suporte quando sair.
+[00:02:10] Beatriz: Ótimo. Próxima revisão na semana que vem, com o protótipo e a medição nova.

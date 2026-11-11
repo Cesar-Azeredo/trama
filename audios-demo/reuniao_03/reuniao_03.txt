@@ -1,0 +1,14 @@
+[00:00:00] Marcos: Vamos fazer a retrospectiva da primeira entrega da exportação. Quem quer começar pelo que funcionou?
+[00:00:07] Paula: Eu começo. Ter o protótipo validado com os clientes antes de codificar economizou pelo menos uma semana de retrabalho.
+[00:00:17] Diego: Concordo. E a ligação para o cliente do PDF foi ótima. Ele entendeu a ordem e até ajudou a priorizar.
+[00:00:26] DESCONHECIDO_SPEAKER_03: Do lado de dados, eu queria registrar que o índice novo também melhorou outros relatórios, que nem estavam no escopo.  <- conferir
+[00:00:35] Marcos: Boa. E o que não funcionou?
+[00:00:38] Diego: A estimativa. A gente disse duas semanas e levou três, porque o filtro por período tinha casos que ninguém previu.
+[00:00:47] DESCONHECIDO_SPEAKER_03: Fuso horário, principalmente. Relatório de cliente em outro país cortava o último dia do mês.  <- conferir
+[00:00:55] Marcos: Isso precisa virar teste automatizado. Não pode depender de alguém lembrar do fuso na próxima vez.
+[00:01:03] Paula: E eu sugiro incluir alguém de dados no começo do próximo projeto, não só no fim. A Sofia teria visto o problema do fuso na primeira conversa.
+[00:01:16] DESCONHECIDO_SPEAKER_03: Com certeza. É só me chamar.  <- conferir
+[00:01:19] Marcos: Então ficam três ações: teste de fuso horário, dados desde o começo e estimativa com folga para casos de borda.
+[00:01:28] Diego: E uma comemoração, porque o tempo do Painel Órbita caiu para três segundos.
+[00:01:35] Paula: Isso merece.
+[00:01:36] Marcos: Merece mesmo. Obrigado, pessoal.

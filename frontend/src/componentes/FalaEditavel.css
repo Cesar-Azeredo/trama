@@ -1,0 +1,110 @@
+/* Fala corrigivel na propria linha (FalaEditavel.tsx). Editar nao muda a
+   letra: o campo usa a mesma tipografia do corpo do transcript
+   (.linha-fala__texto, Detalhe.css), so troca o elemento - igual ao
+   titulo (TituloEditavel.css). */
+
+/* Lapis no fim do texto: alvo de 44px (SKILL.md) sem engordar a linha - a
+   margem negativa devolve a altura da linha (16px x 1,62 = ~26px). So
+   aparece no hover/foco da linha, como o botao de tocar; fica sempre no
+   DOM para o Tab alcancar. */
+.botao-corrigir-fala {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  margin: -9px 0 -9px 2px;
+  vertical-align: middle;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: var(--tinta-fraca);
+  cursor: pointer;
+  opacity: 0;
+}
+
+.linha-fala:hover .botao-corrigir-fala,
+.linha-fala:focus-within .botao-corrigir-fala {
+  opacity: 1;
+}
+
+.botao-corrigir-fala:hover {
+  color: var(--tinta);
+}
+
+.botao-corrigir-fala:focus-visible {
+  opacity: 1;
+  outline: 2px solid var(--acento);
+  outline-offset: 2px;
+}
+
+.fala-editavel__campo {
+  display: block;
+  width: 100%;
+  margin: 0;
+  padding: 0 0 2px;
+  border: none;
+  border-bottom: 1px solid var(--borda);
+  border-radius: 0;
+  background: transparent;
+  resize: none;
+  overflow: hidden;
+  font: inherit;
+  line-height: inherit;
+  color: var(--tinta-corpo);
+}
+
+.fala-editavel__campo:focus-visible {
+  outline: 2px solid var(--acento);
+  outline-offset: 2px;
+}
+
+.fala-editavel__campo[aria-invalid="true"] {
+  border-bottom-color: var(--alerta);
+}
+
+.fala-editavel__rodape {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  column-gap: 16px;
+}
+
+.fala-editavel__ajuda {
+  margin: 6px 0 0;
+  font-family: var(--fonte-interface);
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--tinta-fraca);
+}
+
+.fala-editavel__campo[aria-invalid="true"] ~ .fala-editavel__rodape .fala-editavel__ajuda {
+  color: var(--alerta);
+}
+
+/* Secundario, no tom de "Editar revisão" (Detalhe.css). */
+.fala-editavel__original {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0;
+  border: none;
+  background: none;
+  font-family: var(--fonte-interface);
+  font-size: 12px;
+  color: var(--tinta-fraca);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-thickness: 1px;
+  cursor: pointer;
+}
+
+.fala-editavel__original:hover {
+  color: var(--tinta);
+}
+
+.fala-editavel__original:focus-visible {
+  outline: 2px solid var(--acento);
+  outline-offset: 2px;
+}
+

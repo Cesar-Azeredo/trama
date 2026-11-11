@@ -1,0 +1,203 @@
+@import "./tokens.css";
+@import "./fontes.css";
+@import "./transicoes.css";
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+}
+
+/* Selecao de texto no Fio (ADR 0023: "termo selecionado") - a selecao
+   e o que abre o "Corrigir" no transcript (ADR 0019). Sem isto, o azul
+   do sistema, que a skill proibe. Texto em --tinta: passa 7:1 sobre o
+   --destaque-fundo nos dois modos. */
+::selection {
+  background-color: var(--destaque-fundo);
+  color: var(--tinta);
+}
+
+/* Trecho tocando agora (fala no Detalhe, trecho na Revisao, contexto no
+   Conferir termos): fundo de Fio. Margem negativa + padding do mesmo
+   tamanho: o fundo respira dos dois lados sem o texto sair do lugar. */
+.trecho-tocando {
+  background: var(--destaque-fundo);
+  margin-inline: -6px;
+  padding-inline: 6px;
+}
+
+body {
+  background: var(--fundo);
+  color: var(--tinta-corpo);
+  font-family: var(--fonte-interface);
+  font-size: 13px;
+  line-height: 1.5;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+/*
+  Cabecalho fixo, conteudo com scroll proprio - nao a pagina inteira
+  rolando. Motivo original: nav persistente devia continuar visivel
+  rolando a lista, nao sumir junto (era o comportamento antes desta
+  regra, por descuido).
+
+  .area-conteudo (App.tsx) e um limite FIXO sem rolagem propria
+  (overflow:hidden) - e nele que a transicao de tela e nomeada
+  (estilos/transicoes.css). .area-conteudo__rolagem, dentro dela, e
+  quem rola de verdade (overflow-y:auto), sempre na largura inteira da
+  janela - nunca o <main>, que tem max-width por tela e prenderia o
+  rolamento numa coluna central (ver App.tsx). Os dois papeis tem que
+  ser elementos DIFERENTES: a View Transitions API captura a altura RENDERIZADA de verdade de
+  quem leva view-transition-name - com <main> do tamanho do documento
+  inteiro (medido: 1195px de conteudo real contra 664px de janela), a
+  captura saia maior que o viewport (transicao deslocada/duplicada em
+  vez de sobreposta). Pior: testado na pratica, dar o nome a um
+  elemento que TAMBEM rola sozinho deixa a transicao pendurada de vez
+  em quando (a promise "ready" nunca resolve) - por isso dois
+  elementos, nao um so fazendo os dois papeis.
+*/
+#root {
+  /* Nenhuma tela pode fazer a PAGINA rolar para o lado: no celular isso
+     arrastava tudo, cortava o texto na esquerda e jogava a aba Perfil
+     para fora da barra de baixo. Protecao, nao correcao - cada causa e
+     resolvida na propria tela (ex.: Pessoas.css, abaixo de 720px).
+     clip, nunca hidden: hidden faz de #root um conteiner de rolagem, e
+     o position: sticky da fita de tempo passaria a grudar nele em vez de
+     em .area-conteudo__rolagem. clip corta sem criar rolagem nenhuma.
+     O zoom do usuario continua livre (index.html nao trava
+     maximum-scale nem user-scalable - acessibilidade). */
+  overflow-x: clip;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  /* dvh: no celular, 100vh inclui a area atras da barra de endereco que
+     some/aparece - o fim do conteudo ficaria escondido. Quem nao conhece
+     dvh descarta a linha e fica com o 100vh de cima. */
+  height: 100dvh;
+}
+
+.area-conteudo {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* Sem overscroll-behavior-x aqui nem no html: none desligaria o gesto
+   de voltar deslizando (trackpad e celular), e o clip ja impede a
+   pagina de rolar para o lado. Quem contem o proprio gesto e a grade de
+   Pessoas (Pessoas.css).
+   overflow-y: auto sozinho faz o overflow-x computar auto tambem (CSS
+   Overflow 3: se um eixo rola, o outro nao pode ficar visible) - era
+   este elemento, da largura da janela, que deixava arrastar a tela para
+   o lado quando algum conteudo passava da largura. overflow-x: clip
+   junto de um eixo que rola computa hidden pela mesma regra: sem
+   rolagem lateral pelo dedo, e o sticky da fita nao muda, porque este
+   ja era o conteiner de rolagem dela. */
+.area-conteudo__rolagem {
+  height: 100%;
+  overflow-y: auto;
+  overflow-x: clip;
+  /* Bloco de contencao de todo absoluto de qualquer tela que nao tenha
+     ancestral posicionado mais perto - em especial .so-leitor-de-tela.
+     Sem isto, o bloco de contencao deles era o documento, e overflow
+     nao recorta descendente cujo bloco de contencao esta ACIMA de quem
+     rola (CSS 2.1, 11.1.1): um rotulo oculto no fim de uma tela longa
+     ficava fora daqui, na posicao estatica la embaixo, e esticava o
+     documento (segunda barra de rolagem no Perfil). Nao muda o sticky
+     (a fita de tempo continua grudando neste conteiner) nem os absolutos
+     que ja tem ancestral posicionado (painel de correcao, fita). */
+  position: relative;
+}
+
+/* So para leitor de tela: some da vista e continua na arvore de
+   acessibilidade (e focavel, se o elemento for). Classe unica - antes
+   eram sete copias do mesmo recorte, uma por tela. position: absolute
+   tira do fluxo; quem contem e .area-conteudo__rolagem (acima), nunca o
+   documento. */
+.so-leitor-de-tela {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Celular: a barra de abas (componentes/BarraAbas.css) e fixa e
+   translucida - o conteudo rola POR BAIXO dela de proposito (e o que o
+   desfoque mostra), mas o fim de cada tela precisa poder subir acima
+   dela. --altura-abas tambem desconta a barra de quem calcula altura
+   pelo viewport (FitaDeTempo.css). */
+:root {
+  --altura-abas: 0px;
+}
+
+@media (max-width: 719.98px) {
+  :root {
+    /* 52px de aba + 2px de padding + 1px de regua + a area segura do
+       aparelho (a barra de gestos do iPhone). */
+    --altura-abas: calc(55px + env(safe-area-inset-bottom));
+  }
+
+  .area-conteudo__rolagem {
+    padding-bottom: var(--altura-abas);
+  }
+}
+
+button,
+input {
+  font-family: inherit;
+}
+
+/* Foco visivel: nunca outline: none sem substituto (SKILL, acessibilidade). */
+:focus-visible {
+  outline: 2px solid var(--acento);
+  outline-offset: 2px;
+}
+
+/*
+  Resposta no instante do toque, nunca so depois do React re-renderizar em
+  reacao ao clique (skill apple-design, principio 1: "respond on
+  pointer-down, not on release" - esperar o release pra mostrar qualquer
+  coisa "parece morto"). Regra global porque e transversal: todo <button>
+  do app ganha o mesmo tratamento por padrao, sem precisar lembrar de
+  repetir em cada componente novo. Cada elemento so sai daqui se o
+  tratamento generico ficar errado pro tamanho dele (ver excecao em
+  FitaDeTempo.css - encolher uma coluna do tamanho da tela pareceria a
+  pagina tremendo, nao um botao respondendo).
+
+  Isto NAO e a etiqueta colorida de estado que a identidade proibe
+  (SKILL.md regra 2): e feedback transitorio, some assim que o botao
+  solta, nunca comunica um estado que persiste.
+
+  A escala vem de --escala-pressao (nao um numero fixo) para uma excecao
+  poder desligar so o encolhimento (ex.: FitaDeTempo.css) sobrescrevendo a
+  variavel no proprio elemento, sem entrar numa guerra de especificidade
+  contra este seletor - testado na pratica: uma tentativa inicial de
+  ".fita-de-tempo:active { transform: none }" perdia pra este seletor
+  (mais especifico por causa do "button" + ":not()") e a fita continuava
+  encolhendo.
+*/
+button:not(:disabled):active {
+  transform: scale(var(--escala-pressao, 0.97));
+  transition: transform 100ms ease-out;
+}
+
+a:active {
+  opacity: 0.6;
+}
+
+.numeros {
+  font-family: var(--fonte-numeros);
+  font-variant-numeric: tabular-nums;
+}

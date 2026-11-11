@@ -1,0 +1,21 @@
+#!/bin/sh
+# ganchos/commit-msg - commits sem coautor e sem assinatura (CLAUDE.md).
+#
+# Remove da mensagem as linhas que COMECAM com "Co-Authored-By:" ou com
+# "Generated with Claude Code" (com ou sem emoji, colchete e link antes),
+# sem diferenciar maiuscula, e as linhas em branco que sobram no fim.
+# Ancorado no comeco da linha: um corpo de commit que CITA a assinatura
+# no meio da frase nao pode perder a linha (ja aconteceu com a regex
+# solta). Existe porque a configuracao "attribution" do Claude
+# Code nem sempre e respeitada.
+#
+# Ativacao (uma vez por clone; core.hooksPath e configuracao local, nao
+# vai junto com o repositorio):
+#     git config core.hooksPath ganchos
+set -eu
+arquivo="$1"
+temporario="$arquivo.limpo.$$"
+grep -v -i -E '^[[:space:]]*co-authored-by:|^[^[:alnum:]]*generated with \[?claude code' "$arquivo" \
+  | awk '{ linhas[NR] = $0 } END { n = NR; while (n > 0 && linhas[n] ~ /^[[:space:]]*$/) n--; for (i = 1; i <= n; i++) print linhas[i] }' \
+  > "$temporario" || true
+mv "$temporario" "$arquivo"

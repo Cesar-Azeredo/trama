@@ -1,0 +1,473 @@
+/* Coluna unica de 640px de conteudo, centralizada: os dois passos e o
+   Transcrever. E formulario curto, lido de cima pra baixo - nao ganha
+   nada esticado por --medida-conteudo. max-width soma o padding de 16px
+   de cada lado (box-sizing: border-box global), senao o conteudo teria
+   608px, nao 640. 640 e --medida-leitura, nao uma terceira largura. */
+.tela-nova {
+  max-width: calc(var(--medida-leitura) + 32px);
+  margin: 0 auto;
+  padding: 32px 16px 96px;
+}
+
+.tela-nova__titulo {
+  font-family: var(--fonte-corpo);
+  font-weight: 600;
+  font-size: 34px;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  color: var(--tinta);
+  margin: 0 0 32px;
+}
+
+/* passos numerados */
+
+.passo + .passo {
+  margin-top: 48px;
+}
+
+/* Acima de 1440px: os dois passos lado a lado, Transcrever embaixo, no
+   container fluido (ADR 0015). Cada passo e formulario, nao texto
+   corrido - ganha largura sem virar linha longa de leitura (a frase da
+   area de arquivo tem max-width proprio, em em). */
+@media (width > 1440px) {
+  .tela-nova {
+    max-width: calc(var(--largura-fluida-max) + 2 * var(--margem-fluida));
+    padding-left: var(--margem-fluida);
+    padding-right: var(--margem-fluida);
+  }
+
+  .tela-nova__passos {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: 64px;
+    align-items: start;
+  }
+
+  .passo + .passo {
+    margin-top: 0;
+  }
+}
+
+.passo__topo {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.passo__titulo {
+  margin: 0;
+  font-family: var(--fonte-corpo);
+  font-weight: 600;
+  font-size: 19px;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+  color: var(--tinta-corpo);
+}
+
+.passo__numero {
+  margin-right: 12px;
+  font-weight: 400;
+  font-size: 13px;
+  letter-spacing: 0;
+  color: var(--tinta-fraca);
+}
+
+.passo__contador {
+  flex-shrink: 0;
+  font-family: var(--fonte-interface);
+  font-size: 12px;
+  color: var(--tinta-media);
+  font-variant-numeric: tabular-nums;
+}
+
+/* area de escolha do arquivo - tipografia + regua, nunca borda tracejada
+   com icone de nuvem (SKILL.md: proibido). A regua e a borda superior de
+   2px em --linha-forte, o mesmo peso do cabecalho do app - e o que marca
+   isto como uma zona distinta, nao decoracao. */
+
+.area-arquivo {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 208px;
+  border: 1px solid var(--borda);
+  border-top: 2px solid var(--linha-forte);
+  border-radius: 2px;
+  padding: 28px;
+  text-align: left;
+  cursor: pointer;
+  background: var(--superficie);
+}
+
+.area-arquivo--arrastando {
+  border-color: var(--tinta);
+  background: var(--trilho);
+}
+
+/* <label>, nao <button> - base.css nao cobre. Mesmo vocabulario visual do
+   arrastando (fundo --trilho) em vez de encolher: e uma area grande de
+   escolha de arquivo, nao um botao pequeno. */
+.area-arquivo:active {
+  background: var(--trilho);
+}
+
+.area-arquivo:focus-within {
+  outline: 2px solid var(--acento);
+  outline-offset: 2px;
+}
+
+/* A frase principal e o que a tela pede - Literata grande, tracking
+   levemente negativo (SKILL.md: negativo no grande). */
+.area-arquivo__instrucao {
+  margin: 0;
+  max-width: 22em;
+  font-family: var(--fonte-corpo);
+  font-size: 26px;
+  line-height: 1.25;
+  letter-spacing: -0.01em;
+  color: var(--tinta-corpo);
+}
+
+.area-arquivo__link {
+  color: var(--acento);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-thickness: 1px;
+}
+
+.area-arquivo__formatos {
+  margin: 12px 0 0;
+  font-size: 11.5px;
+  color: var(--tinta-fraca);
+}
+
+.area-arquivo__escolhido {
+  min-width: 0;
+}
+
+.area-arquivo__nome {
+  margin: 0;
+  font-family: var(--fonte-corpo);
+  font-size: 19px;
+  line-height: 1.3;
+  color: var(--tinta-corpo);
+  word-break: break-all;
+}
+
+.area-arquivo__tamanho {
+  margin: 6px 0 0;
+  font-size: 12px;
+  color: var(--tinta-fraca);
+}
+
+.tela-nova__erro {
+  display: block;
+  margin: 10px 0 0;
+  font-size: 13px;
+  color: var(--alerta);
+}
+
+.tela-nova__trocar {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  margin-top: 4px;
+  padding: 0;
+  border: none;
+  background: none;
+  font-family: var(--fonte-interface);
+  font-size: 13px;
+  color: var(--acento);
+  cursor: pointer;
+}
+
+.tela-nova__trocar:hover {
+  color: var(--acento-fundo);
+}
+
+/* quem estava na sala */
+
+.seletor-pessoas__explicacao {
+  margin: 0 0 16px;
+  max-width: 52ch;
+  font-family: var(--fonte-interface);
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--tinta-media);
+}
+
+.seletor-pessoas__estado {
+  margin: 0 0 12px;
+  font-size: 13px;
+  color: var(--tinta-fraca);
+}
+
+.seletor-pessoas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+/* Botao de alternar. Estado por fundo neutro + borda em tinta + peso -
+   nunca cor de estado (SKILL.md regra 2); a unica cor e a da voz, na
+   barrinha, e ela nao muda com a selecao. */
+.botao-pessoa {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 0 14px;
+  border: 1px solid var(--borda);
+  border-radius: 2px;
+  background: transparent;
+  color: var(--tinta-corpo);
+  font-family: var(--fonte-interface);
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.botao-pessoa:hover {
+  border-color: var(--tinta-fraca);
+}
+
+.botao-pessoa--selecionada,
+.botao-pessoa--selecionada:hover {
+  background: var(--trilho);
+  border-color: var(--tinta);
+}
+
+.botao-pessoa--selecionada .botao-pessoa__nome {
+  font-weight: 600;
+}
+
+.botao-pessoa__cor {
+  flex-shrink: 0;
+  width: 3px;
+  height: 14px;
+}
+
+/* Reserva a largura do nome em 600 mesmo quando ele esta em 400: a copia
+   invisivel (::after) empilha embaixo com altura 0, e a coluna fica com a
+   largura da mais larga das duas - sempre a de 600. Assim selecionar nao
+   alarga o botao nem empurra a fileira.
+
+   Conteudo gerado por CSS PODE entrar no nome acessivel do botao (o
+   leitor de tela diria "Celso Celso"). O texto alternativo vazio do
+   content ("/ ''", MDN: "the alternative text value is exposed in the
+   browser's accessibility tree") troca o que e exposto por nada;
+   visibility: hidden e reforco. Navegador que nao entende a forma com
+   "/" descarta a declaracao e fica com a primeira. Nao conferido num
+   leitor de tela de verdade. */
+.botao-pessoa__nome {
+  display: inline-flex;
+  flex-direction: column;
+}
+
+.botao-pessoa__nome::after {
+  content: attr(data-nome);
+  content: attr(data-nome) / "";
+  height: 0;
+  overflow: hidden;
+  visibility: hidden;
+  font-weight: 600;
+  user-select: none;
+  pointer-events: none;
+}
+
+.botao-pessoa--nova {
+  color: var(--tinta-media);
+}
+
+.botao-pessoa--nova:hover {
+  color: var(--tinta);
+}
+
+.seletor-pessoas__nova {
+  margin-top: 16px;
+  max-width: 480px;
+}
+
+.seletor-pessoas__rotulo-nova {
+  display: block;
+  margin-bottom: 6px;
+  font-family: var(--fonte-interface);
+  font-size: 12px;
+  color: var(--tinta-fraca);
+}
+
+.seletor-pessoas__linha {
+  display: flex;
+  gap: 8px;
+}
+
+.seletor-pessoas__input {
+  flex: 1;
+  min-width: 0;
+  min-height: 44px;
+  padding: 0 12px;
+  border: 1px solid var(--borda);
+  border-radius: 2px;
+  background: var(--fundo);
+  color: var(--tinta-corpo);
+  font-family: var(--fonte-interface);
+  font-size: 14px;
+}
+
+.seletor-pessoas__input:focus-visible {
+  outline: 2px solid var(--acento);
+  outline-offset: 2px;
+}
+
+.seletor-pessoas__botao {
+  flex-shrink: 0;
+  min-height: 44px;
+  padding: 0 16px;
+  border: 1px solid var(--borda);
+  border-radius: 2px;
+  background: var(--superficie);
+  color: var(--tinta-corpo);
+  font-family: var(--fonte-interface);
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.seletor-pessoas__botao:hover:not(:disabled) {
+  border-color: var(--tinta-fraca);
+}
+
+.seletor-pessoas__botao:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.seletor-pessoas__botao--discreto {
+  border-color: transparent;
+  background: none;
+  color: var(--tinta-fraca);
+}
+
+.seletor-pessoas__botao--discreto:hover:not(:disabled) {
+  border-color: transparent;
+  color: var(--tinta);
+}
+
+/* progresso do envio - diferente do progresso do processamento */
+
+.barra-envio-bloco {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 32px;
+}
+
+.barra-envio {
+  flex: 1;
+  height: 4px;
+  background: var(--trilho);
+}
+
+.barra-envio__preenchido {
+  height: 100%;
+  background: var(--tinta);
+  transition: width 0.15s ease;
+}
+
+.barra-envio__valor {
+  flex-shrink: 0;
+  font-size: 12px;
+  color: var(--tinta-media);
+}
+
+/* titulo opcional, antes do Transcrever */
+
+.tela-nova__campo-titulo {
+  margin-top: 40px;
+  max-width: 480px;
+}
+
+.tela-nova__rotulo-titulo {
+  display: block;
+  margin-bottom: 6px;
+  font-family: var(--fonte-corpo);
+  font-weight: 600;
+  font-size: 19px;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+  color: var(--tinta-corpo);
+}
+
+.tela-nova__opcional {
+  font-family: var(--fonte-interface);
+  font-weight: 400;
+  font-size: 13px;
+  letter-spacing: 0;
+  color: var(--tinta-fraca);
+}
+
+.tela-nova__input-titulo {
+  width: 100%;
+  min-height: 44px;
+  padding: 0 12px;
+  border: 1px solid var(--borda);
+  border-radius: 2px;
+  background: var(--fundo);
+  color: var(--tinta-corpo);
+  font-family: var(--fonte-interface);
+  font-size: 14px;
+}
+
+.tela-nova__input-titulo:focus-visible {
+  outline: 2px solid var(--acento);
+  outline-offset: 2px;
+}
+
+.tela-nova__ajuda-titulo {
+  margin: 6px 0 0;
+  font-family: var(--fonte-interface);
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--tinta-fraca);
+}
+
+/* rodape */
+
+.tela-nova__rodape {
+  margin-top: 40px;
+  padding-top: 20px;
+  border-top: 1px solid var(--linha);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px 20px;
+}
+
+.botao-transcrever {
+  min-height: 44px;
+  padding: 0 24px;
+  border: 1px solid var(--acento);
+  border-radius: 2px;
+  background: var(--acento);
+  color: var(--fundo);
+  font-family: var(--fonte-interface);
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.botao-transcrever:hover:not(:disabled) {
+  background: var(--acento-fundo);
+  border-color: var(--acento-fundo);
+}
+
+.botao-transcrever:disabled {
+  cursor: default;
+  opacity: 0.6;
+}
+
+.tela-nova__rodape-nota {
+  font-family: var(--fonte-interface);
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--tinta-fraca);
+}

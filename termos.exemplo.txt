@@ -1,0 +1,52 @@
+# termos.exemplo.txt - exemplo de vocabulario do dominio
+#
+# O glossario real fica em termos.txt, FORA do git: e vocabulario da sua
+# empresa (nomes de produto, sistemas, siglas). Para comecar:
+#
+#     cp termos.exemplo.txt termos.txt
+#
+# Sem termos.txt, o app roda com o glossario vazio. Ele tambem se edita
+# pela tela (Perfil > Configuracoes > Glossario).
+#
+# Formato:  errado => certo
+# Linhas com # sao comentario. Ordem importa: padroes mais especificos
+# primeiro. O pipeline imprime quantas vezes cada regra disparou - regra
+# que dispara demais provavelmente esta errada; regra que nunca dispara
+# pode sair. Maiuscula e acento nao importam para casar; o lado certo sai
+# sempre como escrito aqui.
+
+# --- ferramentas de IA ---
+chat de tibete => ChatGPT
+chat de EPT => ChatGPT
+chat APT => ChatGPT
+chat GPT => ChatGPT
+
+# "cloud"/"Claudio" no contexto de ferramenta de IA e Claude.
+# CUIDADO: se voce falar de nuvem ("cloud computing") ou de alguem chamado
+# Claudio, comente estas duas linhas - vao estragar texto correto.
+extensão do cloud => extensão do Claude
+o Claudio => o Claude
+
+# --- metodo de priorizacao ---
+matriz de goutes => matriz GUT
+matriz root => matriz GUT
+matriz good => matriz GUT
+# CUIDADO: "uma matriz útil" tambem e portugues correto.
+matriz util => matriz GUT
+
+# --- termos de negocio ---
+em housing => in house
+em house => in house
+
+# --- produto interno (ficticio, so para o exemplo) ---
+# Mais especifica primeiro: com o "do", a concordancia vai junto.
+do painel de orbita => do Painel Órbita
+painel de orbita => Painel Órbita
+painel orbita => Painel Órbita
+
+# --- descricoes dos termos (tela Glossario) ---
+# "#= termo => descricao": comeca com #, o pipeline le como comentario.
+# Vai para o vocabulario do .txt baixado. Editado pela tela - so esta
+# secao e reescrita.
+#= Painel Órbita => painel interno de indicadores (exemplo fictício)
+#= matriz GUT => priorização por gravidade, urgência e tendência

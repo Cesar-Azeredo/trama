@@ -1,0 +1,146 @@
+/*
+  Transicao entre telas (tema/transicaoDeRota.ts). View Transitions API
+  nativa do navegador - sem biblioteca nova. So a parte de resposta e
+  movimento da skill apple-design se aplica aqui (ADR 0012); nada de
+  vocabulario de material (blur, camada, sombra).
+
+  O cabecalho tem nome PROPRIO e nunca anima - a casca fica parada, so o
+  conteudo se move (identidade-rec-meet/SKILL.md: "a interface deve
+  quase desaparecer"). Sem isso, o padrao da View Transitions API seria
+  animar a pagina inteira como uma unica captura, arrastando a nav junto
+  a cada clique.
+*/
+
+.cabecalho {
+  view-transition-name: cabecalho;
+}
+
+/* NAO no <main> - ver o comentario de .area-conteudo em base.css. */
+.area-conteudo {
+  view-transition-name: conteudo;
+}
+
+::view-transition-group(root),
+::view-transition-group(cabecalho) {
+  animation: none;
+}
+
+/* O cabecalho nao pode aparecer DUAS vezes durante a transicao. A
+   captura antiga some (display: none) e so a nova aparece, parada, do
+   primeiro quadro ao ultimo - o padrao que a documentacao do Chrome usa
+   para um elemento que nao deve animar:
+
+     ::view-transition-old(video) { display: none; }
+     ::view-transition-new(video) { animation: none; }
+
+   A versao anterior punha animation: none nos DOIS lados. Isso so
+   desligava o crossfade - as duas capturas continuavam empilhadas, com
+   opacidade 1 cada, e ainda com o mix-blend-mode: plus-lighter padrao
+   do navegador somando uma a outra. Como o fundo do cabecalho e
+   transparente, a regua da aba antiga aparecia por tras da nova: duas
+   abas sublinhadas ao mesmo tempo - e, com os links em posicoes
+   ligeiramente diferentes entre as duas versoes, a nav parecia "se
+   mexer". */
+::view-transition-old(cabecalho),
+::view-transition-old(abas) {
+  display: none;
+}
+
+::view-transition-new(cabecalho),
+::view-transition-new(abas) {
+  animation: none;
+}
+
+/* A barra de abas do celular (BarraAbas.css, view-transition-name: abas)
+   tem o mesmo tratamento pelo mesmo motivo: e casca, nao conteudo, e a
+   aba ativa nao pode aparecer duas vezes. */
+::view-transition-group(abas) {
+  animation: none;
+}
+
+/* "secao" (Nova reuniao <-> Reunioes <-> Pessoas <-> Perfil):
+   crossfade curto, sem direcao - sao lugares diferentes, nao
+   profundidades diferentes. damping 1.0 da skill: nunca overshoot num
+   clique de nav, que nao carrega momentum de gesto nenhum.
+
+   150ms, nao 350ms: e navegacao por clique, nao por gesto - nao ha
+   trajetoria de dedo pra "ler" nem sensacao de peso pra transmitir. Uma
+   troca feita 50x por dia (nav lateral, abrir uma reuniao) precisa ficar
+   perto do limiar de "quase nao percebo", nao ganhar uma pausa. Abaixo
+   de ~100ms comeca a ler como piscada em vez de movimento; 150ms e o
+   ponto mais rapido que ainda mostra direcao sem virar um soquinho. */
+::view-transition-old(conteudo),
+::view-transition-new(conteudo) {
+  animation-duration: 150ms;
+  animation-timing-function: cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+/* "avancar" (drill-in hierarquico: Lista -> Detalhe -> Revisao ou
+   Processando): entra da direita, sai pra esquerda.
+
+   SEM espaco antes de "::view-transition-*" - a arvore de pseudo-
+   elementos da View Transitions API e uma cadeia encadeada direto no
+   documento (html::view-transition::view-transition-group(x)::...),
+   nao descendentes de verdade. Com espaco (combinador descendente) o
+   navegador nao casa a regra - testado na pratica: a "avancar" e a
+   "voltar" caiam no fade padrao do navegador em vez destas animacoes. */
+:root[data-transicao="avancar"]::view-transition-old(conteudo) {
+  animation-name: rm-sai-esquerda;
+}
+:root[data-transicao="avancar"]::view-transition-new(conteudo) {
+  animation-name: rm-entra-direita;
+}
+
+/* "voltar": espelha o MESMO caminho de "avancar", nunca um efeito
+   novo - principio de consistencia espacial da skill ("se algo
+   desaparece de um jeito, esperamos que reapareca de onde veio"). */
+:root[data-transicao="voltar"]::view-transition-old(conteudo) {
+  animation-name: rm-sai-direita;
+}
+:root[data-transicao="voltar"]::view-transition-new(conteudo) {
+  animation-name: rm-entra-esquerda;
+}
+
+@keyframes rm-entra-direita {
+  from {
+    transform: translateX(28px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes rm-sai-esquerda {
+  from {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateX(-28px);
+    opacity: 0;
+  }
+}
+
+@keyframes rm-entra-esquerda {
+  from {
+    transform: translateX(-28px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes rm-sai-direita {
+  from {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateX(28px);
+    opacity: 0;
+  }
+}

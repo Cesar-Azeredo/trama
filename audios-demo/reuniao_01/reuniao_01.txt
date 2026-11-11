@@ -1,0 +1,18 @@
+[00:00:00] Beatriz: Bom dia, pessoal. Vamos começar pelo planejamento do trimestre, porque a pauta de hoje é longa e eu quero sair daqui com os três objetivos fechados.
+[00:00:12] Diego: Do lado de produto, a prioridade continua sendo o Painel Órbita. Os clientes pedem a exportação dos relatórios desde agosto.
+[00:00:21] Helena: E o suporte sente isso todo dia. Metade dos chamados da última semana era sobre exportação. Se a gente resolver isso, o tempo de resposta cai pela metade.
+[00:00:35] Marcos: Eu concordo com a prioridade, mas a equipe de engenharia está com duas pessoas a menos até dezembro. Não dá para prometer a exportação e a nova tela de permissões no mesmo trimestre.
+[00:00:50] Beatriz: Então vamos escolher. Qual das duas tem mais impacto no OKR de retenção?
+[00:00:56] Diego: A exportação, sem dúvida. A tela de permissões é pedido de dois clientes grandes, mas a exportação aparece em quase todas as conversas de renovação.
+[00:01:09] Marcos: Então a permissão fica para janeiro. Eu prefiro assim. Com uma entrega só, a gente consegue testar direito antes de liberar para todo mundo.
+[00:01:20] Helena: Posso montar a lista dos clientes que mais pediram, para o Diego conversar com eles antes de fechar o escopo?
+[00:01:29] Diego: Pode, isso ajuda muito. Até quinta?
+[00:01:32] Helena: Até quinta.
+[00:01:34] Beatriz: Segundo objetivo: o NPS. A gente caiu quatro pontos no último trimestre e eu quero entender o porquê antes de definir a meta.
+[00:01:45] Helena: Boa parte das notas baixas cita a lentidão do painel da orbita quando o relatório é grande. Não é bug, é tempo de carregamento.
+[00:01:55] Marcos: Isso a gente consegue atacar junto com a exportação. É a mesma consulta por baixo, então otimizar uma melhora a outra.
+[00:02:05] Beatriz: Ótimo. Então o segundo objetivo é recuperar os quatro pontos de NPS, medindo o tempo de carregamento como indicador.
+[00:02:14] Diego: Terceiro objetivo eu sugiro deixar para a documentação. O time de vendas pede material novo desde o lançamento.
+[00:02:23] Beatriz: Concordo. Marcos, você consegue estimar a exportação até a próxima reunião?
+[00:02:29] Marcos: Consigo uma estimativa grosseira até segunda, e uma mais firme depois que o Diego fechar o escopo com os clientes.
+[00:02:39] Beatriz: Perfeito. Fechamos então: exportação no Painel Órbita, quatro pontos de NPS e a documentação para vendas. Obrigada, pessoal.

@@ -1,0 +1,13 @@
+/* Barra de tempo de fala (SKILL.md, elemento de assinatura). margin-top
+   fica com quem usa. */
+.barra-fala {
+  display: flex;
+  height: 5px;
+  width: 100%;
+  background: var(--trilho);
+  overflow: hidden;
+}
+
+.barra-fala__segmento {
+  height: 100%;
+}

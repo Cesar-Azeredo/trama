@@ -1,0 +1,22 @@
+.botao-play {
+  flex-shrink: 0;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 1px solid var(--borda);
+  background: var(--superficie);
+  color: var(--tinta);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.botao-play:hover {
+  border-color: var(--tinta-fraca);
+}
+
+.botao-play[aria-pressed="true"] {
+  color: var(--acento);
+  border-color: var(--acento);
+}

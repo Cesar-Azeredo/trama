@@ -1,0 +1,597 @@
+.tela-detalhe {
+  max-width: 820px;
+  margin: 0 auto;
+  padding: 32px 16px 96px;
+}
+
+.tela-detalhe__voltar {
+  display: inline-block;
+  margin-bottom: 24px;
+  font-size: 13px;
+  color: var(--tinta-fraca);
+  text-decoration: none;
+}
+
+.tela-detalhe__voltar:hover {
+  color: var(--tinta);
+}
+
+.tela-detalhe__estado,
+.tela-detalhe__erro {
+  font-size: 13px;
+  color: var(--tinta-fraca);
+}
+
+.tela-detalhe__erro {
+  color: var(--alerta);
+}
+
+.tela-detalhe__cabecalho {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.tela-detalhe__titulo-bloco {
+  min-width: 0;
+}
+
+/* Celular: titulo de 34px e "Revisada · Editar revisão" (ou "A revisar")
+   nao cabem lado a lado em 343px - a acao desce para baixo do titulo em
+   vez de espremer o titulo ate ele sair do proprio bloco. */
+@media (max-width: 719.98px) {
+  .tela-detalhe__cabecalho {
+    flex-wrap: wrap;
+  }
+}
+
+/* Data da reuniao embaixo do titulo - metadado de linha (SKILL.md,
+   escala: 11,5-13px), numeros tabulares. */
+.tela-detalhe__data {
+  margin: 6px 0 0;
+  font-size: 13px;
+  color: var(--tinta-fraca);
+}
+
+.tela-detalhe__titulo {
+  font-family: var(--fonte-corpo);
+  font-weight: 600;
+  font-size: 34px;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  color: var(--tinta);
+  margin: 0;
+}
+
+/* Revisada: estado, nao acao - texto discreto, sem botao (SKILL.md regra
+   2: estado por peso e posicao, nunca etiqueta). O link de editar e
+   secundario, no tom de "voltar". */
+.tela-detalhe__revisao {
+  flex-shrink: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  column-gap: 16px;
+  row-gap: 0;
+  font-family: var(--fonte-interface);
+  font-size: 13px;
+}
+
+.tela-detalhe__estado-revisada {
+  color: var(--tinta-fraca);
+}
+
+.tela-detalhe__editar-revisao {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  color: var(--tinta-fraca);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-thickness: 1px;
+}
+
+.tela-detalhe__editar-revisao:hover {
+  color: var(--tinta);
+}
+
+/* A revisar: e a acao da tela - botao primario, o mesmo do Transcrever. */
+.tela-detalhe__revisar {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0 20px;
+  border: 1px solid var(--acento);
+  border-radius: 2px;
+  background: var(--acento);
+  color: var(--fundo);
+  font-family: var(--fonte-interface);
+  font-size: 14px;
+  text-decoration: none;
+}
+
+.tela-detalhe__revisar:hover {
+  background: var(--acento-fundo);
+  border-color: var(--acento-fundo);
+}
+
+.tela-detalhe__avisos {
+  margin-bottom: 20px;
+  padding: 12px 16px;
+  border: 1px solid var(--borda);
+  font-size: 13px;
+  color: var(--tinta-media);
+}
+
+.tela-detalhe__avisos p {
+  margin: 0;
+}
+
+/* resumo de dinamica */
+
+.resumo-dinamica {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px 28px;
+  margin-bottom: 28px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid var(--linha);
+}
+
+.resumo-dinamica__pessoa {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.resumo-dinamica__marca {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  flex-shrink: 0;
+  align-self: center;
+}
+
+.resumo-dinamica__nome {
+  font-family: var(--fonte-interface);
+  font-weight: 600;
+  font-size: 13px;
+  color: var(--tinta-corpo);
+}
+
+.resumo-dinamica__stat {
+  font-size: 11.5px;
+  color: var(--tinta-fraca);
+}
+
+/* layout: fita + transcript */
+
+/* Ate 1440px: painel em cima (o layout de sempre), fita + transcript
+   embaixo. Grid com areas nomeadas para a MESMA ordem do DOM servir aos
+   dois layouts, sem duplicar o painel. */
+.tela-detalhe__layout {
+  display: grid;
+  grid-template-columns: 30px minmax(0, 1fr);
+  grid-template-areas:
+    "painel painel"
+    "fita   transcript";
+  column-gap: 20px;
+  align-items: start;
+}
+
+.tela-detalhe__layout--sem-fita {
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-areas:
+    "painel"
+    "transcript";
+}
+
+.tela-detalhe__painel {
+  grid-area: painel;
+  min-width: 0;
+}
+
+.tela-detalhe__layout > .fita-de-tempo {
+  grid-area: fita;
+}
+
+.transcript {
+  /* relative: o botao "Corrigir" da selecao e o painel se posicionam
+     dentro dele (PainelCorrecao.css) */
+  position: relative;
+  grid-area: transcript;
+  min-width: 0;
+  max-width: 640px;
+}
+
+/* Acima de 1440px: tres colunas. O transcript continua em 640px - e texto
+   corrido, a largura de leitura nao muda com a janela (ADR 0015). O
+   espaco a mais vai para o painel lateral, fixo (sticky) a direita, com o
+   resumo da dinamica e o controle de interacoes. */
+@media (width > 1440px) {
+  .tela-detalhe {
+    max-width: calc(var(--largura-fluida-max) + 2 * var(--margem-fluida));
+    padding-left: var(--margem-fluida);
+    padding-right: var(--margem-fluida);
+  }
+
+  /* Alinhada a esquerda, nao centralizada: a fita comeca na mesma borda
+     do titulo e do "voltar" em cima. O painel fica com o espaco que sobra
+     (minimo de 280px) - a 1441px de janela, ~580px; a 1776px, ~900px. */
+  .tela-detalhe__layout {
+    grid-template-columns: 30px minmax(0, 640px) minmax(280px, 1fr);
+    grid-template-areas: "fita transcript painel";
+    column-gap: 48px;
+  }
+
+  .tela-detalhe__layout--sem-fita {
+    grid-template-columns: minmax(0, 640px) minmax(280px, 1fr);
+    grid-template-areas: "transcript painel";
+  }
+
+  .tela-detalhe__painel {
+    position: sticky;
+    top: 24px;
+    max-height: calc(100vh - var(--altura-cabecalho) - 48px);
+    overflow-y: auto;
+  }
+
+  .tela-detalhe__painel .resumo-dinamica {
+    border-bottom: none;
+    padding-bottom: 0;
+  }
+}
+
+.bloco-fala {
+  margin-bottom: 26px;
+}
+
+.linha-fala {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+}
+
+.linha-fala + .linha-fala {
+  margin-top: 6px;
+}
+
+.linha-fala__margem {
+  position: relative;
+  flex-shrink: 0;
+  width: 92px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  text-align: right;
+}
+
+/* Toca a fala (ver Detalhe.tsx:BotaoTocarFala). Nome/timestamp e marcas de
+   evento sao alinhados a DIREITA da margem (align-items: flex-end); o
+   lado esquerdo fica livre, entao o controle mora ali - nunca colide com
+   esse conteudo. So aparece no hover ou foco da linha inteira (o hover
+   cobre a altura toda do paragrafo, nao so a margem), para o Tab
+   alcancar mesmo invisivel. */
+.botao-tocar-fala {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  padding: 0;
+  color: var(--tinta-fraca);
+  cursor: pointer;
+  opacity: 0;
+}
+
+.linha-fala:hover .botao-tocar-fala,
+.linha-fala:focus-within .botao-tocar-fala {
+  opacity: 1;
+}
+
+.botao-tocar-fala:hover {
+  color: var(--tinta);
+}
+
+.botao-tocar-fala[aria-pressed="true"] {
+  color: var(--acento);
+  opacity: 1;
+}
+
+.botao-tocar-fala:focus-visible {
+  opacity: 1;
+  outline: 2px solid var(--acento);
+  outline-offset: 2px;
+}
+
+/* Nome maior que os 92px da margem (uma palavra so, em caixa alta) corta
+   com reticencias - sem isso passava para a esquerda e encostava na fita.
+   Nome inteiro no title (Detalhe.tsx). */
+.linha-fala__nome {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-family: var(--fonte-interface);
+  font-weight: 600;
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+/* Voz sem pessoa ("voz não atribuída"): minusculas e peso normal - tres
+   palavras em caixa alta seria "caixa alta em frase" (SKILL.md, Proibido),
+   e o peso 600 em caixa alta e o que marca um NOME de pessoa. A cor
+   (--tinta-fraca) vem de corDoTextoDaVoz; quebra em duas linhas dentro
+   dos 92px da margem, alinhada a direita como o nome. */
+.linha-fala__nome--sem-pessoa {
+  white-space: normal;
+  font-weight: 400;
+  font-size: 11.5px;
+  letter-spacing: 0;
+  text-transform: none;
+  line-height: 1.3;
+}
+
+.linha-fala__timestamp {
+  margin-top: 4px;
+  font-size: 11px;
+  /* tinta-tenue passa so 3:1 (SKILL.md) - nao serve para texto de 11px */
+  color: var(--tinta-fraca);
+}
+
+/* break-word: palavra maior que a coluna (um link colado na fala) quebra
+   em vez de passar da tela - no celular a coluna tem ~185px. */
+.linha-fala__texto {
+  flex: 1;
+  min-width: 0;
+  overflow-wrap: break-word;
+  margin: 0;
+  font-family: var(--fonte-corpo);
+  font-size: 16px;
+  line-height: 1.62;
+  color: var(--tinta-corpo);
+}
+
+/* palavra com atribuicao divergente (ver Detalhe.tsx:TextoComMarcas).
+   So a palavra muda - o resto do corpo continua em --tinta-corpo. O
+   pontilhado e o segundo portador de significado (SKILL.md: cor nunca e
+   o unico) e tambem o que diz "pista", nao "correcao". */
+.palavra-divergente {
+  color: var(--cor-pista);
+  border-bottom: 1px dotted var(--cor-pista);
+}
+
+/* Sobreposicao: fundo na cor da OUTRA pessoa em baixa opacidade
+   (--opacidade-sobreposicao, tokens.css). color-mix com transparent sobre
+   o papel da exatamente a mistura que tests/test_paleta.py mede.
+   box-decoration-break: a faixa que quebra de linha continua nas duas. */
+.faixa-sobreposicao {
+  background: color-mix(in srgb, var(--cor-faixa) var(--opacidade-sobreposicao), transparent);
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+}
+
+/* Dentro da faixa, a letra da pista volta para --tinta-corpo: na cor da
+   voz, sobre a faixa, nao passa 4,5:1 no modo claro. O pontilhado continua
+   na cor da voz - e ele que diz "pista". */
+.faixa-sobreposicao .palavra-divergente {
+  color: var(--tinta-corpo);
+}
+
+/* Mesma regra dentro da fala tocando (.trecho-tocando, base.css): sobre o
+   --destaque-fundo a letra na cor da voz cai a 3,1-3,6:1 e o
+   --tinta-fraca a 3,3-3,7:1. A pista mostra a voz so no pontilhado; a
+   lacuna e o lapis sobem para --tinta-media (7,29 claro, 4,83 escuro).
+   Travado em tests/test_paleta.py. */
+.trecho-tocando .palavra-divergente {
+  color: var(--tinta-corpo);
+}
+
+.trecho-tocando .marca-lacuna,
+.trecho-tocando .botao-corrigir-fala {
+  color: var(--tinta-media);
+}
+
+/* lacuna de fala sem texto, inline no fluxo (ver Detalhe.tsx:TextoComMarcas).
+   Estilo "Marca" da escala tipografica (SKILL.md) - Plex Mono, caixa baixa,
+   tracking largo - para se destacar como anotacao, nao como fala. Nunca
+   cor de estado (--alerta e so para disputa/erro): isto e omissao honesta,
+   nao problema. */
+.marca-lacuna {
+  font-family: var(--fonte-numeros);
+  font-size: 15px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  color: var(--tinta-fraca);
+  cursor: default;
+}
+
+/* marca de confianca baixa da FALA (nunca de uma palavra isolada - ver
+   MarcaConfiancaBaixa). Mesmo tratamento tipografico da marginalia de
+   eventos, para nao competir visualmente com ela. */
+.marca-confianca-baixa {
+  margin-top: 6px;
+  font-family: var(--fonte-interface);
+  font-size: 9.5px;
+  letter-spacing: 0.02em;
+  color: var(--tinta-fraca);
+  white-space: nowrap;
+  cursor: default;
+}
+
+/* fala corrigida a mao (Detalhe.tsx:MarcaEditada) - mesmo tratamento da
+   marca de confianca baixa: anotacao de margem, nunca cor de estado. */
+.marca-editada {
+  margin-top: 6px;
+  font-family: var(--fonte-interface);
+  font-size: 9.5px;
+  letter-spacing: 0.02em;
+  color: var(--tinta-fraca);
+  white-space: nowrap;
+  cursor: default;
+}
+
+/* marginalia dos eventos (apoio/interrupcao/disputa) */
+
+.linha-fala__eventos {
+  margin-top: 6px;
+  /* width: 100% da margem (92px), nao a largura do conteudo - e o que
+     da uma referencia definida pro max-width das marcas abaixo. Sem
+     isso, com white-space: nowrap, a marca cresceria ate o conteudo e
+     estouraria a margem. */
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+}
+
+/* Duas linhas (ver MarcaEventos): nome em cima, tipo e contagem
+   embaixo, as duas alinhadas a direita, nunca mais largas que a margem. */
+.evento-marca {
+  max-width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  font-family: var(--fonte-interface);
+  font-size: 9.5px;
+  line-height: 1.3;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  cursor: default;
+}
+
+.evento-marca__linha-nome {
+  max-width: 100%;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.evento-marca__til {
+  /* tinta-tenue passa so 3:1 (SKILL.md) - nao serve para texto de 9.5px */
+  flex-shrink: 0;
+  color: var(--tinta-fraca);
+  margin-right: 1px;
+}
+
+/* Nome maior que a margem corta com reticencias (nome completo no title
+   da marca). min-width: 0 e o que deixa um item flex encolher abaixo da
+   largura do proprio texto - sem isso o overflow nunca acontece e o
+   corte nao aparece. So o nome corta: o tipo e curto e sempre cabe. */
+.evento-marca__nome--sem-pessoa {
+  font-weight: 400;
+  text-transform: none;
+}
+
+.evento-marca__nome {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+/* Dois sinais por tipo, nunca so um: tom E peso. So o tom (tres cinzas
+   vizinhos, mesmo peso) deixava apoio e interrupcao parecidos demais na
+   leitura - #6a6251 vs #4a443a no claro, #968d7c vs #b8b0a0 no escuro.
+   Apoio fica fraco e leve; interrupcao sobe pra tinta cheia e 600, perto
+   da disputa pelo peso mas separada dela pela cor, que so a disputa tem
+   (--alerta). Nenhuma cor nova: as tres ja passam 4.5:1 nos dois modos
+   em qualquer tamanho - --tinta-tenue (3:1) nunca, o texto tem 9.5px. */
+.evento-marca__tipo--apoio {
+  color: var(--tinta-fraca);
+  font-weight: 400;
+}
+
+.evento-marca__tipo--interrupcao {
+  color: var(--tinta);
+  font-weight: 600;
+}
+
+.evento-marca__tipo--disputa {
+  color: var(--alerta);
+  font-weight: 600;
+}
+
+.tela-detalhe__toggle-eventos {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  margin-bottom: 20px;
+  font-family: var(--fonte-interface);
+  font-size: 13px;
+  color: var(--tinta-media);
+  cursor: pointer;
+}
+
+.tela-detalhe__legenda-faixa {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: -12px 0 20px;
+  font-family: var(--fonte-interface);
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--tinta-fraca);
+}
+
+/* Amostra neutra da faixa: a cor de verdade e sempre a de quem falava
+   junto, que muda de trecho para trecho. */
+.tela-detalhe__amostra-faixa {
+  flex-shrink: 0;
+  width: 22px;
+  height: 12px;
+  background: color-mix(in srgb, var(--tinta-media) var(--opacidade-sobreposicao), transparent);
+}
+
+.tela-detalhe__toggle-eventos input[type="checkbox"] {
+  /* Sem isto o navegador usa o azul saturado dele - proibido na skill.
+     accent-color troca so a cor de "marcado", mantendo o checkbox nativo
+     (semantica e teclado intactos, sem reinventar o controle). */
+  accent-color: var(--tinta);
+}
+
+.tela-detalhe__toggle-eventos input[type="checkbox"]:focus-visible {
+  outline: 2px solid var(--acento);
+  outline-offset: 2px;
+}
+
+/* nao processada / processando / interrompido */
+
+.tela-detalhe__estado-processamento {
+  margin: 8px 0 24px;
+  font-family: var(--fonte-interface);
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--tinta-media);
+}
+
+/* minmax(0, 1fr), nao 1fr: 1fr tem minimo "auto" = largura do nome de
+   arquivo inteiro, que sem espaco passava da tela do celular. */
+.tela-detalhe__ficha {
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr);
+  gap: 6px 16px;
+  margin: 0 0 24px;
+  font-size: 13px;
+}
+
+.tela-detalhe__ficha dt {
+  color: var(--tinta-fraca);
+}
+
+.tela-detalhe__ficha dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+  color: var(--tinta-corpo);
+}

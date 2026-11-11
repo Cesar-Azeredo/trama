@@ -1,0 +1,73 @@
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "trama"
+version = "0.1.0"
+description = "Transcricao de reunioes presenciais com identificacao de quem falou, 100% local."
+readme = "README.md"
+# Source-available, sem uso comercial (ADR 0024). Cobre so o codigo deste
+# projeto; modelos e bibliotecas de terceiros: ATRIBUICAO.md.
+license = "PolyForm-Noncommercial-1.0.0"
+license-files = ["LICENSE"]
+requires-python = ">=3.12"
+dependencies = [
+    "numpy",
+    "torch",
+    "soundfile",
+    "pyannote.audio>=3.1",
+    "faster-whisper",
+    "mlx-whisper; sys_platform == 'darwin' and platform_machine == 'arm64'",
+    # servidor local (ADR 0004)
+    "fastapi",
+    "uvicorn[standard]",
+    "python-multipart",  # upload de audio - parsing puro, sem rede
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest",
+    "httpx",  # fastapi.testclient
+    "coverage",
+    "ruff",
+    "radon",
+]
+
+[project.scripts]
+trama-processar = "trama.cli.processar:main"
+trama-revisar = "trama.cli.revisar:main"
+trama-servidor = "trama.servidor.app:main"
+trama-verificar = "trama.cli.verificar:main"
+
+[tool.setuptools.packages.find]
+include = ["trama*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+python_files = ["test_*.py"]
+addopts = "-p no:cacheprovider"
+
+[tool.ruff]
+target-version = "py312"
+line-length = 100
+extend-exclude = ["frontend"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I"]
+
+[tool.ruff.lint.per-file-ignores]
+# As suites isolam o ambiente (tests/_ambiente.py) e instalam stubs de
+# torch/pyannote ANTES de importar o projeto - import fora do topo e o
+# proposito. Lambda atribuida a nome e o jeito curto de um stub.
+# Linhas longas nas suites sao texto de fixture (falas inteiras).
+"tests/*" = ["E402", "E731", "E501", "E741"]
+# Poe a raiz em sys.path antes dos imports, para rodar por caminho
+# (python trama/servidor/app.py) - ver o comentario no topo do arquivo.
+"trama/servidor/app.py" = ["E402"]
+# Exemplo de formato no prompt do LLM: a linha longa e o proprio formato.
+"experimental/ata.py" = ["E501"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["trama", "ferramentas", "experimental"]

@@ -1,0 +1,367 @@
+.tela-revisao {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 32px 16px 96px;
+}
+
+.tela-revisao__voltar {
+  display: inline-block;
+  margin-bottom: 24px;
+  font-size: 13px;
+  color: var(--tinta-fraca);
+  text-decoration: none;
+}
+
+.tela-revisao__voltar:hover {
+  color: var(--tinta);
+}
+
+.tela-revisao__titulo {
+  font-family: var(--fonte-corpo);
+  font-weight: 600;
+  font-size: 34px;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  color: var(--tinta);
+  margin: 0 0 20px;
+}
+
+.tela-revisao__aviso-limiar {
+  margin: 0 0 28px;
+  padding: 12px 16px;
+  border: 1px solid var(--borda);
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--tinta-media);
+}
+
+.tela-revisao__estado,
+.tela-revisao__erro {
+  font-size: 13px;
+  color: var(--tinta-fraca);
+}
+
+.tela-revisao__erro {
+  color: var(--alerta);
+}
+
+.tela-revisao__cartoes {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* Acima de 1440px: cartoes de cluster em duas colunas, no container
+   fluido (ADR 0015) - quatro clusters cabem numa tela so, lado a lado,
+   para comparar as vozes. O texto dos trechos continua curto por cartao. */
+@media (width > 1440px) {
+  .tela-revisao {
+    max-width: calc(var(--largura-fluida-max) + 2 * var(--margem-fluida));
+    padding-left: var(--margem-fluida);
+    padding-right: var(--margem-fluida);
+  }
+
+  .tela-revisao__cartoes {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 24px 48px;
+    align-items: start;
+  }
+}
+
+/* cartao de cluster */
+
+.cartao-cluster {
+  background: var(--superficie);
+  border: 1px solid var(--borda);
+  border-radius: 2px;
+  padding: 20px;
+}
+
+.cartao-cluster__cabecalho {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.cartao-cluster__rotulo {
+  font-family: var(--fonte-numeros);
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  /* tinta-tenue passa so 3:1 (SKILL.md) - nao serve para texto de 10px */
+  color: var(--tinta-fraca);
+}
+
+.cartao-cluster__fala-s {
+  font-size: 11.5px;
+  color: var(--tinta-fraca);
+}
+
+.cartao-cluster__candidatos {
+  margin: 8px 0 0;
+  font-family: var(--fonte-numeros);
+  font-size: 11px;
+  color: var(--tinta-fraca);
+}
+
+/* barra de similaridade */
+
+.barra-similaridade {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.barra-similaridade__trilho {
+  position: relative;
+  flex: 1;
+  height: 8px;
+  background: var(--trilho);
+}
+
+.barra-similaridade__preenchido {
+  height: 100%;
+}
+
+.barra-similaridade__limiar {
+  position: absolute;
+  top: -3px;
+  width: 2px;
+  height: 14px;
+  /* --alerta, nao --linha-forte: --linha-forte e IDENTICO a --tinta nos
+     dois modos da skill (de proposito, para regua/titulo), entao o
+     marcador ficaria invisivel sempre que caisse sobre a parte da barra
+     que passou o limiar (preenchida em --tinta). Nem --acento: o Verde
+     Trama sobre a Tinta da 2,06:1. O marcador so cai sobre --trilho
+     (sem passar) ou --tinta (passou) - nunca sobre o preenchimento em
+     --alerta, que para antes do limiar. */
+  background: var(--alerta);
+}
+
+.barra-similaridade__valor {
+  flex-shrink: 0;
+  font-size: 12px;
+  color: var(--tinta-media);
+}
+
+.barra-similaridade__descricao {
+  flex-shrink: 0;
+  font-size: 11px;
+  color: var(--tinta-fraca);
+}
+
+.barra-similaridade__descricao--falhou {
+  color: var(--alerta);
+}
+
+/* trechos tocaveis */
+
+.cartao-cluster__trechos {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 16px 0;
+}
+
+.trecho-tocavel {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.trecho-tocavel__texto {
+  margin: 0;
+  font-family: var(--fonte-interface);
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--tinta-corpo);
+  /* Maximo 2 linhas - o texto aqui e so para localizar o momento, quem
+     decide e o audio. Sem isso, uma transcricao rapida cabendo no trecho
+     de 15s ainda podia estourar o cartao. */
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  overflow: hidden;
+}
+
+/* campo de nome */
+
+.cartao-cluster__campo {
+  display: block;
+}
+
+.cartao-cluster__campo-rotulo {
+  display: block;
+  margin-bottom: 6px;
+  font-family: var(--fonte-numeros);
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--tinta-fraca);
+}
+
+.cartao-cluster__input {
+  width: 100%;
+  min-height: 44px;
+  padding: 0 12px;
+  border: 1px solid var(--borda);
+  border-radius: 2px;
+  background: var(--fundo);
+  color: var(--tinta-corpo);
+  font-family: var(--fonte-interface);
+  font-size: 14px;
+}
+
+.cartao-cluster__input:focus-visible {
+  outline: 2px solid var(--acento);
+  outline-offset: 2px;
+}
+
+.cartao-cluster__input:disabled {
+  color: var(--tinta-fraca);
+  background: var(--trilho);
+}
+
+/* ignorar cluster - mesmo padrao de .tela-detalhe__toggle-eventos
+   (Detalhe.css): accent-color em vez do azul saturado do navegador,
+   min-height 44px de alvo de toque, <label>+<input> de verdade. */
+
+/* tres decisoes por cluster (aprender / so nomear / ignorar) - radio
+   nativo, mesma tipografia do antigo checkbox "Ignorar". */
+.cartao-cluster__modos {
+  margin: 8px 0 0;
+}
+
+.cartao-cluster__modo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  font-family: var(--fonte-interface);
+  font-size: 13px;
+  color: var(--tinta-media);
+  cursor: pointer;
+}
+
+.cartao-cluster__modo input[type="radio"] {
+  accent-color: var(--tinta);
+}
+
+.cartao-cluster__modo input[type="radio"]:focus-visible {
+  outline: 2px solid var(--acento);
+  outline-offset: 2px;
+}
+
+.cartao-cluster__modo-explicacao {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--tinta-fraca);
+}
+
+/* aviso antes de gravar quando a revisao tira voz ja aprendida - regua
+   de 2px em --alerta em cima, como a confirmacao de exclusao em Pessoas:
+   e perda de dado aprendido, so acontece depois de a pessoa ver. */
+.aviso-ledger {
+  margin-top: 32px;
+  padding-top: 20px;
+  border-top: 2px solid var(--alerta);
+}
+
+.aviso-ledger__titulo {
+  margin: 0 0 10px;
+  font-family: var(--fonte-corpo);
+  font-weight: 600;
+  font-size: 19px;
+  line-height: 1.2;
+  color: var(--tinta-corpo);
+}
+
+.aviso-ledger__lista {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-family: var(--fonte-interface);
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--tinta-media);
+}
+
+.aviso-ledger__lista li + li {
+  margin-top: 6px;
+}
+
+.aviso-ledger__cluster {
+  font-family: var(--fonte-numeros);
+  font-size: 11px;
+  color: var(--tinta-fraca);
+}
+
+.aviso-ledger__acoes {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 16px;
+  margin-top: 16px;
+}
+
+.aviso-ledger__voltar {
+  min-height: 44px;
+  padding: 0 4px;
+  border: none;
+  background: none;
+  font-family: var(--fonte-interface);
+  font-size: 13px;
+  color: var(--tinta-media);
+  cursor: pointer;
+}
+
+.aviso-ledger__voltar:hover:not(:disabled) {
+  color: var(--tinta);
+}
+
+/* rodape */
+
+.tela-revisao__rodape {
+  margin-top: 32px;
+  padding-top: 20px;
+  border-top: 1px solid var(--linha);
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.botao-salvar-revisao {
+  min-height: 44px;
+  padding: 0 20px;
+  border: 1px solid var(--acento);
+  border-radius: 2px;
+  background: var(--acento);
+  color: var(--fundo);
+  font-family: var(--fonte-interface);
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.botao-salvar-revisao:hover:not(:disabled) {
+  background: var(--acento-fundo);
+  border-color: var(--acento-fundo);
+}
+
+.botao-salvar-revisao:disabled {
+  cursor: default;
+  opacity: 0.6;
+}
+
+.tela-revisao__rodape-legenda {
+  font-size: 12px;
+  color: var(--tinta-fraca);
+}
+
+.tela-revisao__rodape-erro {
+  font-size: 12px;
+  color: var(--alerta);
+}

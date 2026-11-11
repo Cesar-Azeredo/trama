@@ -1,0 +1,330 @@
+.tela-lista {
+  max-width: var(--medida-conteudo);
+  margin: 0 auto;
+  padding: 32px 16px 96px;
+}
+
+.tela-lista__topo {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 16px;
+  margin-bottom: 20px;
+}
+
+.tela-lista__busca {
+  flex: 1;
+  min-width: 0;
+  max-width: 360px;
+  min-height: 44px;
+  padding: 0 12px;
+  border: 1px solid var(--borda);
+  border-radius: 2px;
+  background: var(--fundo);
+  color: var(--tinta-corpo);
+  font-family: var(--fonte-interface);
+  font-size: 14px;
+}
+
+.tela-lista__busca:focus-visible {
+  outline: 2px solid var(--acento);
+  outline-offset: 2px;
+}
+
+.tela-lista__topo .tela-lista__contagem {
+  margin: 0;
+}
+
+/* Data embaixo do titulo - metadado de linha (SKILL.md, 11,5px). */
+.linha-reuniao__data {
+  margin-top: 4px;
+  font-size: 11.5px;
+  color: var(--tinta-fraca);
+}
+
+.tela-lista__contagem {
+  margin: 0 0 20px;
+  font-size: 12px;
+  color: var(--tinta-fraca);
+}
+
+.tela-lista__estado,
+.tela-lista__erro {
+  font-size: 13px;
+  color: var(--tinta-fraca);
+}
+
+.tela-lista__erro {
+  color: var(--alerta);
+}
+
+/* Rotulo de secao (SKILL.md: Plex Mono 10-11px, +0.14em, caixa alta) com
+   regua de 1px - a mesma do Perfil e da tabela de Pessoas. */
+.grupo-reunioes + .grupo-reunioes {
+  margin-top: 40px;
+}
+
+.grupo-reunioes__rotulo {
+  margin: 0;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--linha);
+  font-family: var(--fonte-numeros);
+  font-weight: 400;
+  font-size: 10.5px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--tinta-fraca);
+}
+
+.lista-reunioes {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.linha-reuniao {
+  display: flex;
+  gap: 16px;
+  padding: 20px 0;
+  border-bottom: 1px solid var(--linha);
+}
+
+.linha-reuniao__link {
+  display: block;
+  color: inherit;
+  text-decoration: none;
+}
+
+/* Id fora do padrao reuniao_NN (reuniao processada pela CLI com outro
+   nome de pasta) aparece inteiro aqui - em 30px, passava dos 48px e da
+   tela do celular. Corta com reticencias: o titulo ao lado ja mostra o id
+   completo (formatarTitulo). */
+.linha-reuniao__numero {
+  flex-shrink: 0;
+  width: 48px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 30px;
+  line-height: 1;
+  color: var(--tinta);
+  padding-top: 2px;
+}
+
+.linha-reuniao__numero--apagado {
+  color: var(--tinta-apagada);
+}
+
+.linha-reuniao__corpo {
+  flex: 1;
+  min-width: 0;
+}
+
+.linha-reuniao__topo {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+/* min-width: 0 + overflow-wrap: titulo sem espaco (id cru, nome de
+   arquivo) quebra em vez de alargar a linha alem da tela. */
+.linha-reuniao__titulo {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  font-family: var(--fonte-corpo);
+  font-weight: 600;
+  font-size: 19px;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+  color: var(--tinta-corpo);
+}
+
+.linha-reuniao__duracao {
+  flex-shrink: 0;
+  font-size: 12px;
+  color: var(--tinta-media);
+}
+
+.linha-reuniao__pessoas {
+  margin-top: 8px;
+  font-size: 11.5px;
+  color: var(--tinta-fraca);
+}
+
+/* barra de tempo de fala */
+
+.linha-reuniao .barra-fala {
+  margin-top: 12px;
+}
+
+/* sem dinamica: linha de 1px, nunca barra zerada */
+
+.linha-reuniao__sem-dinamica {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.linha-reuniao__sem-dinamica-traco {
+  flex: 1;
+  height: 1px;
+  background: var(--linha);
+}
+
+.linha-reuniao__sem-dinamica-legenda {
+  flex-shrink: 0;
+  font-size: 11.5px;
+  color: var(--tinta-fraca);
+}
+
+/* nao processada: acao pendente */
+
+.linha-reuniao__acao {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+/* Serve tanto de <button> (nao_processada/interrompido, dispara o
+   processamento) quanto de <a> (processando, so acompanha o progresso
+   de quem ja esta rodando) - display:inline-flex funciona igual pros
+   dois, o <a> nao herdaria min-height de elemento inline sozinho. */
+.botao-processar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 0 16px;
+  border: 1px solid var(--borda);
+  border-radius: 2px;
+  background: var(--superficie);
+  color: var(--tinta-corpo);
+  font-family: var(--fonte-interface);
+  font-size: 13px;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.botao-processar:hover {
+  border-color: var(--tinta-fraca);
+}
+
+.botao-processar:disabled {
+  color: var(--tinta-fraca);
+  cursor: default;
+}
+
+.linha-reuniao__erro-acao {
+  font-size: 12px;
+  color: var(--alerta);
+}
+
+/* coluna de dinamica: so em tela larga (ADR 0015). */
+.linha-reuniao__dinamica {
+  display: none;
+}
+
+/* Acima de 1440px: container fluido (margem de 48px, teto de 1680px) e a
+   lista na largura toda - a barra de fala cresce junto com o corpo, e
+   uma coluna nova mostra a dinamica. As linhas de texto (titulo, nomes)
+   nao ficam mais longas do que ja eram: o espaco vai para colunas. */
+@media (width > 1440px) {
+  .tela-lista {
+    max-width: calc(var(--largura-fluida-max) + 2 * var(--margem-fluida));
+    padding-left: var(--margem-fluida);
+    padding-right: var(--margem-fluida);
+  }
+
+  .linha-reuniao__dinamica {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    flex-shrink: 0;
+    width: 280px;
+    padding-top: 4px;
+    font-family: var(--fonte-interface);
+    font-size: 12px;
+    line-height: 1.4;
+    color: var(--tinta-media);
+  }
+}
+
+/* resultados da busca dentro das falas */
+
+.trechos-reuniao {
+  padding: 16px 0;
+  border-bottom: 1px solid var(--linha);
+}
+
+.trechos-reuniao__titulo {
+  margin: 0 0 8px;
+  font-family: var(--fonte-corpo);
+  font-weight: 600;
+  font-size: 19px;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+  color: var(--tinta-corpo);
+}
+
+.trechos-reuniao__lista {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.trecho-busca {
+  display: grid;
+  grid-template-columns: 140px minmax(0, 1fr);
+  gap: 16px;
+  min-height: 44px;
+  padding: 8px 0;
+  color: inherit;
+  text-decoration: none;
+}
+
+.trecho-busca:hover .trecho-busca__texto {
+  color: var(--tinta);
+}
+
+.trecho-busca__quem {
+  font-family: var(--fonte-interface);
+  font-size: 12px;
+  color: var(--tinta-fraca);
+}
+
+/* Trecho da fala: e transcript, entao Literata 16px (SKILL.md, corpo) -
+   em linha de ate 640px, a medida de leitura. */
+.trecho-busca__texto {
+  max-width: var(--medida-leitura);
+  overflow-wrap: break-word;
+  font-family: var(--fonte-corpo);
+  font-size: 16px;
+  line-height: 1.5;
+  color: var(--tinta-corpo);
+}
+
+/* Palavra buscada: fundo de Fio (--destaque-fundo, ADR 0023), nunca o
+   amarelo de marca-texto do navegador, nunca o --alerta, que e so de
+   disputa e erro. O peso 600 continua dizendo "e aqui" sem a cor. */
+.trecho-busca__marca {
+  background: var(--destaque-fundo);
+  color: var(--tinta);
+  font-weight: 600;
+}
+
+.trechos-reuniao__mais {
+  margin: 4px 0 0;
+  font-family: var(--fonte-interface);
+  font-size: 12px;
+  color: var(--tinta-fraca);
+}
+
+@media (max-width: 719.98px) {
+  .trecho-busca {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 2px;
+  }
+}
+
