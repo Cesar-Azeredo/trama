@@ -15,11 +15,25 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 import numpy as np
-import torch
-from pyannote.audio import Inference, Model
-from pyannote.core import Segment
 
 from trama import migracoes
+
+# torch e pyannote so sao carregados por quem calcula embedding
+# (get_inference/embed_segments), nunca no import deste modulo. No topo
+# custavam ~2 s a cada partida de quem importa o nucleo - o servidor
+# inclusive, que so le o banco - e muito mais num primeiro uso frio, que
+# estourava o prazo dos testes que sobem o servidor de verdade.
+Segment = None  # pyannote.core.Segment, carregado por _classe_segment()
+
+
+def _classe_segment():
+    global Segment
+    if Segment is None:
+        from pyannote.core import Segment as SegmentDoPyannote
+
+        Segment = SegmentDoPyannote
+    return Segment
+
 
 EMBED_MODEL = "pyannote/wespeaker-voxceleb-resnet34-LM"
 DB_PATH = Path(os.environ.get("VOZES_DB", "vozes.db"))
@@ -250,6 +264,9 @@ _inference = None
 def get_inference(device="cpu"):
     global _inference
     if _inference is None:
+        import torch
+        from pyannote.audio import Inference, Model
+
         model = Model.from_pretrained(EMBED_MODEL, token=HF_TOKEN)
         inf = Inference(model, window="whole")
         inf.to(torch.device(device))
@@ -276,6 +293,7 @@ def embed_segments(
     # qualquer objeto com .start/.end. O Inference.crop SO aceita um
     # pyannote.core.Segment de verdade - passar outra coisa levanta excecao
     # em todos os trechos e a funcao parece "nao ter achado audio".
+    Segment = _classe_segment()
     segs = []
     for s in segments:
         if isinstance(s, Segment):

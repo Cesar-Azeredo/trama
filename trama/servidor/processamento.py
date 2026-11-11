@@ -30,8 +30,10 @@ a cada reinicio) para reportar "interrompido" em vez de fingir
 readotar o processo antigo, so marca a interrupcao com honestidade.
 """
 
+import importlib.util
 import json
 import os
+import platform
 import re
 import signal
 import subprocess
@@ -69,13 +71,12 @@ def detectar_device_e_asr():
     mps+mlx (o par que o desenvolvimento usa); senao cai para cpu+faster
     (funciona em qualquer maquina).
     """
-    try:
-        import torch
-
-        if torch.backends.mps.is_available():
-            return "mps", "mlx"
-    except Exception:
-        pass
+    # Sem importar torch: carregar o torch inteiro so para perguntar "e
+    # Apple Silicon?" custava segundos na primeira chamada de /api/sistema.
+    # MPS existe em todo Mac com chip Apple; mlx_whisper so instala nele.
+    apple_silicon = platform.system() == "Darwin" and platform.machine() == "arm64"
+    if apple_silicon and importlib.util.find_spec("mlx_whisper") is not None:
+        return "mps", "mlx"
     return "cpu", "faster"
 
 

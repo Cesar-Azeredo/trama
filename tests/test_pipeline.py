@@ -65,10 +65,10 @@ from trama import (
 )
 from trama.cli import processar as processar_cli  # noqa: E402
 
-# Com pytest, todas as suites rodam num processo so: se outra suite
-# importou o nucleo antes (com o stub de Segment dela, ou com o pyannote de
-# verdade), o "from pyannote.core import Segment" do nucleo ja ficou preso
-# a outra classe. Os testes de embed daqui dependem DESTE duble.
+# Com pytest, todas as suites rodam num processo so: se outra suite usou o
+# nucleo antes, o Segment dele (carregado sob demanda, nucleo._classe_segment)
+# pode ja ser o stub de outra suite ou o pyannote de verdade. Os testes de
+# embed daqui dependem DESTE duble.
 nucleo.Segment = Segment
 
 

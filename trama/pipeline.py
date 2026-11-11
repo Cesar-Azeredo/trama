@@ -21,7 +21,6 @@ import uuid
 from pathlib import Path
 
 import numpy as np
-import torch
 
 from trama import edicao, interacao, nucleo, termos
 
@@ -93,6 +92,9 @@ def iter_turns(annotation):
 
 
 def diarizar(wav, device, num_speakers=None, min_speakers=None, max_speakers=None):
+    # Aqui, nao no topo: quem so le resultados (o servidor) nunca carrega
+    # torch/pyannote - ver o comentario em nucleo.py.
+    import torch
     from pyannote.audio import Pipeline
     from pyannote.audio.pipelines.utils.hook import ProgressHook
 

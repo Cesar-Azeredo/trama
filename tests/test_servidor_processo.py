@@ -628,5 +628,28 @@ def test_rota_progresso_reconecta_e_ve_o_estado_atual_na_hora():
         shutil.rmtree(pasta, ignore_errors=True)
 
 
+def test_servidor_sobe_sem_carregar_torch_nem_pyannote():
+    """REGRESSAO (teste instavel na CI): o servidor importava torch e
+    pyannote no topo do nucleo/pipeline sem usar nenhum dos dois - ~2 s a
+    cada partida, e num primeiro uso frio o bastante para estourar o prazo
+    dos testes que sobem o servidor de verdade. Interpretador limpo, sem os
+    stubs desta suite."""
+    codigo = (
+        "import sys, trama.servidor.app as a; "
+        "a.sistema.processamento.detectar_device_e_asr(); "
+        "print(sorted(m for m in ('torch', 'pyannote.audio', 'pyannote.core') "
+        "if m in sys.modules))"
+    )
+    r = subprocess.run(
+        [sys.executable, "-c", codigo],
+        cwd=str(RAIZ),
+        capture_output=True,
+        text=True,
+        timeout=60,
+    )
+    assert r.returncode == 0, r.stderr
+    assert r.stdout.strip() == "[]", r.stdout
+
+
 if __name__ == "__main__":
     sys.exit(rodar_suite(globals()))
