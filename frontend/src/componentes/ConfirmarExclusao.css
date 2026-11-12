@@ -1,0 +1,91 @@
+/* Confirmacao de exclusao - irreversivel (e, na voz, biometrico), entao
+   explicita e na propria tela, nunca um window.confirm de uma linha.
+   Regua de 2px em --alerta em cima: so as acoes destrutivas do app usam
+   (excluir a voz de uma pessoa, em Pessoas; apagar uma reuniao, no
+   Detalhe). */
+.confirmar-exclusao {
+  max-width: 640px;
+  margin-top: 24px;
+  padding: 20px 0 0;
+  border-top: 2px solid var(--alerta);
+}
+
+.confirmar-exclusao__titulo {
+  margin: 0 0 8px;
+  font-family: var(--fonte-corpo);
+  font-weight: 600;
+  font-size: 19px;
+  line-height: 1.2;
+  color: var(--tinta-corpo);
+}
+
+.confirmar-exclusao__texto {
+  margin: 0 0 10px;
+  font-family: var(--fonte-interface);
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--tinta-media);
+}
+
+.confirmar-exclusao__acoes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  align-items: center;
+  margin-top: 16px;
+}
+
+.confirmar-exclusao__sim {
+  min-height: 44px;
+  padding: 0 18px;
+  border: 1px solid var(--alerta);
+  border-radius: 2px;
+  background: var(--alerta);
+  color: var(--fundo);
+  font-family: var(--fonte-interface);
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.confirmar-exclusao__sim:hover:not(:disabled) {
+  background: var(--alerta-fundo);
+  border-color: var(--alerta-fundo);
+}
+
+.confirmar-exclusao__sim:disabled,
+.confirmar-exclusao__nao:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.confirmar-exclusao__nao {
+  min-height: 44px;
+  padding: 0 4px;
+  border: none;
+  background: none;
+  font-family: var(--fonte-interface);
+  font-size: 13px;
+  color: var(--tinta-media);
+  cursor: pointer;
+}
+
+.confirmar-exclusao__nao:hover:not(:disabled) {
+  color: var(--tinta);
+}
+
+.confirmar-exclusao__erro {
+  margin: 12px 0 0;
+  font-family: var(--fonte-interface);
+  font-size: 13px;
+  color: var(--alerta);
+}
+
+.confirmar-exclusao__lista {
+  margin: 0 0 10px;
+  padding-left: 18px;
+  font-family: var(--fonte-interface);
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--tinta-media);
+  font-variant-numeric: tabular-nums;
+}

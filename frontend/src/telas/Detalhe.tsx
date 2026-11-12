@@ -37,7 +37,9 @@ import {
   formatarTamanhoArquivo,
   formatarTimestamp,
   rotuloBotaoProcessar,
+  tituloDaReuniao,
 } from "../util/formatarReuniao";
+import { ConfirmarApagarReuniao } from "../componentes/ConfirmarApagarReuniao";
 import { numero } from "../util/numeros";
 import { useIdioma } from "../i18n/idioma";
 import { useTextos } from "../i18n/textos";
@@ -529,6 +531,7 @@ export function Detalhe({ id, em }: { id: string; em?: number }) {
   const [erro, setErro] = useState<Mensagem | null>(null);
   const [mostrarEventos, setMostrarEventos] = useState(lerPreferenciaMostrarEventos);
   const [acionando, setAcionando] = useState(false);
+  const [confirmandoApagar, setConfirmandoApagar] = useState(false);
   const [erroProcessar, setErroProcessar] = useState<Mensagem | null>(null);
   const indiceGaleria = useIndiceGaleria();
   const transcriptRef = useRef<HTMLDivElement>(null);
@@ -767,6 +770,23 @@ export function Detalhe({ id, em }: { id: string; em?: number }) {
           {erroProcessar && (
             <p className="tela-detalhe__erro">{textoDe(erroProcessar)}</p>
           )}
+          {/* Upload errado, ou ninguem vai processar: sem isto a reuniao
+              ficava na fila para sempre. */}
+          {!confirmandoApagar ? (
+            <button
+              type="button"
+              className="tela-detalhe__apagar"
+              onClick={() => setConfirmandoApagar(true)}
+            >
+              {t.apagarReuniao}
+            </button>
+          ) : (
+            <ConfirmarApagarReuniao
+              id={dados.id}
+              titulo={tituloDaReuniao(dados.id, dados.titulo)}
+              aoCancelar={() => setConfirmandoApagar(false)}
+            />
+          )}
         </div>
       )}
 
@@ -816,8 +836,24 @@ export function Detalhe({ id, em }: { id: string; em?: number }) {
               >
                 {t.baixarTranscricao}
               </a>
+              <button
+                type="button"
+                className="tela-detalhe__apagar"
+                aria-expanded={confirmandoApagar}
+                onClick={() => setConfirmandoApagar(true)}
+              >
+                {t.apagarReuniao}
+              </button>
             </div>
           </header>
+
+          {confirmandoApagar && (
+            <ConfirmarApagarReuniao
+              id={dados.id}
+              titulo={tituloDaReuniao(dados.id, dados.titulo)}
+              aoCancelar={() => setConfirmandoApagar(false)}
+            />
+          )}
 
           {dados.avisos && dados.avisos.length > 0 && (
             <div className="tela-detalhe__avisos">

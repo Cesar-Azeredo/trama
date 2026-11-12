@@ -730,3 +730,86 @@ def excluir_pessoa(nome):
     except sqlite3.Error:
         removidos["compactado"] = False
     return removidos
+
+
+def perdas_ao_excluir_reuniao(reuniao_id):
+    """
+    Quanto de voz cada pessoa perderia se a reuniao fosse apagada, sem
+    gravar nada: [{"pessoa", "peso_s", "restante_s", "perfil_some"}], a
+    maior perda primeiro. restante_s e o peso que fica (base legada +
+    contribuicoes de outras reunioes); perfil_some, quando nao fica nada.
+    """
+    if not reuniao_id:
+        return []
+    con = connect()
+    try:
+        perdas = con.execute(
+            "SELECT pessoa, SUM(peso) FROM contribuicoes WHERE reuniao_id = ? GROUP BY pessoa",
+            (reuniao_id,),
+        ).fetchall()
+        resultado = []
+        for pessoa, peso in perdas:
+            outras = con.execute(
+                "SELECT COALESCE(SUM(peso), 0) FROM contribuicoes "
+                "WHERE pessoa = ? AND reuniao_id != ?",
+                (pessoa, reuniao_id),
+            ).fetchone()[0]
+            legado = con.execute(
+                "SELECT COALESCE(SUM(peso), 0) FROM pessoas_legado WHERE nome = ?", (pessoa,)
+            ).fetchone()[0]
+            restante = float(outras) + float(legado)
+            resultado.append(
+                {
+                    "pessoa": pessoa,
+                    "peso_s": float(peso),
+                    "restante_s": restante,
+                    "perfil_some": restante <= 0,
+                }
+            )
+    finally:
+        con.close()
+    resultado.sort(key=lambda r: (-r["peso_s"], r["pessoa"]))
+    return resultado
+
+
+def excluir_contribuicoes_da_reuniao(reuniao_id):
+    """
+    Tira do ledger tudo o que foi aprendido de UMA reuniao e recalcula o
+    perfil de cada pessoa afetada (quem fica sem voz nenhuma sai da
+    galeria) - numa transacao so. Depois, VACUUM, como em excluir_pessoa:
+    o vetor de voz e dado biometrico e nao pode ficar nas paginas livres.
+
+    Devolve {"pessoas": {pessoa: peso_total_apos}, "compactado": bool}.
+    NAO toca os backups vozes.db.bak-* (mesmo limite de excluir_pessoa).
+    """
+    if not reuniao_id:
+        return {"pessoas": {}, "compactado": True}
+    con = connect()
+    try:
+        afetados = [
+            r[0]
+            for r in con.execute(
+                "SELECT DISTINCT pessoa FROM contribuicoes WHERE reuniao_id = ?", (reuniao_id,)
+            ).fetchall()
+        ]
+        con.execute("DELETE FROM contribuicoes WHERE reuniao_id = ?", (reuniao_id,))
+        totais = {n: _recompute_pessoa(con, n) for n in afetados}
+        con.commit()
+    except Exception:
+        con.rollback()
+        raise
+    finally:
+        con.close()
+    if not afetados:
+        return {"pessoas": {}, "compactado": True}
+
+    compactado = True
+    try:
+        con = sqlite3.connect(DB_PATH)
+        try:
+            con.execute("VACUUM")
+        finally:
+            con.close()
+    except sqlite3.Error:
+        compactado = False
+    return {"pessoas": totais, "compactado": compactado}

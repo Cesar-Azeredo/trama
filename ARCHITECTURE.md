@@ -248,7 +248,7 @@ Memória mínima sugerida (16 GB) é estimativa, não medição.
 
 ### Testes
 
-18 suítes, 396 casos. Cada arquivo roda sozinho com `python` (imprime
+19 suítes, 403 casos. Cada arquivo roda sozinho com `python` (imprime
 PASSOU/FALHOU por caso e sai com código de erro), e o `pytest` descobre as
 mesmas funções `test_*` sem nenhuma mudança. As suítes do servidor dividem
 a infraestrutura em `tests/servidor_apoio.py`.
@@ -265,6 +265,7 @@ a infraestrutura em `tests/servidor_apoio.py`.
 | `test_paleta.py` | 19 |
 | `test_pipeline.py` | 70 |
 | `test_review.py` | 24 |
+| `test_servidor_apagar.py` | 7 |
 | `test_servidor_pessoas.py` | 13 |
 | `test_servidor_processo.py` | 20 |
 | `test_servidor_reunioes.py` | 46 |
@@ -333,6 +334,8 @@ Python novo nem em TypeScript. Ver ADR 0004.
 | `DELETE /api/termos/variacao?errado=` | para de corrigir uma variação; o que já foi corrigido nas reuniões continua | 3 |
 | `GET /api/termos/reaplicar` / `POST /api/termos/reaplicar` | prévia (quantas substituições, em quais reuniões, e uma assinatura) e gravação do glossário salvo nas reuniões já processadas; POST só aceita a assinatura da prévia (409 se algo mudou) | 3 |
 | `GET /api/sistema` | versão, dispositivo/motor detectados, caminhos dos dados, licenças do `ATRIBUICAO.md` (somente leitura) | 3 |
+| `GET /api/reunioes/{id}/exclusao` | prévia de apagar a reunião: quanto de voz cada pessoa perde, quanto fica e se sai da galeria (`nucleo.perdas_ao_excluir_reuniao`) — nada apagado | 3 |
+| `DELETE /api/reunioes/{id}` | apaga a reunião (ADR 0029): primeiro as contribuições dela no ledger, numa transação, com os perfis recalculados e `VACUUM`; depois a pasta inteira (rename atômico para `.apagando-…`, fora do padrão de id, e então remoção) e a cópia WAV temporária, só se o caminho cai na pasta temporária do sistema. Reunião processando → 409 (`processamento.com_reuniao_parada`, a mesma trava do processamento) | 3 |
 | `DELETE /api/pessoas/{nome}` | exclusão de perfil de voz (LGPD): perfil, contribuições no ledger e base legada numa transação, depois `VACUUM` | 3 |
 | `GET /api/pessoas/participacao` | voz aprendida e participação de cada pessoa, reunião a reunião (`trama/servidor/pessoas.py`) | 3 |
 
@@ -698,6 +701,14 @@ a `Mensagem` (`mensagemDe(e)` no `catch`). A transcrição baixada recebe `?idio
    lacuna, em itálico (`.lacuna-escrita`), com o `title` "escrito à mão".
    "Não dá para entender" grava e não pergunta de novo; "Pular" não grava.
    Sem nenhum item, volta direto ao Detalhe.
+   **Apagar reunião** (`componentes/ConfirmarApagarReuniao.tsx`, ADR 0029):
+   link discreto no Detalhe, ao lado de "Baixar transcrição" (e abaixo do
+   "Processar" numa reunião sem transcrição). Abre a confirmação na
+   própria tela, com o foco em "Cancelar" e a régua de `--alerta` de
+   excluir pessoa (`componentes/ConfirmarExclusao.css`, compartilhado):
+   quanto de voz cada pessoa perde e quem sai da galeria; sem a prévia
+   carregada, o botão de apagar fica desligado. Apagada, volta para a
+   lista e recarrega o índice de cor da galeria.
 
 5. **Processamento** (`#/reuniao/<id>/processando`) — acompanha o SSE das
    5 etapas; cai para "ocioso" se não há job correspondente rodando.
@@ -753,14 +764,8 @@ a `Mensagem` (`mensagemDe(e)` no `catch`). A transcrição baixada recebe `?idio
 3. Conteúdo de Pessoas (galeria com exclusão LGPD), Glossário (edição de
    `termos.txt`) e Configurações; estados vazios reais das três áreas;
    retenção, exportar, aviso.
-   **Lacuna identificada, ainda sem rota nem tela:** não existe jeito de
-   excluir uma REUNIÃO (pasta + áudio), só perfil de voz. Uma reunião
-   `nao_processada` ou `interrompido` que ninguém vai mais tentar
-   processar (upload errado, por exemplo) fica listada para sempre - o
-   único recurso hoje é apagar a pasta a mão no disco, que um cliente
-   rodando o app empacotado não tem como fazer. Diferente de excluir
-   pessoa (LGPD, perfil de voz): aqui é sobre não deixar lixo se
-   acumular na lista, não sobre dado biométrico.
+   Apagar uma reunião (pasta, áudio e a voz que ela ensinou) existe desde
+   2026-11-12 (ADR 0029), no Detalhe, em qualquer estado.
 
 ---
 

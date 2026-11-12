@@ -40,6 +40,7 @@ import subprocess
 import sys
 import threading
 import time
+from contextlib import contextmanager
 from pathlib import Path
 
 from trama import erros
@@ -255,6 +256,19 @@ def iniciar(id, pasta, caminho_audio, pessoas):
         thread = threading.Thread(target=_acompanhar, args=(id, pasta, processo), daemon=True)
         _estado["thread"] = thread
         thread.start()
+
+
+@contextmanager
+def com_reuniao_parada(id):
+    """
+    Segura a MESMA trava de iniciar() enquanto o bloco roda (apagar a
+    reuniao): nenhum processamento desta reuniao comeca no meio. Levanta
+    JaEmProcessamento se ela ja esta rodando.
+    """
+    with _trava:
+        if _estado is not None and _estado["status"] == "rodando" and _estado["reuniao_id"] == id:
+            raise JaEmProcessamento(id)
+        yield
 
 
 def cancelar(id):

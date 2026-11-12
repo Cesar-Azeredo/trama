@@ -97,6 +97,41 @@
   color: var(--tinta);
 }
 
+/* Apagar reuniao: discreto como os links ao lado; o vermelho so no hover
+   e na confirmacao (ConfirmarExclusao.css) - acao destrutiva, nunca a
+   acao da tela. */
+.tela-detalhe__apagar {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0;
+  border: none;
+  background: none;
+  font-family: var(--fonte-interface);
+  font-size: 13px;
+  color: var(--tinta-fraca);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-thickness: 1px;
+  cursor: pointer;
+}
+
+/* Na reuniao sem transcricao: numa linha propria, abaixo do Processar. */
+.tela-detalhe__nao-processada .tela-detalhe__apagar {
+  display: flex;
+  width: fit-content;
+  margin-top: 16px;
+}
+
+.tela-detalhe__apagar:hover {
+  color: var(--alerta);
+}
+
+.tela-detalhe__apagar:focus-visible {
+  outline: 2px solid var(--acento);
+  outline-offset: 2px;
+}
+
 /* A revisar: e a acao da tela - botao primario, o mesmo do Transcrever. */
 .tela-detalhe__revisar {
   flex-shrink: 0;

@@ -32,7 +32,10 @@ de "sabemos que foi zero".
 import json
 import os
 import re
+import shutil
 import subprocess
+import tempfile
+import uuid
 from pathlib import Path
 
 from trama import edicao, erros, nucleo, pipeline, trechos
@@ -656,3 +659,78 @@ def marcar_ininteligivel(id, tipo, inicio, fim, indice=None):
     else:
         _alterar_json(id, lambda d: trechos.marcar_fala_ininteligivel(d, indice, inicio))
     return {"ok": True}
+
+
+# --------------------------------------------------------------------------
+# apagar uma reuniao
+# --------------------------------------------------------------------------
+
+
+def _reuniao_id_do_json(pasta, id):
+    caminho = pasta / f"{id}.json"
+    if not caminho.exists():
+        return None, None
+    dados = json.loads(caminho.read_text(encoding="utf-8"))
+    return dados.get("reuniao_id"), dados
+
+
+def previa_exclusao(id):
+    """O que apagar a reuniao tiraria de voz aprendida, sem apagar nada:
+    {"perdas": [{pessoa, peso_s, restante_s, perfil_some}]}."""
+    pasta = resolver_pasta(id)
+    reuniao_id, _ = _reuniao_id_do_json(pasta, id)
+    return {"perdas": nucleo.perdas_ao_excluir_reuniao(reuniao_id)}
+
+
+def _wav_temporario(dados):
+    """
+    A copia em WAV 16 kHz que o pipeline.py deixa na pasta temporaria do
+    sistema (nucleo.to_wav16k) e o mesmo audio da reuniao. O caminho vem
+    do proprio .json, nunca do cliente - e mesmo assim so vale se cair
+    DENTRO da pasta temporaria, numa subpasta propria, com o nome que o
+    to_wav16k da.
+    """
+    bruto = (dados or {}).get("wav16k")
+    if not bruto:
+        return None
+    try:
+        caminho = Path(bruto).resolve()
+        raiz = Path(tempfile.gettempdir()).resolve()
+    except (OSError, ValueError):
+        return None
+    if caminho.parent.parent != raiz or not caminho.name.endswith("_16k.wav"):
+        return None
+    return caminho
+
+
+def apagar(id):
+    """
+    Apaga a reuniao inteira: o que ela ensinou de voz (ledger, com VACUUM)
+    e a pasta dela (audio, .json, .txt, amostras, caches), mais a copia
+    WAV temporaria, se ainda existir.
+
+    Ordem deliberada: o ledger PRIMEIRO, numa transacao - se falhar, nada
+    foi apagado. So depois a pasta, que sai da lista num rename atomico
+    (para um nome com ponto, que PADRAO_ID nunca aceita) e entao e
+    removida. Uma falha no meio nunca deixa voz aprendida de uma reuniao
+    que ja nao existe; deixa no maximo a pasta escondida, que a proxima
+    tentativa nao ve mas que tambem nao aparece em lugar nenhum.
+
+    Recusa (processamento.JaEmProcessamento) se a reuniao esta sendo
+    processada agora. Devolve {"pessoas": {nome: peso_apos}, "compactado"}.
+    """
+    pasta = resolver_pasta(id)
+    with processamento.com_reuniao_parada(id):
+        reuniao_id, dados = _reuniao_id_do_json(pasta, id)
+        resultado = nucleo.excluir_contribuicoes_da_reuniao(reuniao_id)
+        escondida = PASTA_AUDIOS / f".apagando-{id}-{uuid.uuid4().hex[:8]}"
+        os.replace(pasta, escondida)
+    shutil.rmtree(escondida, ignore_errors=True)
+    wav = _wav_temporario(dados)
+    if wav is not None:
+        wav.unlink(missing_ok=True)
+        try:
+            wav.parent.rmdir()
+        except OSError:
+            pass
+    return resultado

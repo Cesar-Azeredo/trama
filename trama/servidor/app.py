@@ -116,6 +116,38 @@ class CorpoProcessar(BaseModel):
     pessoas: list[str] = []
 
 
+@app.get("/api/reunioes/{id}/exclusao")
+def previa_apagar_reuniao(id: str):
+    """O que apagar a reuniao tiraria de voz de cada pessoa - nada e
+    apagado aqui."""
+    try:
+        return reunioes.previa_exclusao(id)
+    except reunioes.IdInvalido:
+        raise _erro(400, "id_invalido")
+    except reunioes.ReuniaoNaoEncontrada:
+        raise _erro(404, "reuniao_nao_encontrada")
+
+
+@app.delete("/api/reunioes/{id}")
+def apagar_reuniao(id: str):
+    """
+    Apaga a reuniao: audio, .json, .txt, a pasta inteira e o que ela
+    ensinou de voz (servidor/reunioes.apagar). O id e validado e resolvido
+    dentro da pasta de audios (CLAUDE.md, regra 4).
+    """
+    try:
+        return {"ok": True, **reunioes.apagar(id)}
+    except reunioes.IdInvalido:
+        raise _erro(400, "id_invalido")
+    except reunioes.ReuniaoNaoEncontrada:
+        raise _erro(404, "reuniao_nao_encontrada")
+    except processamento.JaEmProcessamento:
+        raise _erro(409, "reuniao_processando")
+    except Exception as exc:
+        print(f"[reunioes] falha ao apagar {id}: {type(exc).__name__}")
+        raise _erro(500, "falha_apagar_reuniao")
+
+
 @app.post("/api/reunioes/{id}/processar", status_code=202)
 def processar_reuniao(id: str, corpo: CorpoProcessar):
     """

@@ -33,6 +33,22 @@ export const detalhe = {
     "Trecho sem nenhuma palavra transcrita aqui (ex.: riso, gesto, respiração) - a transcrição não afirma o que era",
   tituloLacunaEscrita:
     "Escrito à mão por quem ouviu o trecho - não veio da transcrição automática",
+  apagarReuniao: "Apagar reunião",
+  apagarTitulo: (titulo: string) => `Apagar ${titulo}?`,
+  apagarTexto:
+    "Apaga o áudio, a transcrição, as correções e as respostas da revisão desta reunião. Não dá para desfazer.",
+  apagarCalculando: "Calculando quanto de voz sai do banco…",
+  apagarSemVoz: "Nenhuma voz aprendida vem desta reunião: a galeria não muda.",
+  apagarPerdas: "A voz aprendida desta reunião também sai do banco:",
+  apagarPerde: (nome: string, perde: string, fica: string) =>
+    `${nome} perde ${perde} de voz (fica com ${fica}).`,
+  apagarPerdeTudo: (nome: string, perde: string) =>
+    `${nome} perde ${perde} de voz - era toda a voz aprendida, e ${nome} sai da galeria.`,
+  apagarBackups:
+    "Cópias de segurança antigas do banco (arquivos vozes.db.bak) não são alteradas.",
+  apagando: "Apagando…",
+  cancelar: "Cancelar",
+  segundos: (valor: string) => `${valor} s`,
   tituloPista: (nome: string) => `Pista: pode ser ${nome} - atribuição por palavra, não confirmada`,
   tituloSobreposicao: (nome: string) => `Sobreposição: ${nome} falava ao mesmo tempo`,
   pctDaFala: (pct: string) => `${pct}% da fala`,

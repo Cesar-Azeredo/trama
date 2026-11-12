@@ -32,6 +32,20 @@ export const detalhe: Catalogo["detalhe"] = {
     "No words were transcribed here (laughter, coughing, background noise) — the transcript doesn't guess what it was",
   tituloLacunaEscrita:
     "Written by hand by someone who listened to the passage — not from the automatic transcript",
+  apagarReuniao: "Delete meeting",
+  apagarTitulo: (titulo) => `Delete ${titulo}?`,
+  apagarTexto:
+    "Deletes the audio, the transcript, the corrections and the review answers of this meeting. This can't be undone.",
+  apagarCalculando: "Working out how much voice leaves the database…",
+  apagarSemVoz: "No learned voice comes from this meeting: the gallery doesn't change.",
+  apagarPerdas: "The voice learned from this meeting also leaves the database:",
+  apagarPerde: (nome, perde, fica) => `${nome} loses ${perde} of voice (keeps ${fica}).`,
+  apagarPerdeTudo: (nome, perde) =>
+    `${nome} loses ${perde} of voice — that was all of it, and ${nome} leaves the gallery.`,
+  apagarBackups: "Old database backups (vozes.db.bak files) are not changed.",
+  apagando: "Deleting…",
+  cancelar: "Cancel",
+  segundos: (valor) => `${valor} s`,
   tituloPista: (nome) => `Possibly ${nome} — word-level guess, not confirmed`,
   tituloSobreposicao: (nome) => `Overlap: ${nome} was speaking at the same time`,
   pctDaFala: (pct) => `${pct}% of speaking time`,

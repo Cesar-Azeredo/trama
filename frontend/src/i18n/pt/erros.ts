@@ -51,6 +51,10 @@ export const erros = {
     trecho_mudou: () =>
       "Este trecho mudou desde que a página foi aberta (a reunião foi reprocessada ou a fala foi corrigida). Recarregue a página.",
     falha_gravar_trecho: () => "Não foi possível gravar. Nada mudou - tente de novo.",
+    reuniao_processando: () =>
+      "Esta reunião está sendo processada agora. Cancele o processamento ou espere terminar antes de apagar.",
+    falha_apagar_reuniao: () =>
+      "Não foi possível apagar a reunião. Tente de novo - a operação é segura para repetir.",
     pessoa_nao_encontrada: () => "Esta pessoa não está na galeria.",
     falha_excluir_pessoa: () => "Não foi possível excluir o perfil. Nada foi apagado - tente de novo.",
     falha_gravar_revisao: () =>

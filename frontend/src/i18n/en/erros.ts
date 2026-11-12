@@ -45,6 +45,10 @@ export const erros: Catalogo["erros"] = {
     trecho_mudou: () =>
       "This passage changed since the page was opened (the meeting was reprocessed or the segment was corrected). Reload the page.",
     falha_gravar_trecho: () => "Could not save. Nothing changed — try again.",
+    reuniao_processando: () =>
+      "This meeting is being processed right now. Cancel the processing or wait for it to finish before deleting.",
+    falha_apagar_reuniao: () =>
+      "Could not delete the meeting. Try again — it is safe to repeat.",
     pessoa_nao_encontrada: () => "This person is not in the gallery.",
     falha_excluir_pessoa: () => "Could not delete the profile. Nothing was removed — try again.",
     falha_gravar_revisao: () => "Could not save the review. It is safe to repeat — try again.",

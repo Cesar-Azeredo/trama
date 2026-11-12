@@ -572,3 +572,30 @@ export async function marcarIninteligivel(id: string, trecho: TrechoParaConferir
     "PUT",
   );
 }
+
+// ---- apagar uma reuniao ----------------------------------------------------
+
+/** Quanto de voz aprendida cada pessoa perde se a reuniao for apagada. */
+export interface PerdaDeVoz {
+  pessoa: string;
+  peso_s: number;
+  /** O que fica: base legada + outras reunioes. */
+  restante_s: number;
+  /** Nao fica nada: a pessoa sai da galeria. */
+  perfil_some: boolean;
+}
+
+export async function previaApagarReuniao(id: string): Promise<PerdaDeVoz[]> {
+  return (
+    await buscarJson<{ perdas: PerdaDeVoz[] }>(
+      `/api/reunioes/${encodeURIComponent(id)}/exclusao`,
+    )
+  ).perdas;
+}
+
+/** Apaga audio, .json, .txt, a pasta inteira e a voz aprendida dela.
+ * `compactado` falso: o banco nao pode ser compactado agora (restos do
+ * vetor podem ficar no arquivo ate a proxima exclusao). */
+export function apagarReuniao(id: string): Promise<{ ok: boolean; compactado: boolean }> {
+  return enviarJson(`/api/reunioes/${encodeURIComponent(id)}`, {}, "DELETE");
+}

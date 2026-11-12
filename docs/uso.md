@@ -220,6 +220,16 @@ transcricao nova nao tiver o mesmo trecho, fica guardado e aparece um
 aviso). "Nao da para entender" marca o trecho para nunca mais ser
 perguntado; "Pular" nao grava nada. Etapa sem nada a perguntar e pulada.
 
+**Apagar reuniao** fica no Detalhe, ao lado de "Baixar transcricao" (e
+abaixo do "Processar", numa reuniao ainda na fila). Antes de apagar, a
+tela mostra quanto de voz aprendida cada pessoa perde ("Ramiro perde 40 s
+de voz (fica com 30 s)"; quem so tinha voz dali sai da galeria). Confirmado,
+sai tudo: a pasta da reuniao (audio, `.json`, `.txt`, amostras), a copia
+WAV temporaria do processamento e o que ela ensinou no `vozes.db` (com
+compactacao, para o vetor de voz nao ficar no arquivo). Nao da para
+desfazer. Reuniao sendo processada nao pode ser apagada. Copias
+`vozes.db.bak-*` nao sao alteradas.
+
 No fim do `.txt` baixado vem o **Vocabulario desta empresa**: os termos
 da empresa, para a IA que ler o arquivo interpretar o que a transcricao
 automatica errou. Em Perfil > **Termos da empresa**, cada termo tem o nome
@@ -305,23 +315,25 @@ para isso.
 
 ## Testes
 
-`tests/` tem 15 suites, 367 testes no total. Cada arquivo roda com `python`, imprime PASSOU/FALHOU por caso e
+`tests/` tem 19 suites, 403 testes no total. Cada arquivo roda com `python`, imprime PASSOU/FALHOU por caso e
 sai com codigo de erro se algo falhar. As suites ignoram as variaveis de
 ambiente de calibracao do seu shell (`SIM_MIN`, `MIN_SOBREPOSICAO`...):
 testam sempre o padrao do codigo.
 
 | Suite                     | O que cobre                                                        | Testes |
 |---------------------------|---------------------------------------------------------------------|--------|
-| `tests/test_pipeline.py`  | quebra de frase, juncao de texto, atribuicao INDEPENDENTE cluster->pessoa (`pipeline.identificar`), normalizacao de segmentos | 69 |
+| `tests/test_pipeline.py`  | quebra de frase, juncao de texto, atribuicao INDEPENDENTE cluster->pessoa (`pipeline.identificar`), normalizacao de segmentos, reprocessamento preservando revisao, correcoes e respostas | 70 |
 | `tests/test_interacao.py` | sobreposicao, interrupcao, apoio e dinamica (`interacao.py`)        | 22 |
-| `tests/test_termos.py`    | correcao de vocabulario (`termos.py`)                               | 33 |
+| `tests/test_termos.py`    | correcao de vocabulario (`termos.py`)                               | 36 |
 | `tests/test_ata.py`       | verificacao de citacoes da ata (`ata.py`)                           | 29 |
-| `tests/test_review.py`    | ledger de contribuicoes de voz, idempotencia e migracao (`nucleo.py`/`revisao.py`) | 22 |
+| `tests/test_review.py`    | ledger de contribuicoes de voz, idempotencia e migracao (`nucleo.py`/`revisao.py`) | 24 |
 | `tests/test_migracoes.py` | migracoes versionadas do `vozes.db` (`trama/migracoes/`)                  | 9 |
-| `tests/test_servidor_*.py` | rotas da API em seis suites por area: reunioes, pessoas, transcricao, revisao, processo, termos (`trama/servidor/`) | 140 |
+| `tests/test_servidor_*.py` | rotas da API em oito suites por area: reunioes, pessoas, transcricao, revisao, processo, termos, trechos para conferir, apagar reuniao (`trama/servidor/`) | 161 |
+| `tests/test_codigos_de_erro.py` | todo codigo de erro do servidor tem texto nos dois catalogos (pt e en) | 4 |
+| `tests/test_demo.py` | os dados de demonstracao (`audios-demo/`) | 5 |
 | `tests/test_gancho_commit_msg.py` | o gancho `ganchos/commit-msg` tira coautor e assinatura | 5 |
 | `tests/test_paleta.py`    | cores de voz distintas entre si e dos papeis de cor, com daltonismo simulado; contraste dos papeis, dos tons de tinta e do texto sobre o destaque (`tokens.css`) | 19 |
-| `tests/test_identidade.py` | toda fonte empacotada tem o OFL dela em `public/licencas/`; nenhum texto de tela promete ata; `--tinta-apagada` so no numero da reuniao; `lang="pt-BR"`; Fio so como fundo; papel de cada fonte; logotipo e favicon nas cores da marca; nome "Trama" na interface | 17 |
+| `tests/test_identidade.py` | toda fonte empacotada tem o OFL dela em `public/licencas/`; nenhum texto de tela promete ata; `--tinta-apagada` so no numero da reuniao; `lang="pt-BR"`; Fio so como fundo; papel de cada fonte; logotipo e favicon nas cores da marca; nome "Trama" na interface | 19 |
 
 Rodar uma suite:
 

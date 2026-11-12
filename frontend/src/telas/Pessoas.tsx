@@ -15,6 +15,7 @@ import { perfilEmFormacao } from "../vozes/perfil";
 import { formatarTitulo, numeroDaReuniao } from "../util/formatarReuniao";
 import { useTextos } from "../i18n/textos";
 import { numero } from "../util/numeros";
+import "../componentes/ConfirmarExclusao.css";
 import "./Pessoas.css";
 
 /**
