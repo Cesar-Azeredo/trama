@@ -28,6 +28,9 @@ dependencies = [
 [project.optional-dependencies]
 dev = [
     "pytest",
+    # ordem dos testes embaralhada a cada execucao do pytest: pega teste
+    # que depende de outro ter rodado antes (CLAUDE.md, "Falha com semente")
+    "pytest-randomly",
     "httpx",  # fastapi.testclient
     "coverage",
     "ruff",

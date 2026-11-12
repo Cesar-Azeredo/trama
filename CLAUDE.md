@@ -103,6 +103,26 @@ cd frontend && npm run dev
   de todo teste que falhar (ou o fim da saída, se a suíte cair sem
   relatório) — nunca só o total. `npm run e2e` é o ponta a ponta com os
   dados de demonstração (~3 s).
+
+## Falha com semente (ordem embaralhada)
+
+`pytest` roda tudo num processo, com a ordem embaralhada pelo
+`pytest-randomly` (dependência de dev) — pega teste que só passa porque
+outro rodou antes. Na CI, o passo "Suites com pytest (ordem embaralhada)"
+imprime `SEMENTE DO EMBARALHAMENTO: N` no começo e, se falhar, uma
+anotação de erro no topo da execução com a semente. Para reproduzir:
+
+```bash
+pytest -p randomly --randomly-seed=N          # a mesma ordem da CI
+pytest -p randomly --randomly-seed=N -x -rf   # para na primeira, com o resumo
+```
+
+Localmente, `pytest` sem semente sorteia uma nova a cada vez e a mostra
+no cabeçalho (`Using --randomly-seed=...`, só sem `-q`). Achou a falha:
+corrija a CAUSA (o teste que deixa estado para trás, ou o que depende de
+estado alheio) — nunca `-p no:randomly`, nova tentativa automática ou
+prazo maior. Prove rodando a mesma semente e depois um laço de sementes
+sorteadas.
 - Mudou comportamento: teste novo. Mudou arquitetura: `ARCHITECTURE.md`.
   Decisão com alternativa descartada: ADR. Mudou o que o usuário roda ou
   vê: `docs/uso.md` (e `README.md`, se muda a visão geral).

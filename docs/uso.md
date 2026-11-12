@@ -356,6 +356,8 @@ Rodar todas:
 
 ```bash
 python tests/rodar.py   # cada suite no seu processo; lista nome e erro de toda falha
+pytest                  # tudo num processo, ordem embaralhada (pytest-randomly)
+pytest -p randomly --randomly-seed=N   # reproduz a ordem de uma falha (semente N)
 ```
 
 Teste de ponta a ponta no navegador, so com os dados de demonstracao

@@ -37,8 +37,17 @@ jobs:
       - name: Suites (cada arquivo sozinho, como no dia a dia)
         # Lista o nome e o erro de todo teste que falhar, nunca so o total.
         run: python tests/rodar.py
-      - name: Suites com pytest
-        run: pytest -q
+      - name: Suites com pytest (ordem embaralhada)
+        # pytest-randomly embaralha a ordem; a semente e sorteada aqui para
+        # aparecer no log logo no comeco e, se falhar, como anotacao de erro
+        # no topo da execucao - com o comando para reproduzir (CLAUDE.md).
+        run: |
+          semente=$(python -c "import random; print(random.randrange(1, 2**32))")
+          echo "SEMENTE DO EMBARALHAMENTO: $semente"
+          if ! pytest -q -p randomly --randomly-seed="$semente"; then
+            echo "::error title=pytest falhou com a ordem embaralhada (semente $semente)::Reproduza com: pytest -p randomly --randomly-seed=$semente"
+            exit 1
+          fi
 
   frontend:
     runs-on: ubuntu-latest
