@@ -8,7 +8,11 @@ interrupcao na analise (interacao.py); uma fala curta ("Uhum.") que entra
 bem antes do fim vira apoio.
 No texto:
   ~palavra  o Whisper teria duvidado dela (probabilidade baixa);
-  |         um silencio dentro da fala, sem texto (vira lacuna).
+  |         um silencio dentro da fala, sem texto (vira lacuna);
+  ||        um silencio longo, de 1,8 s: a lacuna entra nos trechos para
+            conferir da revisao (trechos.py pede 1,5 s ou mais).
+Na reuniao 3, uma fala curta quase toda em duvida vira fala de confianca
+baixa - tambem para os trechos para conferir.
 
 O produto ficticio "Painel Órbita" aparece mal transcrito de dois jeitos:
 "painel de orbita" (o termos.exemplo.txt corrige) e "painel da orbita"
@@ -273,12 +277,13 @@ REUNIOES = [
             (
                 "Paula",
                 "E eu sugiro incluir alguém de dados no começo do próximo projeto, "
-                "não só no fim. | A Sofia teria visto o problema do fuso na primeira "
+                "não só no fim. || A Sofia teria visto o problema do fuso na primeira "
                 "conversa.",
                 0.7,
             ),
             ("Marcos", "Uhum.", -2.0),
             ("Sofia", "Com certeza. É só me chamar.", 0.3),
+            ("Diego", "~E ~o ~painel ~antigo ~sai ~junto?", 0.5),
             (
                 "Marcos",
                 "Então ficam três ações: teste de fuso horário, dados desde o começo "

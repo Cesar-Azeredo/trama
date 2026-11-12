@@ -6,7 +6,8 @@ galeria (e duas pessoas novas), reuniao 3 a revisar, com uma voz que a
 galeria nao conhece. Tudo ficticio.
 
 Mesma notacao: (pessoa, texto, pausa_s); "~palavra" = duvida do Whisper;
-"|" = silencio sem texto (lacuna); pausa negativa = entra por cima.
+"|" = silencio sem texto (lacuna); "||" = silencio longo, que entra nos
+trechos para conferir; pausa negativa = entra por cima.
 
 O produto ficticio "Orbit Board" aparece mal transcrito de dois jeitos:
 "orbit bored" (o termos.exemplo.en.txt corrige) e "or bit board" (nenhuma
@@ -267,12 +268,13 @@ REUNIOES = [
             (
                 "Emma",
                 "And I suggest bringing someone from data in at the start of the next "
-                "project, not just at the end. | Grace would have caught the time zone "
+                "project, not just at the end. || Grace would have caught the time zone "
                 "issue in the first conversation.",
                 0.7,
             ),
             ("Daniel", "Uh-huh.", -2.0),
             ("Grace", "Absolutely. Just call me.", 0.3),
+            ("Ben", "~Does ~the ~old ~board ~go ~too?", 0.5),
             (
                 "Daniel",
                 "So we have three actions: a time zone test, data from the start, and "

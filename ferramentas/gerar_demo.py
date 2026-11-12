@@ -53,6 +53,8 @@ SEGUNDOS_POR_PALAVRA = 0.34
 PROB_NORMAL = 0.93
 PROB_DUVIDA = 0.31
 SILENCIO_LACUNA_S = 1.3
+# "||" no roteiro: passa dos 1,5 s que os trechos para conferir pedem.
+SILENCIO_LACUNA_LONGA_S = 1.8
 # Espaco de nomes fixo: reuniao_id deterministico (uuid5) entre execucoes.
 NAMESPACE = uuid.UUID("6f1c2a52-6a0b-4c1e-9a43-7c1d2f0e8b11")
 
@@ -120,6 +122,9 @@ def _palavras_e_turnos(falas, rng):
         for token in texto.split():
             if token == "|":
                 t += SILENCIO_LACUNA_S
+                continue
+            if token == "||":
+                t += SILENCIO_LACUNA_LONGA_S
                 continue
             duvida = token.startswith("~")
             token = token.lstrip("~")
