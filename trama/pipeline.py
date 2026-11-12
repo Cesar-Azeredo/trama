@@ -22,7 +22,7 @@ from pathlib import Path
 
 import numpy as np
 
-from trama import edicao, erros, interacao, nucleo, termos, trechos
+from trama import edicao, erros, interacao, nucleo, temporarios, termos, trechos
 
 DIAR_MODEL = os.environ.get("DIAR_MODEL", "pyannote/speaker-diarization-community-1")
 
@@ -1157,8 +1157,20 @@ def _gravar(saida_json, saida, remapa, reuniao_id):
     nucleo.confirmar_escrita_atomica(tmp_json, caminho_json)
 
 
-def processar(
+def processar(audio, **opcoes):
+    """Pipeline inteiro de uma reuniao (ver _processar). A copia WAV do
+    audio fica numa pasta temporaria propria, apagada ao terminar - com
+    sucesso, falha ou cancelamento (trama/temporarios.py)."""
+    pasta_wav = temporarios.criar_pasta()
+    try:
+        return _processar(audio, pasta_wav, **opcoes)
+    finally:
+        temporarios.apagar(pasta_wav)
+
+
+def _processar(
     audio,
+    pasta_wav,
     pessoas=None,
     falantes=None,
     min_falantes=None,
@@ -1180,7 +1192,7 @@ def processar(
     dados_anteriores = carregar_saida_anterior(f"{saida}.json")
 
     print("1/5  Convertendo audio para 16 kHz mono...")
-    wav = nucleo.to_wav16k(audio)
+    wav = nucleo.to_wav16k(audio, str(Path(pasta_wav) / f"{Path(audio).stem}_16k.wav"))
 
     faixa = faixa_de_falantes(falantes, min_falantes, max_falantes, pessoas)
     print(f"2/5  Diarizando (quem falou quando){descrever_faixa(faixa)}...")

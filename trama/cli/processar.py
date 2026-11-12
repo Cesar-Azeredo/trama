@@ -11,8 +11,17 @@ e le o progresso das linhas "N/5  texto..." do stdout.
 """
 
 import argparse
+import signal
+import sys
 
 from trama import pipeline, termos
+
+
+def _sigterm_vira_saida(*_):
+    # "Cancelar" na tela manda SIGTERM. O padrao do Python e morrer na hora,
+    # sem rodar nenhum finally - e o finally de pipeline.processar e o que
+    # apaga a copia WAV do audio (trama/temporarios.py).
+    sys.exit(143)
 
 
 def _argumentos():
@@ -42,6 +51,7 @@ def _argumentos():
 
 
 def main():
+    signal.signal(signal.SIGTERM, _sigterm_vira_saida)
     args = _argumentos()
     pessoas = [p.strip() for p in args.pessoas.split(",")] if args.pessoas else None
     saida = pipeline.processar(

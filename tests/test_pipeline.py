@@ -1526,6 +1526,97 @@ def test_reprocessar_mantem_texto_da_lacuna_e_nao_da_para_entender():
         shutil.rmtree(pasta, ignore_errors=True)
 
 
+# --- copia WAV temporaria (trama/temporarios.py) ----------------------------
+
+
+def _wavs_na_pasta_temporaria():
+    """Copias WAV e pastas de copia na pasta temporaria DESTA execucao de
+    teste (_ambiente.isolar), nunca na do sistema."""
+    raiz = Path(tempfile.gettempdir())
+    return sorted(
+        str(p.relative_to(raiz))
+        for p in raiz.rglob("*")
+        if p.name.endswith("_16k.wav") or p.name.startswith("trama-wav-")
+    )
+
+
+def test_processar_nao_deixa_copia_wav_com_sucesso_nem_com_falha():
+    pasta, audio, palavras, turnos, mapa = _cenario_de_correcao()
+    try:
+        assert _wavs_na_pasta_temporaria() == []
+        _rodar_run_main(audio, pasta / "vozes_teste.db", turnos, mapa, palavras)
+        assert (pasta / "reuniao_01.json").exists()
+        assert _wavs_na_pasta_temporaria() == [], "sobrou WAV depois do sucesso"
+
+        def quebra():
+            raise RuntimeError("transcricao falhou")
+
+        try:
+            _rodar_run_main(
+                audio, pasta / "vozes_teste.db", turnos, mapa, palavras, ao_transcrever=quebra
+            )
+        except RuntimeError:
+            pass
+        else:
+            raise AssertionError("a falha nao chegou a acontecer")
+        assert _wavs_na_pasta_temporaria() == [], "sobrou WAV depois da falha"
+    finally:
+        shutil.rmtree(pasta, ignore_errors=True)
+
+
+_PIPELINE_QUE_ESPERA = """
+import sys, time, types
+for nome in ["torch", "pyannote", "pyannote.audio", "pyannote.core", "soundfile"]:
+    sys.modules.setdefault(nome, types.ModuleType(nome))
+sys.modules["torch"].device = lambda x: x
+sys.modules["pyannote.audio"].Model = object
+sys.modules["pyannote.audio"].Inference = object
+sys.modules["pyannote.core"].Segment = object
+from trama import pipeline
+def diarizar(*a, **k):
+    print("DIARIZANDO", flush=True)
+    time.sleep(60)
+pipeline.diarizar = diarizar
+from trama.cli import processar
+sys.argv = ["trama-processar", sys.argv[1], "--sem-termos", "--device", "cpu", "--asr", "mlx"]
+processar.main()
+"""
+
+
+def test_cancelar_com_sigterm_apaga_a_copia_wav():
+    """O "Cancelar" da tela manda SIGTERM ao trama-processar
+    (servidor/processamento.cancelar). Sem tratar o sinal, o Python morre
+    sem rodar o finally que apaga a copia."""
+    import signal
+    import subprocess
+    import time
+
+    pasta, audio, *_ = _cenario_de_correcao()
+    raiz = Path(__file__).resolve().parent.parent
+    filho = subprocess.Popen(
+        [sys.executable, "-c", _PIPELINE_QUE_ESPERA, str(audio)],
+        cwd=str(raiz),
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+        stdin=subprocess.DEVNULL,
+        text=True,
+    )
+    try:
+        limite = time.time() + 60
+        for linha in filho.stdout:
+            if "DIARIZANDO" in linha or time.time() > limite:
+                break
+        copias = _wavs_na_pasta_temporaria()
+        assert any(c.endswith("_16k.wav") for c in copias), f"premissa: copia existe {copias}"
+        filho.send_signal(signal.SIGTERM)
+        assert filho.wait(timeout=20) == 143, filho.returncode
+        assert _wavs_na_pasta_temporaria() == [], "sobrou WAV depois de cancelar"
+    finally:
+        if filho.poll() is None:
+            filho.kill()
+        shutil.rmtree(pasta, ignore_errors=True)
+
+
 def test_reprocessar_reuniao_com_titulo_mantem_titulo_data_id_e_revisao():
     """
     Reprocessa uma reuniao que tem titulo (dado na Nova reuniao e depois

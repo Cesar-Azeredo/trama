@@ -55,3 +55,24 @@ def variaveis_lidas_pelo_codigo():
 def isolar():
     for nome in variaveis_lidas_pelo_codigo() - PRESERVADAS:
         os.environ.pop(nome, None)
+    _pasta_temporaria_propria()
+
+
+def _pasta_temporaria_propria():
+    """
+    Pasta temporaria so desta execucao, apagada no fim. O pipeline poe a
+    copia WAV do audio na pasta temporaria, e o servidor VARRE a pasta
+    temporaria atras de copias orfas (trama/temporarios.py) - na do
+    sistema, um teste apagaria copias de quem usa a maquina. TMPDIR
+    tambem: os subprocessos (pipeline, servidor) herdam.
+    """
+    import atexit
+    import shutil
+    import tempfile
+
+    if os.environ.get("_TRAMA_TESTE_TMP"):
+        return  # subprocesso de teste: ja herdou a pasta do pai
+    pasta = tempfile.mkdtemp(prefix="trama-testes-")
+    os.environ["TMPDIR"] = os.environ["_TRAMA_TESTE_TMP"] = pasta
+    tempfile.tempdir = pasta
+    atexit.register(shutil.rmtree, pasta, ignore_errors=True)

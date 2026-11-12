@@ -47,6 +47,7 @@ Pacote `trama/` (ADR 0025). Nenhum script Python na raiz.
 | `trama/interacao.py` | sobreposição, interrupção, apoio, dinâmica |
 | `trama/edicao.py` | correção manual do texto de uma fala: guarda o original e as marcas de posição, desfaz, e reaplica as correções nas falas novas ao reprocessar (ADR 0016) |
 | `trama/trechos.py` | trechos para conferir (ADR 0028): escolhe até 3 falas de confiança baixa e 2 lacunas, grava o texto escrito dentro da lacuna e "não dá para entender", e reaplica as respostas ao reprocessar, casando pelo tempo |
+| `trama/temporarios.py` | a cópia WAV 16 kHz do áudio, numa pasta temporária própria (`trama-wav-…`, com o PID do dono): o pipeline apaga ao terminar (sucesso, falha ou cancelamento — o `SIGTERM` vira saída normal na CLI); o servidor varre as órfãs, de dono morto ou do formato antigo `tmpXXXX/<nome>_16k.wav`, ao terminar cada processamento e ao iniciar |
 | `trama/termos.py` + `termos.txt` | correção determinística de vocabulário; casa sem diferenciar maiúscula nem acento (`sem_acento`, caractere a caractere, mesmo comprimento — as posições do casamento valem no texto original). `termos.txt` é dado do usuário, fora do git; versionado só `termos.exemplo.txt` |
 | `trama/migracoes/` | migrações versionadas do `vozes.db` (ADR 0006) |
 | `trama/servidor/` | API FastAPI local (ADR 0004) |
@@ -61,7 +62,9 @@ Pacote `trama/` (ADR 0025). Nenhum script Python na raiz.
 
 ### As 5 etapas do `pipeline.py`
 
-1. `nucleo.to_wav16k` — ffmpeg para WAV 16 kHz mono
+1. `nucleo.to_wav16k` — ffmpeg para WAV 16 kHz mono, numa pasta temporária
+   própria que `pipeline.processar` apaga no fim (`trama/temporarios.py`;
+   o campo `wav16k` do `.json` guarda o caminho, que deixa de existir)
 2. `diarizar` — pyannote `speaker-diarization-community-1`, devolve a versão
    exclusiva **e** a não-exclusiva
    Quantos falantes procurar sai de `faixa_de_falantes`: `--falantes` fixa;
@@ -248,7 +251,7 @@ Memória mínima sugerida (16 GB) é estimativa, não medição.
 
 ### Testes
 
-20 suítes, 410 casos. Cada arquivo roda sozinho com `python` (imprime
+21 suítes, 415 casos. Cada arquivo roda sozinho com `python` (imprime
 PASSOU/FALHOU por caso e sai com código de erro), e o `pytest` descobre as
 mesmas funções `test_*` sem nenhuma mudança. As suítes do servidor dividem
 a infraestrutura em `tests/servidor_apoio.py`.
@@ -263,7 +266,7 @@ a infraestrutura em `tests/servidor_apoio.py`.
 | `test_interacao.py` | 22 |
 | `test_migracoes.py` | 9 |
 | `test_paleta.py` | 19 |
-| `test_pipeline.py` | 70 |
+| `test_pipeline.py` | 72 |
 | `test_review.py` | 24 |
 | `test_servidor_apagar.py` | 7 |
 | `test_servidor_pessoas.py` | 13 |
@@ -274,11 +277,15 @@ a infraestrutura em `tests/servidor_apoio.py`.
 | `test_servidor_termos.py` | 33 |
 | `test_servidor_transcricao.py` | 15 |
 | `test_servidor_trechos.py` | 10 |
+| `test_temporarios.py` | 3 |
 | `test_termos.py` | 36 |
 
 Toda suíte chama `tests/_ambiente.py` antes de importar o projeto: tira do
 ambiente as variáveis que o código lê (limiares, `VOZES_DB`,
-`TRAMA_*`), para o resultado nunca depender do shell de quem roda.
+`TRAMA_*`), para o resultado nunca depender do shell de quem roda, e
+troca a pasta temporária por uma só da execução (`TMPDIR`, herdada pelos
+subprocessos), apagada no fim — a varredura de cópias WAV órfãs nunca
+roda na pasta temporária de quem usa a máquina.
 Teste que sobe o servidor de verdade usa porta efêmera, nunca a 8000.
 
 `test_pipeline`, `test_interacao` e `test_review` importam numpy/torch —

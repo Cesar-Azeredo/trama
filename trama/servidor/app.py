@@ -59,6 +59,8 @@ def _erro(status, codigo, **parametros):
 @asynccontextmanager
 async def _ciclo_de_vida(app):
     processamento.verificar_marcadores_orfaos(reunioes.PASTA_AUDIOS)
+    # Copias WAV de processamentos interrompidos (trama/temporarios.py).
+    processamento.limpar_wavs_orfaos()
     yield
 
 

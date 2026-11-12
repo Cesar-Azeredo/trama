@@ -321,14 +321,15 @@ para isso.
 
 ## Testes
 
-`tests/` tem 20 suites, 410 testes no total. Cada arquivo roda com `python`, imprime PASSOU/FALHOU por caso e
+`tests/` tem 21 suites, 415 testes no total. Cada arquivo roda com `python`, imprime PASSOU/FALHOU por caso e
 sai com codigo de erro se algo falhar. As suites ignoram as variaveis de
 ambiente de calibracao do seu shell (`SIM_MIN`, `MIN_SOBREPOSICAO`...):
 testam sempre o padrao do codigo.
 
 | Suite                     | O que cobre                                                        | Testes |
 |---------------------------|---------------------------------------------------------------------|--------|
-| `tests/test_pipeline.py`  | quebra de frase, juncao de texto, atribuicao INDEPENDENTE cluster->pessoa (`pipeline.identificar`), normalizacao de segmentos, reprocessamento preservando revisao, correcoes e respostas | 70 |
+| `tests/test_pipeline.py`  | quebra de frase, juncao de texto, atribuicao INDEPENDENTE cluster->pessoa (`pipeline.identificar`), normalizacao de segmentos, reprocessamento preservando revisao, correcoes e respostas, nenhuma copia WAV sobrando (sucesso, falha, cancelamento) | 72 |
+| `tests/test_temporarios.py` | varredura das copias WAV orfas na pasta temporaria (`temporarios.py`) | 3 |
 | `tests/test_interacao.py` | sobreposicao, interrupcao, apoio e dinamica (`interacao.py`)        | 22 |
 | `tests/test_termos.py`    | correcao de vocabulario (`termos.py`)                               | 36 |
 | `tests/test_ata.py`       | verificacao de citacoes da ata (`ata.py`)                           | 29 |

@@ -43,7 +43,7 @@ import time
 from contextlib import contextmanager
 from pathlib import Path
 
-from trama import erros
+from trama import erros, temporarios
 
 RAIZ = Path(__file__).resolve().parents[2]
 # Modulo do pipeline rodado como subprocess (python -m, com cwd=RAIZ).
@@ -185,6 +185,20 @@ def _acompanhar(id, pasta, processo):
             print(f"[processamento] {id} falhou, codigo {codigo}")
 
     _apagar_marcador(pasta)
+    # Reserva: o pipeline apaga a propria copia WAV, mas um SIGKILL ou uma
+    # queda nao rodam o finally dele. Com o processo morto, a pasta e orfa.
+    limpar_wavs_orfaos()
+
+
+def limpar_wavs_orfaos():
+    """Nunca falha quem chama - limpeza e best-effort. So contagem no log."""
+    try:
+        quantas, total = temporarios.limpar_orfas()
+    except Exception as exc:
+        print(f"[processamento] falha ao limpar copias WAV: {type(exc).__name__}")
+        return
+    if quantas:
+        print(f"[processamento] {quantas} copia(s) WAV orfa(s) apagada(s), {total / 1e6:.1f} MB")
 
 
 def argumentos_de_falantes(pessoas, talvez_calados=()):
