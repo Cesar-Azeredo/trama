@@ -73,8 +73,13 @@ Citacao:
 - Fonte: https://github.com/googlefonts/literata
 - Autores: Ricardo Marcin / TypeTogether, contribuidores Google Fonts
 - Licenca: SIL Open Font License 1.1
-- Modificacoes: nenhuma. Arquivos `.woff2` (pesos 400 e 600) empacotados em
-  `frontend/src/estilos/fontes/` (SKILL.md de identidade visual, ADR 0005).
+- Reserved Font Name: nenhum.
+- Arquivos: `literata-400.woff2` e `literata-600.woff2`, em
+  `frontend/src/estilos/fontes/`. Sao o subset latin feito e distribuido
+  pelo Fontsource (`@fontsource/literata` 5.3.0, arquivos
+  `literata-latin-400-normal.woff2` e `literata-latin-600-normal.woff2`),
+  identicos byte a byte; nenhuma alteracao nossa. Subset e modificacao
+  pela OFL - permitida aqui porque a Literata nao tem Reserved Font Name.
 
 ---
 
@@ -83,8 +88,12 @@ Citacao:
 - Fonte: https://github.com/IBM/plex
 - Autor: IBM
 - Licenca: SIL Open Font License 1.1 (Reserved Font Name "Plex")
-- Modificacoes: nenhuma. Arquivo `.woff2` (peso 400) empacotado em
-  `frontend/src/estilos/fontes/`. Texto da licenca em
+- Arquivo: `IBMPlexMono-Regular-Latin1.woff2`, em
+  `frontend/src/estilos/fontes/` - o subset Latin1 OFICIAL da IBM
+  (`fonts/split/woff2/` do pacote `@ibm/plex-mono` 2.5.0, fonte versao
+  2.005), identico byte a byte; nenhuma alteracao nossa. Por causa do
+  Reserved Font Name, a Plex nao pode ser distribuida num subset feito por
+  terceiros com o mesmo nome - so o subset da propria IBM. Texto da licenca em
   `frontend/public/licencas/OFL-ibm-plex.txt`. A IBM Plex Sans saiu do app
   com a marca Trama (ADR 0023).
 
@@ -95,8 +104,11 @@ Citacao:
 - Fonte: https://github.com/erikdkennedy/figtree
 - Autor: Erik Kennedy (The Figtree Project Authors)
 - Licenca: SIL Open Font License 1.1 (sem Reserved Font Name)
-- Modificacoes: subset latin (U+0000-00FF e pontuacao), como distribuido
-  pelo Fontsource (`@fontsource/figtree` 5.3.0). Arquivos `.woff2` (pesos
-  400 e 600) empacotados em `frontend/src/estilos/fontes/`. Texto da
+- Arquivos: `figtree-400.woff2` e `figtree-600.woff2`, em
+  `frontend/src/estilos/fontes/`. Sao o subset latin feito e distribuido
+  pelo Fontsource (`@fontsource/figtree` 5.3.0, arquivos
+  `figtree-latin-400-normal.woff2` e `figtree-latin-600-normal.woff2`),
+  identicos byte a byte; nenhuma alteracao nossa. Subset e modificacao
+  pela OFL - permitida aqui porque a Figtree nao tem Reserved Font Name. Texto da
   licenca em `frontend/public/licencas/OFL-figtree.txt`. Interface do app
   (marca Trama, ADR 0023).

@@ -76,6 +76,19 @@ def test_toda_familia_de_fontes_css_tem_licenca_ofl():
         assert _e_ofl_completa(licencas[nome]), f"{nome}: texto da OFL 1.1 incompleto"
 
 
+def test_plex_so_pelo_subset_oficial_da_ibm():
+    """A IBM Plex tem Reserved Font Name "Plex": subset feito por terceiros
+    nao pode ser distribuido com esse nome. So entra o arquivo de subset da
+    propria IBM (fonts/split/woff2/ do pacote @ibm/plex-mono), sem
+    alteracao - ver ATRIBUICAO.md."""
+    plex = [p.name for p in PASTA_FONTES.glob("*.woff2") if "plex" in p.name.lower()]
+    assert plex, "nenhuma Plex empacotada"
+    for nome in plex:
+        assert nome.startswith("IBMPlex") and nome.endswith(("-Latin1.woff2", "-Latin2.woff2")), (
+            f"{nome} nao e um subset oficial da IBM"
+        )
+
+
 def test_toda_woff2_empacotada_esta_declarada_em_fontes_css():
     """Uma .woff2 solta na pasta, sem @font-face, escaparia do teste da
     licenca acima - e seria distribuida do mesmo jeito se alguem a

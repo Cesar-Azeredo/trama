@@ -975,7 +975,7 @@ def test_sistema_devolve_versao_dispositivo_caminhos_e_licencas():
         rotulos = {i["rotulo"]: i["texto"] for i in literata["itens"]}
         assert rotulos["Licenca"] == "SIL Open Font License 1.1"
         # linha de continuacao indentada junta com o item de cima
-        assert "frontend/src/estilos/fontes/" in rotulos["Modificacoes"]
+        assert "frontend/src/estilos/fontes/" in rotulos["Arquivos"]
     finally:
         shutil.rmtree(pasta, ignore_errors=True)
 
