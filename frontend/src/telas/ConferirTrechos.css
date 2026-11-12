@@ -1,0 +1,46 @@
+/* "Trechos para conferir" (ConferirTrechos.tsx, ADR 0028). Mesma lista do
+   Conferir termos (ConferirTermos.css); aqui so o que e proprio dela. */
+
+.trechos__cabeca {
+  margin: 8px 0 4px;
+  font-family: var(--fonte-interface);
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--tinta-fraca);
+  font-variant-numeric: tabular-nums;
+}
+
+/* O que foi dito e fala: o campo usa a letra do transcript, nao a da
+   interface. */
+.trechos__campo {
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 44px;
+  padding: 8px;
+  border: 1px solid var(--borda);
+  border-radius: 2px;
+  background: var(--fundo);
+  color: var(--tinta-corpo);
+  font-family: var(--fonte-corpo);
+  font-size: 16px;
+  line-height: 1.62;
+  resize: vertical;
+}
+
+.trechos__campo:focus-visible {
+  outline: 2px solid var(--acento);
+  outline-offset: 2px;
+}
+
+/* A marca do som nao transcrito, como no Detalhe (.marca-lacuna). */
+.trechos__lacuna {
+  font-family: var(--fonte-numeros);
+  font-size: 15px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  color: var(--tinta-fraca);
+}
+
+.trecho-tocando .trechos__lacuna {
+  color: var(--tinta-media);
+}

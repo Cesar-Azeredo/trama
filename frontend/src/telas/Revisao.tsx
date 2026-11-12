@@ -16,6 +16,7 @@ import {
 import { listarPessoas } from "../api/pessoas";
 import { BotaoPlay } from "../componentes/BotaoPlay";
 import { ConferirTermos } from "./ConferirTermos";
+import { ConferirTrechos } from "./ConferirTrechos";
 import { useReprodutor } from "../audio/useReprodutor";
 import { useRecarregarGaleria } from "../vozes/useIndiceGaleria";
 import { tituloDaReuniao } from "../util/formatarReuniao";
@@ -411,8 +412,9 @@ export function Revisao({ id }: { id: string }) {
   const [erroSalvar, setErroSalvar] = useState<Mensagem | null>(null);
   const [avisoLedger, setAvisoLedger] = useState<EfeitoNoLedger[] | null>(null);
   // Depois de gravar as vozes, a segunda etapa: termos para conferir (ADR
-  // 0022). Sem nada a conferir, ConferirTermos volta direto ao Detalhe.
-  const [etapa, setEtapa] = useState<"vozes" | "termos">("vozes");
+  // 0022), e a terceira: trechos para conferir (ADR 0028). Etapa sem nada
+  // a conferir passa direto para a seguinte; a ultima volta ao Detalhe.
+  const [etapa, setEtapa] = useState<"vozes" | "termos" | "trechos">("vozes");
   // O aviso descreve UMA decisao - mexer em qualquer nome ou modo depois
   // de ve-lo invalida o numero mostrado. Fecha, e o proximo "Salvar" pede
   // a previa de novo.
@@ -548,6 +550,22 @@ export function Revisao({ id }: { id: string }) {
             {t.titulo(tituloDaReuniao(id, dados.titulo))}
           </h1>
           <ConferirTermos
+            id={id}
+            reprodutor={reprodutor}
+            aoConcluir={() => {
+              setEtapa("trechos");
+              window.scrollTo(0, 0);
+            }}
+          />
+        </>
+      )}
+
+      {!erro && dados !== null && temResultadoProcessado(dados) && etapa === "trechos" && (
+        <>
+          <h1 className="tela-revisao__titulo">
+            {t.titulo(tituloDaReuniao(id, dados.titulo))}
+          </h1>
+          <ConferirTrechos
             id={id}
             reprodutor={reprodutor}
             aoConcluir={() => {

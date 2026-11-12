@@ -10,6 +10,7 @@ import { lista } from "./lista";
 import { pessoas } from "./pessoas";
 import { revisao } from "./revisao";
 import { conferir } from "./conferir";
+import { trechos } from "./trechos";
 import { nova } from "./nova";
 import { processamento } from "./processamento";
 import { termos } from "./termos";
@@ -25,6 +26,7 @@ export const en: Catalogo = {
   pessoas,
   revisao,
   conferir,
+  trechos,
   nova,
   processamento,
   termos,

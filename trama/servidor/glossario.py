@@ -446,7 +446,10 @@ def gravar_reunioes(resultado):
             if not contagem:
                 continue
             texto_txt = pipeline.montar_texto_txt(
-                dados["falas"], dados.get("clusters", {}), regioes=dados.get("regioes_sobrepostas")
+                dados["falas"],
+                dados.get("clusters", {}),
+                regioes=dados.get("regioes_sobrepostas"),
+                lacunas=dados.get("lacunas_sem_texto"),
             )
             texto_json = nucleo.json_para_disco(dados)
             txt = caminho_json.with_suffix(".txt")

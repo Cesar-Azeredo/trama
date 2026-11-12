@@ -356,7 +356,12 @@ def aplicar_e_gravar(caminho, dados, reuniao_id, renomear, aprender, retirar=(),
     # e "[vozes sobrepostas]" inclusive) em vez de reescrever um TXT simples
     # que perdia essas informacoes.
     txt = caminho.with_suffix(".txt")
-    texto_txt = pipeline.montar_texto_txt(falas, clusters, regioes=dados.get("regioes_sobrepostas"))
+    texto_txt = pipeline.montar_texto_txt(
+        falas,
+        clusters,
+        regioes=dados.get("regioes_sobrepostas"),
+        lacunas=dados.get("lacunas_sem_texto"),
+    )
     texto_json = nucleo.json_para_disco(dados)
 
     tmp_txt = nucleo.preparar_escrita_atomica(txt, texto_txt)

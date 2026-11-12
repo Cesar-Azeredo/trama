@@ -139,6 +139,9 @@ export interface Fala {
    * Fala corrigida nao tem marcas de posicao (palavras_*, lacunas) - nao
    * ha como saber onde cairiam num texto escrito a mao. */
   edicao_manual?: EdicaoManual;
+  /** "Não dá para entender" nos trechos para conferir (ADR 0028): a fala
+   * nunca e perguntada de novo. */
+  ininteligivel?: boolean;
 }
 
 export interface EdicaoManual {
@@ -160,6 +163,13 @@ export interface LacunaSemTexto {
   falante: string;
   /** Ausente em reuniao processada antes deste campo. */
   cluster?: string;
+  /** O que alguem escreveu ouvindo o trecho (trechos para conferir, ADR
+   * 0028). Fica DENTRO da lacuna - o texto da fala e as posicoes das
+   * marcas nao mudam. */
+  texto_manual?: string;
+  escrito_em?: string;
+  /** "Não dá para entender": nunca perguntada de novo. */
+  ininteligivel?: boolean;
 }
 
 /** [inicio, fim, rotulo_do_cluster] - como o .json grava cada turno. */
@@ -496,5 +506,69 @@ export async function desfazerCorrecaoFala(
     `/api/reunioes/${encodeURIComponent(id)}/falas/${indice}/edicao?inicio=${inicio}`,
     null,
     "DELETE",
+  );
+}
+
+// ---- trechos para conferir (trama/trechos.py, ADR 0028) --------------------
+
+interface TrechoBase {
+  /** Indice da fala (dona da lacuna, no caso de lacuna). */
+  indice: number;
+  inicio: number;
+  fim: number;
+  falante: string;
+  audio_inicio: number;
+  audio_fim: number;
+}
+
+export interface TrechoFala extends TrechoBase {
+  tipo: "fala";
+  texto: string;
+}
+
+export interface TrechoLacuna extends TrechoBase {
+  tipo: "lacuna";
+  antes: string;
+  depois: string;
+}
+
+export type TrechoParaConferir = TrechoFala | TrechoLacuna;
+
+export async function lerTrechosParaConferir(id: string): Promise<TrechoParaConferir[]> {
+  return (
+    await buscarJson<{ itens: TrechoParaConferir[] }>(
+      `/api/reunioes/${encodeURIComponent(id)}/trechos-para-conferir`,
+    )
+  ).itens;
+}
+
+/** O que foi dito numa lacuna, gravado dentro dela. A lacuna e achada pelo
+ * tempo: reprocessada no meio, o servidor recusa (trecho_mudou). */
+export async function escreverLacuna(
+  id: string,
+  inicio: number,
+  fim: number,
+  texto: string,
+): Promise<LacunaSemTexto> {
+  return (
+    await enviarJson<{ lacuna: LacunaSemTexto }>(
+      `/api/reunioes/${encodeURIComponent(id)}/lacunas`,
+      { inicio, fim, texto },
+      "PUT",
+    )
+  ).lacuna;
+}
+
+/** "Não dá para entender": o trecho nunca e perguntado de novo. */
+export async function marcarIninteligivel(id: string, trecho: TrechoParaConferir): Promise<void> {
+  await enviarJson(
+    `/api/reunioes/${encodeURIComponent(id)}/ininteligivel`,
+    {
+      tipo: trecho.tipo,
+      inicio: trecho.inicio,
+      fim: trecho.fim,
+      indice: trecho.tipo === "fala" ? trecho.indice : null,
+    },
+    "PUT",
   );
 }

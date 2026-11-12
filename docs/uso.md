@@ -209,6 +209,17 @@ novo, nem nas proximas reunioes. A fala fica marcada como "editado a mao", o tex
 transcrito continua guardado ("Voltar ao original"), e a correcao
 sobrevive ao reprocessamento e ao glossario.
 
+Depois dos termos vem **Trechos para conferir**: ate 3 falas em que a
+transcricao teve confianca baixa (as mais longas) e ate 2 sons nao
+transcritos de 1,5 s ou mais, no maximo 5 por reuniao. Cada um toca o
+trecho e tem um campo para escrever o que foi dito. Na fala, o campo ja
+vem com o texto transcrito e gravar e a mesma correcao a mao de sempre. No
+som nao transcrito, o texto fica no ponto exato da fala, em italico no
+Detalhe e normal no `.txt` baixado, e volta sozinho ao reprocessar (se a
+transcricao nova nao tiver o mesmo trecho, fica guardado e aparece um
+aviso). "Nao da para entender" marca o trecho para nunca mais ser
+perguntado; "Pular" nao grava nada. Etapa sem nada a perguntar e pulada.
+
 No fim do `.txt` baixado vem o **Vocabulario desta empresa**: os termos
 da empresa, para a IA que ler o arquivo interpretar o que a transcricao
 automatica errou. Em Perfil > **Termos da empresa**, cada termo tem o nome

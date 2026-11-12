@@ -42,6 +42,9 @@ export const erros: Catalogo["erros"] = {
     falha_gravar_correcao_fala: () =>
       "Could not save the correction. The previous text is still there — try again.",
     falha_gravar_titulo: () => "Could not save the title. The previous one is still there — try again.",
+    trecho_mudou: () =>
+      "This passage changed since the page was opened (the meeting was reprocessed or the segment was corrected). Reload the page.",
+    falha_gravar_trecho: () => "Could not save. Nothing changed — try again.",
     pessoa_nao_encontrada: () => "This person is not in the gallery.",
     falha_excluir_pessoa: () => "Could not delete the profile. Nothing was removed — try again.",
     falha_gravar_revisao: () => "Could not save the review. It is safe to repeat — try again.",
@@ -128,6 +131,10 @@ export const erros: Catalogo["erros"] = {
       Number(p.n) === 1
         ? "1 hand correction couldn't find its segment in this transcript (the audio was split differently). Its text was not lost: it is saved in the meeting file, and comes back on its own if a future reprocessing finds the segment."
         : `${p.n} hand corrections couldn't find their segments in this transcript (the audio was split differently). Their text was not lost: it is saved in the meeting file, and comes back on its own if a future reprocessing finds the segments.`,
+    lacunas_sem_lugar: (p: Parametros) =>
+      Number(p.n) === 1
+        ? "1 text written by hand in untranscribed audio couldn't find the same point in this transcript. It was not lost: it is saved in the meeting file, and comes back on its own if a future reprocessing finds the passage."
+        : `${p.n} texts written by hand in untranscribed audio couldn't find the same point in this transcript. They were not lost: they are saved in the meeting file, and come back on their own if a future reprocessing finds the passages.`,
     arquivo_sem_turnos: () =>
       "File without the raw turns (made by an older version of the pipeline): dynamics, interruption matrix, events and overlap regions could NOT be recalculated with the corrected names and may be out of date. No values were guessed: the old values were kept as they were.",
   },

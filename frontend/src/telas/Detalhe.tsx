@@ -35,6 +35,7 @@ import {
   formatarDataReuniao,
   formatarDuracao,
   formatarTamanhoArquivo,
+  formatarTimestamp,
   rotuloBotaoProcessar,
 } from "../util/formatarReuniao";
 import { numero } from "../util/numeros";
@@ -48,15 +49,6 @@ import { Seta } from "../componentes/Seta";
  * (min_palavras_confianca_fala), nao numa tokenizacao linguistica. */
 function contarPalavras(texto: string): number {
   return texto.trim().split(/\s+/).filter(Boolean).length;
-}
-
-function formatarTimestamp(segundos: number): string {
-  const s = Math.floor(segundos);
-  const h = Math.floor(s / 3600);
-  const min = Math.floor((s % 3600) / 60);
-  const seg = s % 60;
-  const par = (n: number) => String(n).padStart(2, "0");
-  return h > 0 ? `${h}:${par(min)}:${par(seg)}` : `${par(min)}:${par(seg)}`;
 }
 
 // ---- preferencia de mostrar interacoes (localStorage, junto do tema) -----
@@ -418,15 +410,27 @@ function TextoComMarcas({
   const partes: ReactNode[] = [];
   const lacunasEm = (p: number) => lacunas.filter((l) => Math.min(l.posicao, n) === p);
   pontos.forEach((ini, k) => {
-    for (const _ of lacunasEm(ini)) {
+    for (const l of lacunasEm(ini)) {
+      // Escrito por quem ouviu (trechos para conferir, ADR 0028): o texto
+      // no ponto da lacuna, em itálico - é fala, mas não da máquina.
       partes.push(
-        <span
-          key={`l${ini}-${partes.length}`}
-          className="marca-lacuna"
-          title={t.tituloLacuna}
-        >
-          {" "}{t.lacuna}{" "}
-        </span>,
+        l.texto_manual !== undefined ? (
+          <span
+            key={`l${ini}-${partes.length}`}
+            className="lacuna-escrita"
+            title={t.tituloLacunaEscrita}
+          >
+            {" "}{l.texto_manual}{" "}
+          </span>
+        ) : (
+          <span
+            key={`l${ini}-${partes.length}`}
+            className="marca-lacuna"
+            title={t.tituloLacuna}
+          >
+            {" "}{t.lacuna}{" "}
+          </span>
+        ),
       );
     }
     const fim = pontos[k + 1];

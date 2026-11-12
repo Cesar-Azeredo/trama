@@ -48,6 +48,9 @@ export const erros = {
     falha_gravar_correcao_fala: () =>
       "Não foi possível gravar a correção. O texto anterior continua - tente de novo.",
     falha_gravar_titulo: () => "Não foi possível gravar o título. O anterior continua - tente de novo.",
+    trecho_mudou: () =>
+      "Este trecho mudou desde que a página foi aberta (a reunião foi reprocessada ou a fala foi corrigida). Recarregue a página.",
+    falha_gravar_trecho: () => "Não foi possível gravar. Nada mudou - tente de novo.",
     pessoa_nao_encontrada: () => "Esta pessoa não está na galeria.",
     falha_excluir_pessoa: () => "Não foi possível excluir o perfil. Nada foi apagado - tente de novo.",
     falha_gravar_revisao: () =>
@@ -137,6 +140,8 @@ export const erros = {
       `Em parte do texto, a correção já existente de "${p.errado}" para "${p.certo}" vai continuar valendo no lugar desta.`,
     edicoes_sem_fala: (p: Parametros) =>
       `${p.n} correção(ões) feita(s) à mão não encontraram a fala correspondente nesta transcrição (o áudio foi dividido de outro jeito). O texto delas não se perdeu: ficou guardado no arquivo da reunião, e volta sozinho se um reprocessamento futuro achar a fala.`,
+    lacunas_sem_lugar: (p: Parametros) =>
+      `${p.n} texto(s) escrito(s) à mão num som não transcrito não encontraram o mesmo ponto nesta transcrição. O texto não se perdeu: ficou guardado no arquivo da reunião, e volta sozinho se um reprocessamento futuro achar o trecho.`,
     arquivo_sem_turnos: () =>
       "Arquivo sem os turnos brutos (gerado por uma versão antiga do pipeline): dinâmica, matriz de interrupções, eventos e regiões sobrepostas NÃO puderam ser recalculados com os nomes corrigidos e podem estar desatualizados. Nada foi inventado: os valores antigos foram mantidos como estavam.",
   } as Record<string, (p: Parametros) => string>,

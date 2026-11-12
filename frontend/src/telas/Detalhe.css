@@ -415,6 +415,13 @@
   cursor: default;
 }
 
+/* o que alguem escreveu numa lacuna (trechos para conferir, ADR 0028):
+   e fala, entao fica na letra e na cor do transcript; o italico diz que
+   nao veio da maquina, sem etiqueta nem cor de estado. */
+.lacuna-escrita {
+  font-style: italic;
+}
+
 /* marca de confianca baixa da FALA (nunca de uma palavra isolada - ver
    MarcaConfiancaBaixa). Mesmo tratamento tipografico da marginalia de
    eventos, para nao competir visualmente com ela. */

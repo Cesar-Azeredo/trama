@@ -46,6 +46,7 @@ Pacote `trama/` (ADR 0025). Nenhum script Python na raiz.
 | `trama/revisao.py` | correção humana + realimentação dos perfis (a mesma lógica para a CLI e para a tela) |
 | `trama/interacao.py` | sobreposição, interrupção, apoio, dinâmica |
 | `trama/edicao.py` | correção manual do texto de uma fala: guarda o original e as marcas de posição, desfaz, e reaplica as correções nas falas novas ao reprocessar (ADR 0016) |
+| `trama/trechos.py` | trechos para conferir (ADR 0028): escolhe até 3 falas de confiança baixa e 2 lacunas, grava o texto escrito dentro da lacuna e "não dá para entender", e reaplica as respostas ao reprocessar, casando pelo tempo |
 | `trama/termos.py` + `termos.txt` | correção determinística de vocabulário; casa sem diferenciar maiúscula nem acento (`sem_acento`, caractere a caractere, mesmo comprimento — as posições do casamento valem no texto original). `termos.txt` é dado do usuário, fora do git; versionado só `termos.exemplo.txt` |
 | `trama/migracoes/` | migrações versionadas do `vozes.db` (ADR 0006) |
 | `trama/servidor/` | API FastAPI local (ADR 0004) |
@@ -83,6 +84,17 @@ o texto novo da máquina vira `edicao_manual.texto_original`. Correção sem
 fala correspondente vai para `edicoes_sem_fala`, com um aviso, e volta se
 um reprocessamento futuro achar a fala. `termos.aplicar_em_falas` pula
 fala com `edicao_manual` — no `pipeline.py` e ao reaplicar o glossário.
+
+Antes disso, `trechos.preservar` faz o mesmo com as respostas dos trechos
+para conferir (ADR 0028): o texto escrito numa lacuna (`texto_manual`) e o
+"não dá para entender" (`ininteligivel`, na lacuna ou na fala) vão para a
+lacuna/fala nova com metade do tempo em comum. Texto de lacuna sem par vai
+para `lacunas_sem_lugar`, com aviso, e volta num reprocessamento futuro.
+Roda antes de `preservar_edicoes` para a lacuna respondida dentro de uma
+fala corrigida viajar com ela. `montar_texto_txt` (o `.txt` do disco) e o
+`.txt` baixado põem o texto da lacuna no ponto dela
+(`trechos.texto_com_lacunas_escritas`); o texto da fala e as posições das
+marcas nunca mudam.
 
 `alinhar()` também grava, por fala, `confianca_media` (probabilidade média
 das palavras) e `palavras_baixa_confianca` (abaixo de
@@ -236,7 +248,7 @@ Memória mínima sugerida (16 GB) é estimativa, não medição.
 
 ### Testes
 
-15 suítes, 367 casos. Cada arquivo roda sozinho com `python` (imprime
+18 suítes, 396 casos. Cada arquivo roda sozinho com `python` (imprime
 PASSOU/FALHOU por caso e sai com código de erro), e o `pytest` descobre as
 mesmas funções `test_*` sem nenhuma mudança. As suítes do servidor dividem
 a infraestrutura em `tests/servidor_apoio.py`.
@@ -244,20 +256,23 @@ a infraestrutura em `tests/servidor_apoio.py`.
 | Suíte | Casos |
 |---|---|
 | `test_ata.py` | 29 |
+| `test_codigos_de_erro.py` | 4 |
+| `test_demo.py` | 5 |
 | `test_gancho_commit_msg.py` | 5 |
-| `test_identidade.py` | 17 |
+| `test_identidade.py` | 19 |
 | `test_interacao.py` | 22 |
 | `test_migracoes.py` | 9 |
 | `test_paleta.py` | 19 |
-| `test_pipeline.py` | 69 |
-| `test_review.py` | 22 |
+| `test_pipeline.py` | 70 |
+| `test_review.py` | 24 |
 | `test_servidor_pessoas.py` | 13 |
-| `test_servidor_processo.py` | 18 |
-| `test_servidor_reunioes.py` | 45 |
+| `test_servidor_processo.py` | 20 |
+| `test_servidor_reunioes.py` | 46 |
 | `test_servidor_revisao.py` | 17 |
 | `test_servidor_termos.py` | 33 |
-| `test_servidor_transcricao.py` | 14 |
-| `test_termos.py` | 35 |
+| `test_servidor_transcricao.py` | 15 |
+| `test_servidor_trechos.py` | 10 |
+| `test_termos.py` | 36 |
 
 Toda suíte chama `tests/_ambiente.py` antes de importar o projeto: tira do
 ambiente as variáveis que o código lê (limiares, `VOZES_DB`,
@@ -309,6 +324,9 @@ Python novo nem em TypeScript. Ver ADR 0004.
 | `POST /api/correcoes/previa` / `POST /api/correcoes` | corrigir um trecho selecionado em todas as reuniões e nas próximas (`trama/servidor/correcao.py`, ADR 0019): prévia com as ocorrências (reunião, fala, horário, contexto) e uma assinatura; a gravação insere a regra no `termos.txt` na posição que não deixa nenhuma regra mais geral capturar o trecho antes (aviso só se impossível) e aplica só ela, recusando com 409 se algo mudou | 3 |
 | `POST /api/correcoes/variacoes` / `POST /api/correcoes/variacoes/aplicar` | depois de uma correção em todas: formas parecidas do termo, com até 3 contextos cada (critério no ADR 0020, sem dicionário), e a correção só das formas marcadas, com assinatura | 3 |
 | `GET /api/reunioes/{id}/termos-para-conferir` | revisão de termos (ADR 0022): até 10 siglas e dúvidas repetidas, mais frequentes primeiro, cada uma com o trecho e o intervalo de áudio | 3 |
+| `GET /api/reunioes/{id}/trechos-para-conferir` | trechos para conferir (ADR 0028): até 3 falas de confiança baixa e 2 lacunas de 1,5 s ou mais, as mais longas, na ordem da reunião, com o intervalo de áudio | 3 |
+| `PUT /api/reunioes/{id}/lacunas` | `{inicio, fim, texto}`: o que foi dito numa lacuna, gravado dentro dela (achada pelo tempo; não achou → 409 `trecho_mudou`). Mesma validação do texto de fala. Grava `.json` e `.txt` | 3 |
+| `PUT /api/reunioes/{id}/ininteligivel` | `{tipo, inicio, fim, indice?}`: "Não dá para entender" numa fala (com índice e início, como a correção) ou lacuna — nunca perguntada de novo | 3 |
 | `POST /api/termos/respondido` | "Ignorar" (ou corrigido só numa fala): grava `#! forma` no `termos.txt`, nunca mais perguntada | 3 |
 | `PUT /api/termos/descricao` | descrição de um termo ("O que é isso?"); vazia mantém o termo conhecido | 3 |
 | `GET` / `POST` / `DELETE /api/termos/empresa` | Termos da empresa (ADR 0021): os termos agrupados (nome, descrição, variações), adicionar termo (só nome e descrição; sem regra vira `#= termo`), remover termo (com descrição e variações). A mesma variação no mesmo termo (sem diferenciar maiúscula, acento nem espaçamento) nunca é gravada duas vezes: `glossario.escrever` fica com a primeira, a única que dispara | 3 |
@@ -669,8 +687,17 @@ a `Mensagem` (`mensagemDe(e)` no `catch`). A transcrição baixada recebe `?idio
    e palavras em que a transcrição duvidou várias vezes, fora nomes da
    galeria, termos da empresa e o que já foi respondido; no máximo 10.
    Cada uma toca o trecho e tem "Está certo", "Corrigir para…" (o painel
-   de correção, embutido) e "Ignorar". Sem nenhum item, volta direto ao
-   Detalhe.
+   de correção, embutido) e "Ignorar". Sem nenhum item, passa direto à
+   etapa seguinte.
+   A terceira etapa, **"Trechos para conferir"**
+   (`telas/ConferirTrechos.tsx`, `trama/trechos.py`, ADR 0028): até 3 falas
+   de confiança baixa e 2 sons não transcritos, no máximo 5, cada um com
+   play e um campo para escrever o que foi dito. Fala: o campo abre com o
+   texto transcrito e grava pela correção manual (`PUT .../falas/{i}`).
+   Lacuna: o texto fica dentro dela; no Detalhe aparece no ponto da
+   lacuna, em itálico (`.lacuna-escrita`), com o `title` "escrito à mão".
+   "Não dá para entender" grava e não pergunta de novo; "Pular" não grava.
+   Sem nenhum item, volta direto ao Detalhe.
 
 5. **Processamento** (`#/reuniao/<id>/processando`) — acompanha o SSE das
    5 etapas; cai para "ocioso" se não há job correspondente rodando.

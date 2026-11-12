@@ -31,6 +31,8 @@ export const detalhe = {
   lacuna: "[som não transcrito]",
   tituloLacuna:
     "Trecho sem nenhuma palavra transcrita aqui (ex.: riso, gesto, respiração) - a transcrição não afirma o que era",
+  tituloLacunaEscrita:
+    "Escrito à mão por quem ouviu o trecho - não veio da transcrição automática",
   tituloPista: (nome: string) => `Pista: pode ser ${nome} - atribuição por palavra, não confirmada`,
   tituloSobreposicao: (nome: string) => `Sobreposição: ${nome} falava ao mesmo tempo`,
   pctDaFala: (pct: string) => `${pct}% da fala`,

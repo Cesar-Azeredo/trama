@@ -27,12 +27,13 @@ if str(RAIZ) not in sys.path:
 import asyncio
 import json
 from contextlib import asynccontextmanager
+from typing import Literal
 
 from fastapi import FastAPI, File, HTTPException, Response, UploadFile
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 
-from trama import edicao, nucleo
+from trama import edicao, nucleo, trechos
 from trama.servidor import (
     busca,
     conferir,
@@ -519,6 +520,72 @@ def termos_para_conferir(id: str):
         raise _erro(400, "id_invalido")
     except reunioes.ReuniaoNaoEncontrada:
         raise _erro(404, "reuniao_nao_encontrada")
+
+
+@app.get("/api/reunioes/{id}/trechos-para-conferir")
+def trechos_para_conferir(id: str):
+    """Terceira etapa da revisao (trama/trechos.py, ADR 0028): ate 3 falas
+    de confianca baixa e 2 lacunas, no maximo 5, na ordem da reuniao."""
+    try:
+        return {"itens": reunioes.trechos_para_conferir(id)}
+    except reunioes.IdInvalido:
+        raise _erro(400, "id_invalido")
+    except reunioes.ReuniaoNaoEncontrada:
+        raise _erro(404, "reuniao_nao_encontrada")
+
+
+def _alterar_trecho_ou_erro(id, funcao):
+    try:
+        return funcao()
+    except edicao.TextoInvalido as exc:
+        raise HTTPException(status_code=400, detail=exc.para_resposta())
+    except reunioes.IdInvalido:
+        raise _erro(400, "id_invalido")
+    except reunioes.ReuniaoNaoEncontrada:
+        raise _erro(404, "reuniao_nao_encontrada")
+    except (edicao.FalaNaoEncontrada, edicao.FalaMudou, trechos.LacunaNaoEncontrada):
+        raise _erro(409, "trecho_mudou")
+    except Exception as exc:
+        # Nunca o texto escrito no log (CLAUDE.md, regra 3).
+        print(f"[trecho] falha ao gravar {id}: {type(exc).__name__}")
+        raise _erro(500, "falha_gravar_trecho")
+
+
+class CorpoLacuna(BaseModel):
+    # A lacuna e achada pelo tempo (nao tem indice proprio); validacao do
+    # texto em edicao.validar_texto, a mesma da fala.
+    inicio: float
+    fim: float
+    texto: str
+
+
+@app.put("/api/reunioes/{id}/lacunas")
+def escrever_lacuna(id: str, corpo: CorpoLacuna):
+    """O que foi dito numa lacuna, gravado dentro dela (trechos.py)."""
+    return _alterar_trecho_ou_erro(
+        id, lambda: reunioes.escrever_lacuna(id, corpo.inicio, corpo.fim, corpo.texto)
+    )
+
+
+class CorpoIninteligivel(BaseModel):
+    tipo: Literal["fala", "lacuna"]
+    inicio: float
+    fim: float
+    # So para tipo "fala": o indice dela (com o inicio, como na correcao).
+    indice: int | None = None
+
+
+@app.put("/api/reunioes/{id}/ininteligivel")
+def marcar_ininteligivel(id: str, corpo: CorpoIninteligivel):
+    """ "Não dá para entender": o trecho nunca e perguntado de novo."""
+    if corpo.tipo == "fala" and corpo.indice is None:
+        raise _erro(400, "trecho_mudou")
+    return _alterar_trecho_ou_erro(
+        id,
+        lambda: reunioes.marcar_ininteligivel(
+            id, corpo.tipo, corpo.inicio, corpo.fim, corpo.indice
+        ),
+    )
 
 
 class CorpoRespondido(BaseModel):

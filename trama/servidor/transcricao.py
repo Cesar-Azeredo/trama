@@ -19,6 +19,8 @@ import unicodedata
 from datetime import datetime
 from urllib.parse import quote
 
+from trama import trechos
+
 # Texto do arquivo por idioma (o da interface, ?idioma= na rota). So o que
 # o arquivo diz SOBRE a reuniao muda de idioma; a fala das pessoas nunca e
 # traduzida.
@@ -230,8 +232,11 @@ def montar_texto(id, dados, fuso=None, vocabulario=None, idioma="pt"):
 
     linhas.append("")
     com_hora = duracao >= 3600
+    lacunas = dados.get("lacunas_sem_texto")
     for f in falas:
-        texto = _texto_numa_linha(f.get("texto"))
+        # O que alguem escreveu numa lacuna (trechos para conferir) entra
+        # no ponto dela - e fala, nao marca de interface.
+        texto = _texto_numa_linha(trechos.texto_com_lacunas_escritas(f, lacunas))
         if not texto:
             continue
         linhas.append(f"[{_horario(f['inicio'], com_hora)}] {rotulo(f['falante'])}: {texto}")

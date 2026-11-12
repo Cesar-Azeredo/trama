@@ -22,7 +22,7 @@ from pathlib import Path
 
 import numpy as np
 
-from trama import edicao, erros, interacao, nucleo, termos
+from trama import edicao, erros, interacao, nucleo, termos, trechos
 
 DIAR_MODEL = os.environ.get("DIAR_MODEL", "pyannote/speaker-diarization-community-1")
 
@@ -605,7 +605,7 @@ def alinhar(palavras, diar_exclusiva, mapa, turnos_ativos=None):
     return _finalizar(_agrupar_em_turnos(palavras, mapa, turnos_para_lacuna))
 
 
-def montar_texto_txt(falas, mapa, regioes=None):
+def montar_texto_txt(falas, mapa, regioes=None, lacunas=None):
     """
     So monta o texto (string pura, nada de disco) - separado de
     escrever_txt para quem precisa preparar o conteudo ANTES de decidir
@@ -618,6 +618,10 @@ def montar_texto_txt(falas, mapa, regioes=None):
       <- conferir        identificacao com similaridade baixa
       [vozes sobrepostas]  trecho onde duas pessoas falavam junto, entao a
                            transcricao e menos confiavel
+
+    `lacunas`: lacunas_sem_texto da reuniao - o que alguem escreveu numa
+    lacuna (trechos para conferir, ADR 0028) entra no texto da fala, no
+    ponto dela.
     """
     regioes_tuplas = [(r["inicio"], r["fim"], r["falantes"]) for r in regioes] if regioes else []
     linhas = []
@@ -629,12 +633,13 @@ def montar_texto_txt(falas, mapa, regioes=None):
         if regioes_tuplas and interacao.em_sobreposicao(f["inicio"], f["fim"], regioes_tuplas):
             marcas.append("[vozes sobrepostas]")
         sufixo = ("  " + "  ".join(marcas)) if marcas else ""
-        linhas.append(f"[{nucleo.hhmmss(f['inicio'])}] {f['falante']}: {f['texto']}{sufixo}")
+        texto = trechos.texto_com_lacunas_escritas(f, lacunas)
+        linhas.append(f"[{nucleo.hhmmss(f['inicio'])}] {f['falante']}: {texto}{sufixo}")
     return "\n".join(linhas)
 
 
-def escrever_txt(falas, mapa, destino, regioes=None):
-    nucleo.escrever_atomico(destino, montar_texto_txt(falas, mapa, regioes))
+def escrever_txt(falas, mapa, destino, regioes=None, lacunas=None):
+    nucleo.escrever_atomico(destino, montar_texto_txt(falas, mapa, regioes, lacunas))
 
 
 def imprimir_dinamica(analise):
@@ -1080,7 +1085,8 @@ def _transcrever_e_corrigir(
     wav, diar_exc, mapa, analise, asr, modelo, idioma, regras, saida, dados_anteriores
 ):
     """Etapa 5: transcricao, alinhamento por palavra, glossario e as
-    correcoes feitas a mao. Devolve (falas, lacunas, edicoes_sem_fala)."""
+    correcoes feitas a mao. Devolve (falas, lacunas, edicoes_sem_fala,
+    lacunas_sem_lugar)."""
     # O initial_prompt so influencia a primeira janela de 30s (usamos
     # condition_on_previous_text=False, sem o qual o Whisper entra em loop de
     # repeticao em audio longo). O arquivo todo e coberto pela substituicao
@@ -1103,16 +1109,25 @@ def _transcrever_e_corrigir(
     # as falas novas. Relido do disco AGORA, como o titulo: uma correcao
     # feita na tela durante este processamento tambem vale. Depois do
     # glossario, que nunca reescreve fala corrigida.
-    edicoes_sem_fala = edicao.preservar_edicoes(
-        falas, lacunas, carregar_saida_anterior(f"{saida}.json") or dados_anteriores
-    )
+    anteriores = carregar_saida_anterior(f"{saida}.json") or dados_anteriores
+    # Respostas dos trechos para conferir (texto escrito numa lacuna, "nao
+    # da para entender") ANTES das correcoes: a lacuna respondida dentro de
+    # uma fala corrigida viaja com ela (trechos.preservar).
+    lacunas_sem_lugar = trechos.preservar(falas, lacunas, anteriores)
+    if lacunas_sem_lugar:
+        print(
+            f"     ! {len(lacunas_sem_lugar)} texto(s) escrito(s) em lacuna sem "
+            "lacuna correspondente nesta transcricao - guardados em "
+            "lacunas_sem_lugar no .json"
+        )
+    edicoes_sem_fala = edicao.preservar_edicoes(falas, lacunas, anteriores)
     if edicoes_sem_fala:
         print(
             f"     ! {len(edicoes_sem_fala)} correcao(oes) manual(is) sem fala "
             "correspondente nesta transcricao - guardadas em "
             "edicoes_sem_fala no .json"
         )
-    return falas, lacunas, edicoes_sem_fala
+    return falas, lacunas, edicoes_sem_fala, lacunas_sem_lugar
 
 
 def _gravar(saida_json, saida, remapa, reuniao_id):
@@ -1182,11 +1197,13 @@ def processar(
     imprimir_dinamica(analise)
 
     regras = [] if sem_termos else termos.carregar(arquivo_termos)
-    falas, lacunas, edicoes_sem_fala = _transcrever_e_corrigir(
+    falas, lacunas, edicoes_sem_fala, lacunas_sem_lugar = _transcrever_e_corrigir(
         wav, diar_exc, mapa, analise, asr, modelo, idioma, regras, saida, dados_anteriores
     )
 
-    escrever_txt(falas, mapa, f"{saida}.txt", regioes=analise["regioes_sobrepostas"])
+    escrever_txt(
+        falas, mapa, f"{saida}.txt", regioes=analise["regioes_sobrepostas"], lacunas=lacunas
+    )
     reuniao_id = preservar_reuniao_id(dados_anteriores)
     saida_json = montar_saida(
         audio,
@@ -1205,8 +1222,14 @@ def processar(
             carregar_saida_anterior(f"{saida}.json") or dados_anteriores, audio
         ),
     )
+    avisos = []
     if edicoes_sem_fala:
         saida_json["edicoes_sem_fala"] = edicoes_sem_fala
-        saida_json["avisos"] = [erros.aviso("edicoes_sem_fala", n=len(edicoes_sem_fala))]
+        avisos.append(erros.aviso("edicoes_sem_fala", n=len(edicoes_sem_fala)))
+    if lacunas_sem_lugar:
+        saida_json["lacunas_sem_lugar"] = lacunas_sem_lugar
+        avisos.append(erros.aviso("lacunas_sem_lugar", n=len(lacunas_sem_lugar)))
+    if avisos:
+        saida_json["avisos"] = avisos
     _gravar(saida_json, saida, remapa, reuniao_id)
     return saida

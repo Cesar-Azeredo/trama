@@ -35,7 +35,7 @@ import re
 import subprocess
 from pathlib import Path
 
-from trama import edicao, erros, nucleo, pipeline
+from trama import edicao, erros, nucleo, pipeline, trechos
 from trama.erros import ErroDeUsuario
 from trama.servidor import processamento
 
@@ -585,24 +585,26 @@ def gravar_titulo(id, bruto):
 # --------------------------------------------------------------------------
 
 
-def _alterar_fala(id, operacao):
+def _alterar_json(id, operacao):
     """
-    Le o .json, aplica `operacao(dados)` (que devolve a fala alterada) e
-    grava .json e .txt juntos: os dois preparados em temporario antes de
-    confirmar qualquer um - mesma ordem do glossario e da revisao. Devolve
-    a fala (como a tela recebe) e as lacunas da reuniao, que podem ter
-    mudado.
+    Le o .json, aplica `operacao(dados)` e grava .json e .txt juntos: os
+    dois preparados em temporario antes de confirmar qualquer um - mesma
+    ordem do glossario e da revisao. Devolve (dados, o que a operacao
+    devolveu).
     """
     pasta = resolver_pasta(id)
     caminho_json = pasta / f"{id}.json"
     if not caminho_json.exists():
         raise ReuniaoNaoEncontrada(id)
     dados = json.loads(caminho_json.read_text(encoding="utf-8"))
-    fala = operacao(dados)
+    resultado = operacao(dados)
 
     txt = caminho_json.with_suffix(".txt")
     texto_txt = pipeline.montar_texto_txt(
-        dados["falas"], dados.get("clusters", {}), regioes=dados.get("regioes_sobrepostas")
+        dados["falas"],
+        dados.get("clusters", {}),
+        regioes=dados.get("regioes_sobrepostas"),
+        lacunas=dados.get("lacunas_sem_texto"),
     )
     tmp_txt = nucleo.preparar_escrita_atomica(txt, texto_txt)
     try:
@@ -612,6 +614,13 @@ def _alterar_fala(id, operacao):
         raise
     nucleo.confirmar_escrita_atomica(tmp_txt, txt)
     nucleo.confirmar_escrita_atomica(tmp_json, caminho_json)
+    return dados, resultado
+
+
+def _alterar_fala(id, operacao):
+    """`operacao(dados)` devolve a fala alterada. Devolve a fala (como a
+    tela recebe) e as lacunas da reuniao, que podem ter mudado."""
+    dados, fala = _alterar_json(id, operacao)
     return {"fala": edicao.para_a_tela(fala), "lacunas_sem_texto": dados.get("lacunas_sem_texto")}
 
 
@@ -621,3 +630,29 @@ def editar_fala(id, indice, texto, inicio):
 
 def desfazer_edicao_fala(id, indice, inicio):
     return _alterar_fala(id, lambda d: edicao.desfazer(d, indice, inicio))
+
+
+# --------------------------------------------------------------------------
+# trechos para conferir (trama/trechos.py, ADR 0028)
+# --------------------------------------------------------------------------
+
+
+def trechos_para_conferir(id):
+    pasta = resolver_pasta(id)
+    caminho_json = pasta / f"{id}.json"
+    if not caminho_json.exists():
+        raise ReuniaoNaoEncontrada(id)
+    return trechos.trechos_para_conferir(json.loads(caminho_json.read_text(encoding="utf-8")))
+
+
+def escrever_lacuna(id, inicio, fim, texto):
+    _, lacuna = _alterar_json(id, lambda d: trechos.escrever_lacuna(d, inicio, fim, texto))
+    return {"lacuna": lacuna}
+
+
+def marcar_ininteligivel(id, tipo, inicio, fim, indice=None):
+    if tipo == "lacuna":
+        _alterar_json(id, lambda d: trechos.marcar_lacuna_ininteligivel(d, inicio, fim))
+    else:
+        _alterar_json(id, lambda d: trechos.marcar_fala_ininteligivel(d, indice, inicio))
+    return {"ok": True}

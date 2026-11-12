@@ -30,6 +30,8 @@ export const detalhe: Catalogo["detalhe"] = {
   lacuna: "[untranscribed audio]",
   tituloLacuna:
     "No words were transcribed here (laughter, coughing, background noise) — the transcript doesn't guess what it was",
+  tituloLacunaEscrita:
+    "Written by hand by someone who listened to the passage — not from the automatic transcript",
   tituloPista: (nome) => `Possibly ${nome} — word-level guess, not confirmed`,
   tituloSobreposicao: (nome) => `Overlap: ${nome} was speaking at the same time`,
   pctDaFala: (pct) => `${pct}% of speaking time`,

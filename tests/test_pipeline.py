@@ -1461,6 +1461,71 @@ def test_correcao_sem_fala_correspondente_fica_guardada_e_volta_depois():
         shutil.rmtree(pasta, ignore_errors=True)
 
 
+# --- trechos para conferir (trechos.py, ADR 0028) ---------------------------
+
+
+def _responder_trechos_no_disco(caminho_json, texto_lacuna):
+    """O que as rotas PUT .../lacunas e .../ininteligivel gravam."""
+    import json
+
+    from trama import trechos
+
+    d = json.loads(caminho_json.read_text(encoding="utf-8"))
+    (lacuna,) = d["lacunas_sem_texto"]
+    trechos.escrever_lacuna(d, lacuna["inicio"], lacuna["fim"], texto_lacuna)
+    trechos.marcar_fala_ininteligivel(d, 1, d["falas"][1]["inicio"])
+    nucleo.escrever_atomico(caminho_json, nucleo.json_para_disco(d))
+
+
+def test_reprocessar_mantem_texto_da_lacuna_e_nao_da_para_entender():
+    import json
+
+    pasta, audio, palavras, turnos, mapa = _cenario_de_correcao()
+    # p4-p6 caladas: 1,6 s sem palavra dentro do turno do Ramiro
+    palavras = [p for i, p in enumerate(palavras) if i not in (4, 5, 6)]
+    try:
+        db = pasta / "vozes_teste.db"
+        j = pasta / "reuniao_01.json"
+        _rodar_run_main(audio, db, turnos, mapa, palavras)
+        d = json.loads(j.read_text(encoding="utf-8"))
+        assert [(lac["inicio"], lac["fim"]) for lac in d["lacunas_sem_texto"]] == [(1.9, 3.5)]
+        _responder_trechos_no_disco(j, "dito na lacuna")
+
+        renumerado = [
+            (a, b, "SPEAKER_01" if q == "SPEAKER_00" else "SPEAKER_00") for a, b, q in turnos
+        ]
+        _rodar_run_main(
+            audio,
+            db,
+            renumerado,
+            {"SPEAKER_01": mapa["SPEAKER_00"], "SPEAKER_00": mapa["SPEAKER_01"]},
+            palavras,
+        )
+        d = json.loads(j.read_text(encoding="utf-8"))
+        (lacuna,) = d["lacunas_sem_texto"]
+        assert lacuna["texto_manual"] == "dito na lacuna", lacuna
+        assert d["falas"][1].get("ininteligivel") is True
+        assert "ininteligivel" not in d["falas"][0]
+        assert "p3. dito na lacuna p7" not in d["falas"][0]["texto"], "texto da fala intacto"
+        assert "p3 dito na lacuna p7" in j.with_suffix(".txt").read_text(encoding="utf-8")
+
+        # audio dividido de outro jeito: a lacuna some, o texto fica guardado
+        longe = [(a + 100, b + 100, t) for a, b, t in palavras]
+        _rodar_run_main(audio, db, [(a + 100, b + 100, q) for a, b, q in turnos], mapa, longe)
+        d = json.loads(j.read_text(encoding="utf-8"))
+        assert not any("texto_manual" in lac for lac in d["lacunas_sem_texto"])
+        assert [x["texto_manual"] for x in d["lacunas_sem_lugar"]] == ["dito na lacuna"]
+        assert {"codigo": "lacunas_sem_lugar", "parametros": {"n": 1}} in d["avisos"]
+
+        # e volta quando um reprocessamento acha a lacuna de novo
+        _rodar_run_main(audio, db, turnos, mapa, palavras)
+        d = json.loads(j.read_text(encoding="utf-8"))
+        assert d["lacunas_sem_texto"][0]["texto_manual"] == "dito na lacuna"
+        assert "lacunas_sem_lugar" not in d and "avisos" not in d
+    finally:
+        shutil.rmtree(pasta, ignore_errors=True)
+
+
 def test_reprocessar_reuniao_com_titulo_mantem_titulo_data_id_e_revisao():
     """
     Reprocessa uma reuniao que tem titulo (dado na Nova reuniao e depois

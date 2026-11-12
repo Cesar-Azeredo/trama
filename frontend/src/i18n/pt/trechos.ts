@@ -1,0 +1,20 @@
+/** Terceira etapa da revisão: trechos para conferir (telas/ConferirTrechos.tsx). */
+export const trechos = {
+  procurando: "Procurando trechos para conferir…",
+  titulo: "Trechos para conferir",
+  nota: "Aqui a transcrição pode ter errado ou deixado algo de fora. Ouça e escreva o que foi dito. Nada aqui é obrigatório, e um trecho respondido não é perguntado de novo.",
+  cabecaFala: (nome: string, hora: string) => `${nome}, ${hora} · confiança baixa`,
+  cabecaLacuna: (nome: string, hora: string) => `${nome}, ${hora} · som não transcrito`,
+  oTrechoDe: (nome: string, hora: string) => `o trecho de ${nome} em ${hora}`,
+  oQueFoiDito: "O que foi dito",
+  oQueFoiDitoAqui: "O que foi dito neste ponto",
+  gravar: "Gravar",
+  gravando: "Gravando…",
+  naoDaParaEntender: "Não dá para entender",
+  pular: "Pular",
+  gravado: "Gravado.",
+  marcadoIninteligivel: "Marcado. Este trecho não volta a ser perguntado.",
+  tudoRespondido: "Tudo respondido.",
+  concluir: "Concluir",
+  irParaReuniao: "Ir para a reunião",
+};

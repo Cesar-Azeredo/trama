@@ -80,3 +80,13 @@ export function formatarDataReuniao(
 export function tituloDaReuniao(id: string, titulo: string | null | undefined): string {
   return titulo || formatarTitulo(id);
 }
+
+/** Horario dentro da reuniao: "mm:ss", ou "h:mm:ss" depois da primeira hora. */
+export function formatarTimestamp(segundos: number): string {
+  const s = Math.floor(segundos);
+  const h = Math.floor(s / 3600);
+  const min = Math.floor((s % 3600) / 60);
+  const seg = s % 60;
+  const par = (n: number) => String(n).padStart(2, "0");
+  return h > 0 ? `${h}:${par(min)}:${par(seg)}` : `${par(min)}:${par(seg)}`;
+}
