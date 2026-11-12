@@ -357,6 +357,7 @@ def aplicar_e_gravar(caminho, dados, reuniao_id, renomear, aprender, retirar=(),
         clusters,
         regioes=dados.get("regioes_sobrepostas"),
         lacunas=dados.get("lacunas_sem_texto"),
+        idioma_txt=dados.get("idioma_txt"),
     )
     texto_json = nucleo.json_para_disco(dados)
 

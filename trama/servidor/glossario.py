@@ -450,6 +450,7 @@ def gravar_reunioes(resultado):
                 dados.get("clusters", {}),
                 regioes=dados.get("regioes_sobrepostas"),
                 lacunas=dados.get("lacunas_sem_texto"),
+                idioma_txt=dados.get("idioma_txt"),
             )
             texto_json = nucleo.json_para_disco(dados)
             txt = caminho_json.with_suffix(".txt")

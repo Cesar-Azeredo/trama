@@ -1617,6 +1617,54 @@ def test_cancelar_com_sigterm_apaga_a_copia_wav():
         shutil.rmtree(pasta, ignore_errors=True)
 
 
+# --- idioma do .txt em disco (trama/idioma.py) ------------------------------
+
+
+def test_marcas_do_txt_em_disco_no_idioma_pedido():
+    falas = [{"falante": "Ana", "cluster": "S0", "inicio": 1.0, "fim": 3.0, "texto": "Oi."}]
+    mapa = {"S0": {"sim": 0.1}}
+    regioes = [{"inicio": 1.0, "fim": 3.0, "falantes": ["Ana", "Bia"]}]
+    pt = pipeline.montar_texto_txt(falas, mapa, regioes, idioma_txt="pt")
+    en = pipeline.montar_texto_txt(falas, mapa, regioes, idioma_txt="en")
+    assert pt.endswith("Ana: Oi.  <- conferir  [vozes sobrepostas]"), pt
+    assert en.endswith("Ana: Oi.  <- check  [overlapping voices]"), en
+
+
+def test_txt_em_disco_fica_no_idioma_do_processamento_mesmo_regravado():
+    """Processado em ingles, o .txt continua em ingles quando o servidor (em
+    portugues) o regrava depois de uma correcao - o idioma mora no .json."""
+    import json
+    import os
+
+    from trama.servidor import reunioes
+
+    pasta, audio, palavras, turnos, mapa = _cenario_de_correcao()
+    mapa["SPEAKER_00"]["sim"] = 0.5  # abaixo de SIM_MIN + 0.1: marca "conferir"
+    # o formato de audios/: reuniao_01/reuniao_01.m4a
+    (pasta / "reuniao_01").mkdir()
+    audio = Path(shutil.move(str(audio), str(pasta / "reuniao_01" / "reuniao_01.m4a")))
+    j, txt = audio.with_suffix(".json"), audio.with_suffix(".txt")
+    original = reunioes.PASTA_AUDIOS
+    os.environ["TRAMA_IDIOMA"] = "en"
+    try:
+        _rodar_run_main(audio, pasta / "vozes_teste.db", turnos, mapa, palavras)
+        os.environ["TRAMA_IDIOMA"] = "pt"
+        assert json.loads(j.read_text(encoding="utf-8"))["idioma_txt"] == "en"
+        assert "<- check" in txt.read_text(encoding="utf-8")
+
+        # a rota de correcao de fala, com o servidor em portugues
+        reunioes.PASTA_AUDIOS = pasta
+        inicio = json.loads(j.read_text(encoding="utf-8"))["falas"][0]["inicio"]
+        reunioes.editar_fala("reuniao_01", 0, "Corrigido.", inicio)
+        texto = txt.read_text(encoding="utf-8")
+        assert "Corrigido." in texto and "<- check" in texto, texto
+        assert "<- conferir" not in texto
+    finally:
+        os.environ["TRAMA_IDIOMA"] = "pt"
+        reunioes.PASTA_AUDIOS = original
+        shutil.rmtree(pasta, ignore_errors=True)
+
+
 def test_reprocessar_reuniao_com_titulo_mantem_titulo_data_id_e_revisao():
     """
     Reprocessa uma reuniao que tem titulo (dado na Nova reuniao e depois

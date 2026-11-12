@@ -188,7 +188,9 @@ audios/
     └── fase0/               # amostras de audio por cluster, do fase0.py
 ```
 
-O `.txt` e o que o `pipeline.py` gerou; para levar a transcricao para outro
+O `.txt` e o que o `pipeline.py` gerou, com as marcas no idioma de quem
+processou (`TRAMA_IDIOMA`, ou o da interface quando foi pela tela) - e
+continua nesse idioma quando a revisao ou uma correcao o regravam; para levar a transcricao para outro
 lugar (colar numa IA, mandar por e-mail), use **Baixar transcricao (.txt)**
 no detalhe da reuniao: o arquivo sai do `.json` na hora, com titulo, data,
 duracao, quem participou e a revisao/glossario mais recentes.
@@ -322,14 +324,14 @@ para isso.
 
 ## Testes
 
-`tests/` tem 22 suites, 423 testes no total. Cada arquivo roda com `python`, imprime PASSOU/FALHOU por caso e
+`tests/` tem 22 suites, 425 testes no total. Cada arquivo roda com `python`, imprime PASSOU/FALHOU por caso e
 sai com codigo de erro se algo falhar. As suites ignoram as variaveis de
 ambiente de calibracao do seu shell (`SIM_MIN`, `MIN_SOBREPOSICAO`...):
 testam sempre o padrao do codigo.
 
 | Suite                     | O que cobre                                                        | Testes |
 |---------------------------|---------------------------------------------------------------------|--------|
-| `tests/test_pipeline.py`  | quebra de frase, juncao de texto, atribuicao INDEPENDENTE cluster->pessoa (`pipeline.identificar`), normalizacao de segmentos, reprocessamento preservando revisao, correcoes e respostas, nenhuma copia WAV sobrando (sucesso, falha, cancelamento) | 72 |
+| `tests/test_pipeline.py`  | quebra de frase, juncao de texto, atribuicao INDEPENDENTE cluster->pessoa (`pipeline.identificar`), normalizacao de segmentos, reprocessamento preservando revisao, correcoes e respostas, nenhuma copia WAV sobrando (sucesso, falha, cancelamento), idioma do `.txt` em disco | 74 |
 | `tests/test_idioma.py` | idioma da linha de comando: ordem de escolha, catalogo pt/en com as mesmas chaves e parametros | 6 |
 | `tests/test_temporarios.py` | varredura das copias WAV orfas na pasta temporaria (`temporarios.py`) | 3 |
 | `tests/test_interacao.py` | sobreposicao, interrupcao, apoio e dinamica (`interacao.py`)        | 22 |

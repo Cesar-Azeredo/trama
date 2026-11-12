@@ -608,6 +608,7 @@ def _alterar_json(id, operacao):
         dados.get("clusters", {}),
         regioes=dados.get("regioes_sobrepostas"),
         lacunas=dados.get("lacunas_sem_texto"),
+        idioma_txt=dados.get("idioma_txt"),
     )
     tmp_txt = nucleo.preparar_escrita_atomica(txt, texto_txt)
     try:

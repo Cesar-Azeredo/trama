@@ -251,7 +251,7 @@ Memória mínima sugerida (16 GB) é estimativa, não medição.
 
 ### Testes
 
-22 suítes, 423 casos. Cada arquivo roda sozinho com `python` (imprime
+22 suítes, 425 casos. Cada arquivo roda sozinho com `python` (imprime
 PASSOU/FALHOU por caso e sai com código de erro), e o `pytest` descobre as
 mesmas funções `test_*` sem nenhuma mudança. As suítes do servidor dividem
 a infraestrutura em `tests/servidor_apoio.py`.
@@ -267,7 +267,7 @@ a infraestrutura em `tests/servidor_apoio.py`.
 | `test_interacao.py` | 22 |
 | `test_migracoes.py` | 9 |
 | `test_paleta.py` | 19 |
-| `test_pipeline.py` | 72 |
+| `test_pipeline.py` | 74 |
 | `test_review.py` | 24 |
 | `test_servidor_apagar.py` | 7 |
 | `test_servidor_pessoas.py` | 13 |
@@ -626,6 +626,15 @@ processamento, manda o idioma da interface (`idioma` no corpo de
 `@progresso`, nunca da frase. O `--idioma` do `trama-processar` continua
 sendo o idioma da FALA, para o Whisper. Log do servidor fica em
 português (é para quem depura).
+
+O `.txt` gravado em disco segue o mesmo idioma: as marcas `<- conferir`
+e `[vozes sobrepostas]` viram `<- check` e `[overlapping voices]` em
+inglês (o resto da linha é horário, nome e fala, que não se traduzem). O
+pipeline grava no `.json` o idioma em que escreveu (`idioma_txt`), e quem
+regrava o `.txt` depois — revisão, reaplicar o glossário, correção de
+fala, todos rodando no servidor, cujo idioma é o do sistema — usa esse,
+nunca o próprio: o arquivo não troca de idioma no meio do caminho.
+Reunião de antes do campo segue o idioma atual.
 
 ### Telas
 

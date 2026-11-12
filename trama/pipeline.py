@@ -23,6 +23,7 @@ from pathlib import Path
 import numpy as np
 
 from trama import edicao, erros, interacao, nucleo, temporarios, termos, trechos
+from trama.idioma import atual as idioma_das_mensagens
 from trama.idioma import t
 
 DIAR_MODEL = os.environ.get("DIAR_MODEL", "pyannote/speaker-diarization-community-1")
@@ -606,7 +607,7 @@ def alinhar(palavras, diar_exclusiva, mapa, turnos_ativos=None):
     return _finalizar(_agrupar_em_turnos(palavras, mapa, turnos_para_lacuna))
 
 
-def montar_texto_txt(falas, mapa, regioes=None, lacunas=None):
+def montar_texto_txt(falas, mapa, regioes=None, lacunas=None, idioma_txt=None):
     """
     So monta o texto (string pura, nada de disco) - separado de
     escrever_txt para quem precisa preparar o conteudo ANTES de decidir
@@ -623,6 +624,11 @@ def montar_texto_txt(falas, mapa, regioes=None, lacunas=None):
     `lacunas`: lacunas_sem_texto da reuniao - o que alguem escreveu numa
     lacuna (trechos para conferir, ADR 0028) entra no texto da fala, no
     ponto dela.
+
+    `idioma_txt`: o das marcas ("pt"/"en"). E o "idioma_txt" do .json -
+    o idioma em que o pipeline escreveu este arquivo -, para quem regrava
+    depois (revisao, glossario, correcao no servidor) nao trocar o idioma
+    do arquivo no meio do caminho. None: o idioma atual (trama/idioma.py).
     """
     regioes_tuplas = [(r["inicio"], r["fim"], r["falantes"]) for r in regioes] if regioes else []
     linhas = []
@@ -630,17 +636,17 @@ def montar_texto_txt(falas, mapa, regioes=None, lacunas=None):
         info = mapa.get(f["cluster"], {})
         marcas = []
         if not info.get("confirmado") and info.get("sim", 0.0) < SIM_MIN + 0.1:
-            marcas.append("<- conferir")
+            marcas.append(t("txt_conferir", idioma_txt))
         if regioes_tuplas and interacao.em_sobreposicao(f["inicio"], f["fim"], regioes_tuplas):
-            marcas.append("[vozes sobrepostas]")
+            marcas.append(t("txt_vozes_sobrepostas", idioma_txt))
         sufixo = ("  " + "  ".join(marcas)) if marcas else ""
         texto = trechos.texto_com_lacunas_escritas(f, lacunas)
         linhas.append(f"[{nucleo.hhmmss(f['inicio'])}] {f['falante']}: {texto}{sufixo}")
     return "\n".join(linhas)
 
 
-def escrever_txt(falas, mapa, destino, regioes=None, lacunas=None):
-    nucleo.escrever_atomico(destino, montar_texto_txt(falas, mapa, regioes, lacunas))
+def escrever_txt(falas, mapa, destino, regioes=None, lacunas=None, idioma_txt=None):
+    nucleo.escrever_atomico(destino, montar_texto_txt(falas, mapa, regioes, lacunas, idioma_txt))
 
 
 def imprimir_dinamica(analise):
@@ -1225,8 +1231,16 @@ def _processar(
         wav, diar_exc, mapa, analise, asr, modelo, idioma, regras, saida, dados_anteriores
     )
 
+    # O idioma das marcas do .txt fica no .json: quem regrava o .txt
+    # depois (revisao, glossario, correcao) usa o mesmo.
+    idioma_txt = idioma_das_mensagens()
     escrever_txt(
-        falas, mapa, f"{saida}.txt", regioes=analise["regioes_sobrepostas"], lacunas=lacunas
+        falas,
+        mapa,
+        f"{saida}.txt",
+        regioes=analise["regioes_sobrepostas"],
+        lacunas=lacunas,
+        idioma_txt=idioma_txt,
     )
     reuniao_id = preservar_reuniao_id(dados_anteriores)
     saida_json = montar_saida(
@@ -1246,6 +1260,7 @@ def _processar(
             carregar_saida_anterior(f"{saida}.json") or dados_anteriores, audio
         ),
     )
+    saida_json["idioma_txt"] = idioma_txt
     avisos = []
     if edicoes_sem_fala:
         saida_json["edicoes_sem_fala"] = edicoes_sem_fala
