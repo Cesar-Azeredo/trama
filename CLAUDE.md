@@ -119,7 +119,6 @@ cd frontend && npm run dev
 - Fine-tuning de modelo de voz (obra derivada, dado biométrico — ADR 0003).
 - Ata local como feature principal (ADR 0002).
 - Autenticação, rate limit ou multiusuário: é um processo em localhost com
-  um usuário (nenhum ADR registra isso ainda; o antigo CLAUDE.md citava o
-  0005, que é sobre identidade visual).
+  um usuário (ADR 0030).
 - Biblioteca de componentes pronta no frontend.
 - Script Python solto na raiz.

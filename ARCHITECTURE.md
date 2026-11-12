@@ -302,6 +302,12 @@ audios/  +  vozes.db
 O servidor é casca fina. Nenhuma lógica de pipeline é reimplementada em
 Python novo nem em TypeScript. Ver ADR 0004.
 
+Sem autenticação, rate limit nem multiusuário (ADR 0030): uma pessoa, uma
+máquina, a fronteira é a conta do sistema operacional mais o bind em
+`127.0.0.1`. Pendência registrada lá: o servidor ainda não confere os
+cabeçalhos `Host` e `Origin` (DNS rebinding; upload enviado por outro
+site aberto no mesmo navegador).
+
 ### Rotas previstas
 
 | Rota | Papel | Marco |
