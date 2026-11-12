@@ -187,7 +187,28 @@ def _acompanhar(id, pasta, processo):
     _apagar_marcador(pasta)
 
 
-def iniciar(id, pasta, caminho_audio, pessoas):
+def argumentos_de_falantes(pessoas, talvez_calados=()):
+    """
+    --pessoas e, quando alguem "estava, mas talvez nao tenha falado", a
+    faixa de falantes que o pipeline.py ja aceita junto com --pessoas
+    (pipeline.faixa_de_falantes): com N pessoas e K delas talvez caladas,
+    --min-falantes N-K --max-falantes N. A galeria comparada continua
+    sendo as N. Sem ninguem marcado, so --pessoas (N vira o numero exato,
+    como sempre). Nome marcado que nao esta em `pessoas` nao conta.
+    """
+    if not pessoas:
+        return []
+    argumentos = ["--pessoas", ",".join(pessoas)]
+    k = len(set(talvez_calados) & set(pessoas))
+    if k:
+        n = len(pessoas)
+        if n - k >= 1:
+            argumentos += ["--min-falantes", str(n - k)]
+        argumentos += ["--max-falantes", str(n)]
+    return argumentos
+
+
+def iniciar(id, pasta, caminho_audio, pessoas, talvez_calados=()):
     """
     Dispara o pipeline.py de verdade como subprocess. Levanta JaEmProcessamento
     se ja houver um trabalho "rodando" - checagem e escrita do estado sob
@@ -196,7 +217,8 @@ def iniciar(id, pasta, caminho_audio, pessoas):
     `pessoas` fica guardado no estado (nao so passado para o comando) para
     a tela de "tentar novamente" depois de uma falha poder reenviar as
     MESMAS pessoas sem pedir de novo - sem isso, um retry perderia essa
-    escolha silenciosamente.
+    escolha silenciosamente. `talvez_calados` (quem "talvez nao tenha
+    falado", argumentos_de_falantes) fica guardado pelo mesmo motivo.
     """
     global _estado
 
@@ -217,8 +239,8 @@ def iniciar(id, pasta, caminho_audio, pessoas):
             "--asr",
             asr,
         ]
-        if pessoas:
-            comando += ["--pessoas", ",".join(pessoas)]
+        talvez_calados = [n for n in talvez_calados if n in pessoas]
+        comando += argumentos_de_falantes(pessoas, talvez_calados)
 
         processo = subprocess.Popen(
             comando,
@@ -251,6 +273,7 @@ def iniciar(id, pasta, caminho_audio, pessoas):
             "device": device,
             "asr": asr,
             "pessoas": pessoas,
+            "talvez_calados": talvez_calados,
             "cancelado": False,
         }
         thread = threading.Thread(target=_acompanhar, args=(id, pasta, processo), daemon=True)

@@ -310,6 +310,9 @@ export function NovaReuniao() {
   const [pessoasGaleria, setPessoasGaleria] = useState<Pessoa[] | null>(null);
   const [novas, setNovas] = useState<string[]>([]);
   const [selecionadas, setSelecionadas] = useState<string[]>([]);
+  // Das selecionadas, quem "estava, mas talvez nao tenha falado" - vira a
+  // faixa de falantes no servidor (ARCHITECTURE.md, Nova reuniao).
+  const [talvezCalados, setTalvezCalados] = useState<string[]>([]);
   const [enviando, setEnviando] = useState(false);
   const [progresso, setProgresso] = useState(0);
   const [erroEnvio, setErroEnvio] = useState<Mensagem | null>(null);
@@ -351,6 +354,15 @@ export function NovaReuniao() {
 
   function alternar(nome: string) {
     setSelecionadas((atual) =>
+      atual.includes(nome) ? atual.filter((n) => n !== nome) : [...atual, nome],
+    );
+    // Quem sai da sala sai tambem da marca - nunca uma marca escondida
+    // que volta se a pessoa for selecionada de novo.
+    setTalvezCalados((atual) => atual.filter((n) => n !== nome));
+  }
+
+  function alternarTalvezCalado(nome: string) {
+    setTalvezCalados((atual) =>
       atual.includes(nome) ? atual.filter((n) => n !== nome) : [...atual, nome],
     );
   }
@@ -402,7 +414,11 @@ export function NovaReuniao() {
     }
 
     try {
-      await iniciarProcessamento(criado.id, selecionadas);
+      await iniciarProcessamento(
+        criado.id,
+        selecionadas,
+        talvezCalados.filter((n) => selecionadas.includes(n)),
+      );
       window.location.hash = `#/reuniao/${criado.id}/processando`;
     } catch {
       // O audio foi salvo mesmo que o processamento nao tenha comecado
@@ -463,6 +479,27 @@ export function NovaReuniao() {
           aoAlternar={alternar}
           aoAdicionarNova={adicionarNova}
         />
+        {selecionadas.length > 0 && (
+          <fieldset className="talvez-calados">
+            <legend className="talvez-calados__titulo">{t.talvezNaoFalou}</legend>
+            <p className="talvez-calados__nota">{t.talvezNaoFalouNota}</p>
+            <ul className="talvez-calados__lista">
+              {selecionadas.map((nome) => (
+                <li key={nome}>
+                  <label className="talvez-calados__opcao">
+                    <input
+                      type="checkbox"
+                      checked={talvezCalados.includes(nome)}
+                      onChange={() => alternarTalvezCalado(nome)}
+                      disabled={enviando}
+                    />
+                    <span>{nome}</span>
+                  </label>
+                </li>
+              ))}
+            </ul>
+          </fieldset>
+        )}
       </Passo>
       </div>
 

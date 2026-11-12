@@ -248,7 +248,7 @@ Memória mínima sugerida (16 GB) é estimativa, não medição.
 
 ### Testes
 
-19 suítes, 403 casos. Cada arquivo roda sozinho com `python` (imprime
+19 suítes, 405 casos. Cada arquivo roda sozinho com `python` (imprime
 PASSOU/FALHOU por caso e sai com código de erro), e o `pytest` descobre as
 mesmas funções `test_*` sem nenhuma mudança. As suítes do servidor dividem
 a infraestrutura em `tests/servidor_apoio.py`.
@@ -267,7 +267,7 @@ a infraestrutura em `tests/servidor_apoio.py`.
 | `test_review.py` | 24 |
 | `test_servidor_apagar.py` | 7 |
 | `test_servidor_pessoas.py` | 13 |
-| `test_servidor_processo.py` | 20 |
+| `test_servidor_processo.py` | 22 |
 | `test_servidor_reunioes.py` | 46 |
 | `test_servidor_revisao.py` | 17 |
 | `test_servidor_termos.py` | 33 |
@@ -318,7 +318,7 @@ Python novo nem em TypeScript. Ver ADR 0004.
 | `DELETE /api/reunioes/{id}/falas/{indice}/edicao?inicio=` | desfaz a correção: texto transcrito e as marcas de posição de volta | 3 |
 | `GET /api/reunioes/{id}/transcricao` | transcrição em `.txt` gerada na hora do `.json` (nunca o `.txt` do pipeline, que não tem título e fica velho depois de revisão/glossário): cabeçalho com título, data, duração e % de fala; uma linha `[mm:ss] Nome: texto` por fala; voz sem pessoa como na tela; sem marca de interface; no fim, "Vocabulário desta empresa" com os termos do glossário (lado certo sem artigo/preposição do começo, sem repetição) e a descrição de cada um, quando existe. `Content-Disposition` com `filename*` UTF-8 (`trama/servidor/transcricao.py`) | 3 |
 | `POST /api/reunioes` | recebe o áudio, cria a pasta (não processa) | 2 |
-| `POST /api/reunioes/{id}/processar` | dispara o `pipeline.py` como subprocess | 2 |
+| `POST /api/reunioes/{id}/processar` | dispara o `pipeline.py` como subprocess. Corpo `{pessoas, talvez_calados}`: das pessoas, quem "estava, mas talvez não tenha falado" vira a faixa de falantes que o pipeline já aceita junto com `--pessoas` — N pessoas e K marcadas dão `--min-falantes N-K --max-falantes N` (só o teto se K = N); sem marca, N exato (`processamento.argumentos_de_falantes`). As duas listas ficam no estado do processamento para o "Tentar novamente" | 2 |
 | `POST /api/reunioes/{id}/cancelar` | mata o subprocess, preserva o áudio | 2 |
 | `GET /api/reunioes/{id}/progresso` | SSE com as 5 etapas | 2 |
 | `GET /api/termos` / `PUT /api/termos` | glossário (`termos.txt`) como lista ordenada de regra/texto, mais `descricoes` (`{termo: descrição}`, até 120 caracteres) guardadas no fim do mesmo arquivo como `#= termo => descrição` — comentário para o `pipeline.py` (ADR 0017); termo sem regra entra só no vocabulário (ADR 0018); PUT valida tudo antes e grava atômico; sem `descricoes` no corpo, mantém as gravadas | 3 |
@@ -595,7 +595,12 @@ a `Mensagem` (`mensagemDe(e)` no `catch`). A transcrição baixada recebe `?idio
 1. **Nova reunião** (`#/`, tela inicial) — coluna única de 640px com
    dois passos (o áudio; quem estava na sala, como botões de alternar
    com as pessoas da galeria e "+ Pessoa nova"), título opcional e
-   "Transcrever". O título é salvo logo depois do upload, antes de
+   "Transcrever". Com alguém selecionado, aparece "Estava, mas talvez não
+   tenha falado": uma caixa por pessoa selecionada (desmarcar a pessoa
+   tira a marca), para quem só ouviu ou entrou calado — sem isso, cada
+   pessoa vira um falante a mais, e forçar um grupo para quem não falou
+   divide outra pessoa em dois. Vai para `talvez_calados` no processar.
+   O título é salvo logo depois do upload, antes de
    processar; se o servidor recusar, a reunião fica na fila e a tela diz.
 2. **Lista** (`#/reunioes`) — reuniões, estado, duração, pessoas, botão
    "Processar" ligado à rota de verdade (marco 2, etapa 5). Três grupos:
@@ -932,24 +937,6 @@ reunião foi gravada em partes. Hoje elas aparecem como reuniões separadas.
   cada diarização. Tempo de fala, interrupções e apoios somam por pessoa.
   Vozes não atribuídas (`DESCONHECIDO_*`, `IGNORADO_*`) não têm como ser
   casadas entre as partes e ficariam separadas.
-
-### "Estava, mas talvez não tenha falado" na Nova reunião
-
-Na tela de Nova reunião, cada pessoa selecionada poderia ser marcada como
-**"estava, mas talvez não tenha falado"**. É o caso mais comum de um
-cliente (a diretora que só ouviu, o convidado que entrou calado), e hoje a
-tela não tem como dizer isso: toda pessoa marcada vira um falante a mais,
-e forçar um grupo para quem não falou divide outra pessoa em dois.
-
-- **Por baixo, vira a faixa de falantes.** Com N pessoas marcadas e K
-  delas como "talvez não tenha falado": `--pessoas` com os N nomes (a
-  galeria comparada continua sendo todos) e `--min-falantes N-K
-  --max-falantes N`. O `pipeline.py` já respeita a faixa junto com
-  `--pessoas` (`faixa_de_falantes`); falta a tela e o corpo de
-  `POST /api/reunioes/{id}/processar`, que hoje só leva a lista de
-  nomes.
-- Caso real que motivou: `reuniao_13`, Clélia na sala sem
-  saber se falou — com 5 nomes, o pipeline teria forçado 5 grupos.
 
 ### Dúvidas sobre termos na ata
 

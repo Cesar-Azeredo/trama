@@ -471,3 +471,61 @@
   line-height: 1.5;
   color: var(--tinta-fraca);
 }
+
+/* "Estava, mas talvez não tenha falado": so aparece com alguem
+   selecionado. Caixas nativas na tinta, como as variacoes do painel de
+   correcao - e uma ressalva sobre a selecao, nao uma segunda selecao. */
+.talvez-calados {
+  margin: 20px 0 0;
+  padding: 0;
+  border: none;
+  min-width: 0;
+}
+
+.talvez-calados__titulo {
+  padding: 0;
+  font-family: var(--fonte-interface);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--tinta-media);
+}
+
+.talvez-calados__nota {
+  margin: 4px 0 8px;
+  max-width: 52ch;
+  font-family: var(--fonte-interface);
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--tinta-fraca);
+}
+
+.talvez-calados__lista {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 20px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.talvez-calados__opcao {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  font-family: var(--fonte-interface);
+  font-size: 14px;
+  color: var(--tinta-corpo);
+  cursor: pointer;
+  overflow-wrap: anywhere;
+}
+
+.talvez-calados__opcao input {
+  accent-color: var(--tinta);
+  margin: 0;
+}
+
+.talvez-calados__opcao input:focus-visible {
+  outline: 2px solid var(--acento);
+  outline-offset: 2px;
+}

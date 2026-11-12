@@ -103,6 +103,9 @@ trama-processar reuniao2.m4a --pessoas Joao,Maria,Pedro
 #    sala mas talvez nao tenha falado, passe uma faixa - ela vale, e
 #    --pessoas so restringe a comparacao de voz a esses nomes:
 trama-processar reuniao2.m4a --pessoas Joao,Maria,Pedro --min-falantes 2 --max-falantes 3
+#    Na tela, e o "Estava, mas talvez nao tenha falado" da Nova reuniao:
+#    cada pessoa selecionada pode ser marcada assim, e com N pessoas e K
+#    marcadas o app roda com --min-falantes N-K --max-falantes N.
 
 # 5. Revisar e corrigir os nomes (realimenta os perfis de voz)
 trama-revisar audios/reuniao_02/reuniao_02.json
@@ -315,7 +318,7 @@ para isso.
 
 ## Testes
 
-`tests/` tem 19 suites, 403 testes no total. Cada arquivo roda com `python`, imprime PASSOU/FALHOU por caso e
+`tests/` tem 19 suites, 405 testes no total. Cada arquivo roda com `python`, imprime PASSOU/FALHOU por caso e
 sai com codigo de erro se algo falhar. As suites ignoram as variaveis de
 ambiente de calibracao do seu shell (`SIM_MIN`, `MIN_SOBREPOSICAO`...):
 testam sempre o padrao do codigo.
@@ -328,7 +331,7 @@ testam sempre o padrao do codigo.
 | `tests/test_ata.py`       | verificacao de citacoes da ata (`ata.py`)                           | 29 |
 | `tests/test_review.py`    | ledger de contribuicoes de voz, idempotencia e migracao (`nucleo.py`/`revisao.py`) | 24 |
 | `tests/test_migracoes.py` | migracoes versionadas do `vozes.db` (`trama/migracoes/`)                  | 9 |
-| `tests/test_servidor_*.py` | rotas da API em oito suites por area: reunioes, pessoas, transcricao, revisao, processo, termos, trechos para conferir, apagar reuniao (`trama/servidor/`) | 161 |
+| `tests/test_servidor_*.py` | rotas da API em oito suites por area: reunioes, pessoas, transcricao, revisao, processo, termos, trechos para conferir, apagar reuniao (`trama/servidor/`) | 163 |
 | `tests/test_codigos_de_erro.py` | todo codigo de erro do servidor tem texto nos dois catalogos (pt e en) | 4 |
 | `tests/test_demo.py` | os dados de demonstracao (`audios-demo/`) | 5 |
 | `tests/test_gancho_commit_msg.py` | o gancho `ganchos/commit-msg` tira coautor e assinatura | 5 |

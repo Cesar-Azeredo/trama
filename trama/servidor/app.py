@@ -114,6 +114,10 @@ class CorpoProcessar(BaseModel):
     # --pessoas do pipeline.py - o maior ganho de precisao que existe. Vazio e
     # valido (o pipeline roda sem galeria, so com rotulos SPEAKER_XX).
     pessoas: list[str] = []
+    # Das `pessoas`, quem "estava, mas talvez nao tenha falado": vira a
+    # faixa de falantes (processamento.argumentos_de_falantes). Opcional:
+    # corpo antigo, so com "pessoas", continua valido.
+    talvez_calados: list[str] = []
 
 
 @app.get("/api/reunioes/{id}/exclusao")
@@ -167,7 +171,7 @@ def processar_reuniao(id: str, corpo: CorpoProcessar):
         raise _erro(404, "sem_audio_para_processar")
 
     try:
-        processamento.iniciar(id, pasta, caminho_audio, corpo.pessoas)
+        processamento.iniciar(id, pasta, caminho_audio, corpo.pessoas, corpo.talvez_calados)
     except processamento.JaEmProcessamento as exc:
         raise _erro(409, "ja_processando", id=str(exc))
 

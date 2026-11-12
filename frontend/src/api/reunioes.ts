@@ -387,12 +387,17 @@ export function enviarAudio(
 
 // ---- POST /api/reunioes/{id}/processar -----------------------------------
 
+/** `talvezCalados`: das `pessoas`, quem "estava, mas talvez nao tenha
+ * falado" - o servidor transforma em faixa de falantes
+ * (processamento.argumentos_de_falantes). */
 export function iniciarProcessamento(
   id: string,
   pessoas: string[],
+  talvezCalados: string[] = [],
 ): Promise<{ ok: boolean; id: string }> {
   return enviarJson(`/api/reunioes/${encodeURIComponent(id)}/processar`, {
     pessoas,
+    talvez_calados: talvezCalados,
   });
 }
 
@@ -429,6 +434,8 @@ export interface EstadoProcessamento {
   device: string;
   asr: string;
   pessoas: string[];
+  /** Ausente num servidor de antes do campo. */
+  talvez_calados?: string[];
 }
 
 /** Nenhum job bate com este id agora - nem rodando, nem acabou de

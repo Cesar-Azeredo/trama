@@ -20,6 +20,9 @@ export const nova: Catalogo["nova"] = {
     `The audio was uploaded, but the title wasn't saved: ${erro} The meeting is in the queue, not processed — you can set the title in its details.`,
   passoAudio: "The audio",
   trocarArquivo: "Change file",
+  talvezNaoFalou: "Was there, but may not have spoken",
+  talvezNaoFalouNota:
+    "Mark anyone who only listened or stayed quiet. Otherwise each selected person becomes a voice to look for, and a voice that isn't there splits someone else's in two.",
   passoPessoas: "Who was in the room",
   progressoDoEnvio: "Upload progress",
   titulo: "Title",

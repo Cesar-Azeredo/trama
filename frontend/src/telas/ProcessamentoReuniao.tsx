@@ -172,11 +172,11 @@ export function ProcessamentoReuniao({ id }: { id: string }) {
     }
   }
 
-  async function tentarDeNovo(pessoas: string[]) {
+  async function tentarDeNovo(pessoas: string[], talvezCalados: string[]) {
     setEmAcao(true);
     setErroAcao(null);
     try {
-      await iniciarProcessamento(id, pessoas);
+      await iniciarProcessamento(id, pessoas, talvezCalados);
       conectar();
     } catch (e) {
       setErroAcao(mensagemDe(e));
@@ -239,7 +239,9 @@ export function ProcessamentoReuniao({ id }: { id: string }) {
           <button
             type="button"
             className="botao-cancelar"
-            onClick={() => tentarDeNovo(tela.dados.pessoas)}
+            onClick={() =>
+              tentarDeNovo(tela.dados.pessoas, tela.dados.talvez_calados ?? [])
+            }
             disabled={emAcao}
           >
             {emAcao ? t.tentando : formatos.tentarNovamente}

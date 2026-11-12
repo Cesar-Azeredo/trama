@@ -551,6 +551,63 @@ def test_tentar_de_novo_usa_as_mesmas_pessoas_da_primeira_vez():
         shutil.rmtree(pasta, ignore_errors=True)
 
 
+def test_talvez_nao_tenha_falado_vira_faixa_de_falantes():
+    f = processamento.argumentos_de_falantes
+    assert f([], ["Ana"]) == []
+    assert f(["Ana", "Bia", "Caio"]) == ["--pessoas", "Ana,Bia,Caio"], "sem marca: numero exato"
+    assert f(["Ana", "Bia", "Caio"], ["Caio"]) == [
+        "--pessoas",
+        "Ana,Bia,Caio",
+        "--min-falantes",
+        "2",
+        "--max-falantes",
+        "3",
+    ]
+    # todos talvez calados: so o teto (nao existe "pelo menos 0")
+    assert f(["Ana", "Bia"], ["Ana", "Bia"]) == ["--pessoas", "Ana,Bia", "--max-falantes", "2"]
+    # nome marcado que nao foi selecionado nao conta
+    assert f(["Ana", "Bia"], ["Zeca"]) == ["--pessoas", "Ana,Bia"]
+
+
+def test_rota_processar_leva_talvez_calados_ao_pipeline_e_ao_tentar_de_novo():
+    pasta, cliente = _ambiente_temporario()
+    raiz_falsa = _preparar_raiz_falsa()
+    processamento.RAIZ = raiz_falsa
+    processamento._estado = None
+    args = pasta / "args_do_run.txt"
+    os.environ["FAKE_RUN_ARGS"] = str(args)
+    os.environ["FAKE_RUN_CODIGO_SAIDA"] = "1"
+    try:
+        _criar_reuniao_nao_processada(reunioes.PASTA_AUDIOS, "reuniao_a")
+        corpo = {"pessoas": ["Amanda", "Celso", "Clélia"], "talvez_calados": ["Clélia"]}
+        r = cliente.post("/api/reunioes/reuniao_a/processar", json=corpo)
+        assert r.status_code == 202, r.text
+        assert _esperar(lambda: processamento.estado_atual()["status"] != "rodando")
+
+        sse = cliente.get("/api/reunioes/reuniao_a/progresso").text
+        ultimo = json.loads([l for l in sse.splitlines() if l.startswith("data: ")][-1][6:])
+        assert ultimo["talvez_calados"] == ["Clélia"], ultimo
+
+        r = cliente.post(
+            "/api/reunioes/reuniao_a/processar",
+            json={"pessoas": ultimo["pessoas"], "talvez_calados": ultimo["talvez_calados"]},
+        )
+        assert r.status_code == 202, r.text
+        assert _esperar(lambda: processamento.estado_atual()["status"] != "rodando")
+
+        chamadas = [json.loads(l) for l in args.read_text(encoding="utf-8").splitlines()]
+        assert len(chamadas) == 2
+        for argv in chamadas:
+            assert argv[argv.index("--min-falantes") + 1] == "2", argv
+            assert argv[argv.index("--max-falantes") + 1] == "3", argv
+            assert argv[argv.index("--pessoas") + 1] == "Amanda,Celso,Clélia", argv
+    finally:
+        del os.environ["FAKE_RUN_ARGS"]
+        del os.environ["FAKE_RUN_CODIGO_SAIDA"]
+        _limpar_ambiente_processamento(raiz_falsa, reunioes.PASTA_AUDIOS)
+        shutil.rmtree(pasta, ignore_errors=True)
+
+
 def test_rota_processar_duas_reunioes_ao_mesmo_tempo_recusa_com_409():
     pasta, cliente = _ambiente_temporario()
     raiz_falsa = _preparar_raiz_falsa()

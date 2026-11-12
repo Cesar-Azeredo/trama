@@ -21,6 +21,9 @@ export const nova = {
   passoAudio: "O áudio",
   trocarArquivo: "Trocar arquivo",
   passoPessoas: "Quem estava na sala",
+  talvezNaoFalou: "Estava, mas talvez não tenha falado",
+  talvezNaoFalouNota:
+    "Marque quem só ouviu ou entrou calado. Sem isso, cada pessoa marcada vira uma voz a procurar, e uma voz que não existe divide a de outra pessoa em duas.",
   progressoDoEnvio: "Progresso do envio",
   titulo: "Título",
   opcional: "(opcional)",
