@@ -853,6 +853,16 @@ de 0,50 sobre o segundo colocado). O cluster foi ignorado na revisão
 contaminar nenhum perfil - similaridade alta não é garantia de pureza, e
 a métrica não tem como saber a diferença.
 
+**Oito cores de voz.** A paleta tem oito cores (`--voz-1` a `--voz-8`),
+conferidas entre si em `tests/test_paleta.py`; a cor sai da ordem de
+entrada na galeria, módulo 8 (`vozes/corDaVoz.ts`). Com mais de oito
+pessoas na galeria, as cores se repetem: a nona tem a cor da primeira. Isso
+só atrapalha de verdade quando duas pessoas da mesma cor estão na MESMA
+reunião — aí transcript, fita de tempo e barra de fala não as separam pela
+cor, só pelo nome. Limite conhecido, não resolvido: as saídas (mais cores
+perdem a distância perceptual medida; escolher a cor por reunião quebra a
+cor estável por pessoa) ficam para quando aparecer o caso real.
+
 **Ata local.** Perde relações que atravessam blocos. Fora do MVP, ADR 0002.
 
 ## Ideias futuras
