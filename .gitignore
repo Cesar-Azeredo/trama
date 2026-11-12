@@ -18,9 +18,10 @@ audios/
 
 modelos/
 
-# symlink por agente criado pela ferramenta `skills` (regenera com o
-# comando em CLAUDE.md) - o conteudo canonico fica em .agents/skills/,
-# versionado
+# skill apple-design (de terceiro, sem licenca para redistribuir): fica
+# fora do git, so a origem em skills-lock.json. Instala com o comando do
+# CLAUDE.md, que cria o conteudo em .agents/ e o symlink em .claude/.
+.agents/
 .claude/skills/apple-design
 
 # zips soltos (exportacoes) nunca entram
