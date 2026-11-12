@@ -14,6 +14,7 @@ import { textoDoAviso } from "../api/cliente";
 import { formatarDuracao, tituloDaReuniao } from "../util/formatarReuniao";
 import { useTextos } from "../i18n/textos";
 import "./ProcessamentoReuniao.css";
+import { Seta } from "../componentes/Seta";
 
 /**
  * O que o pipeline acrescentou a etapa atual ("- N falantes" na 2, motor e
@@ -187,7 +188,8 @@ export function ProcessamentoReuniao({ id }: { id: string }) {
   return (
     <main className="tela-processamento">
       <a className="tela-processamento__voltar" href="#/reunioes">
-        ← {comum.reunioes}
+        <Seta direcao="esquerda" />
+        {comum.reunioes}
       </a>
       <h1 className="tela-processamento__titulo">{tituloDaReuniao(id, titulo)}</h1>
 

@@ -22,6 +22,7 @@ import { tituloDaReuniao } from "../util/formatarReuniao";
 import { numero } from "../util/numeros";
 import { useTextos, type Catalogo } from "../i18n/textos";
 import "./Revisao.css";
+import { Seta } from "../componentes/Seta";
 
 const PREFIXO_DESCONHECIDO = "DESCONHECIDO";
 const PREFIXO_IGNORADO = "IGNORADO";
@@ -524,7 +525,8 @@ export function Revisao({ id }: { id: string }) {
   return (
     <main className="tela-revisao">
       <a className="tela-revisao__voltar" href={`#/reuniao/${id}`}>
-        ← {tituloDaReuniao(id, dados?.titulo)}
+        <Seta direcao="esquerda" />
+        {tituloDaReuniao(id, dados?.titulo)}
       </a>
 
       {erro && <p className="tela-revisao__erro">{textoDe(erro)}</p>}

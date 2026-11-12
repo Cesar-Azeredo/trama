@@ -20,6 +20,7 @@ import {
 import { useTextos } from "../../i18n/textos";
 import { numero } from "../../util/numeros";
 import { ReaplicarNasReunioes } from "./ReaplicarNasReunioes";
+import { Seta } from "../../componentes/Seta";
 
 /** A mesma comparacao do servidor (glossario._chave_variacao): sem acento,
  * sem maiuscula e com o espacamento normalizado - "Chat  apt" e "chat APT"
@@ -396,7 +397,10 @@ export function TermosDaEmpresa() {
                   <span key={v.errado} className="termos__variacao">
                     {v.errado}
                     {v.certo !== t.termo && (
-                      <span className="termos__certo-contexto"> → {v.certo}</span>
+                      <span className="termos__certo-contexto">
+                        <Seta direcao="direita" />
+                        {v.certo}
+                      </span>
                     )}
                     <button
                       type="button"

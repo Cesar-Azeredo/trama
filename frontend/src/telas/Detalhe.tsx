@@ -41,6 +41,7 @@ import { numero } from "../util/numeros";
 import { useIdioma } from "../i18n/idioma";
 import { useTextos } from "../i18n/textos";
 import "./Detalhe.css";
+import { Seta } from "../componentes/Seta";
 
 /** Mesmo criterio de contagem usado em pipeline.py para medir a distribuicao
  * (split por espaco em branco) - so precisa bater no MESMO limiar
@@ -705,7 +706,8 @@ export function Detalhe({ id, em }: { id: string; em?: number }) {
   return (
     <main className="tela-detalhe">
       <a className="tela-detalhe__voltar" href="#/reunioes">
-        ← {tc.reunioes}
+        <Seta direcao="esquerda" />
+        {tc.reunioes}
       </a>
 
       {erro && <p className="tela-detalhe__erro">{textoDe(erro)}</p>}

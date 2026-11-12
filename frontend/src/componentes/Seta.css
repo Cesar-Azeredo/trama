@@ -1,0 +1,16 @@
+/* Alinha com a linha de texto de 13px ao redor; a esquerda e a mesma
+   seta espelhada, para as duas direcoes terem exatamente o mesmo traco. */
+.seta {
+  display: inline-block;
+  vertical-align: -1px;
+  flex-shrink: 0;
+}
+
+.seta--esquerda {
+  transform: scaleX(-1);
+  margin-right: 6px;
+}
+
+.seta--direita {
+  margin: 0 6px;
+}
