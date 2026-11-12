@@ -32,6 +32,8 @@ import unicodedata
 from functools import lru_cache
 from pathlib import Path
 
+from trama.idioma import t
+
 ARQUIVO_PADRAO = "termos.txt"
 
 
@@ -52,7 +54,7 @@ def carregar(caminho=ARQUIVO_PADRAO):
         if not linha or linha.startswith("#"):
             continue
         if "=>" not in linha:
-            print(f"  ! {caminho}:{n} ignorada (falta '=>'): {linha}")
+            print(t("termos_linha_ignorada", caminho=caminho, n=n, linha=linha))
             continue
 
         errado, certo = (x.strip() for x in linha.split("=>", 1))
@@ -321,8 +323,8 @@ def prompt_whisper(regras, limite=180):
             termos.append(certo)
 
     prompt = ""
-    for t in termos:
-        candidato = (prompt + ", " + t) if prompt else t
+    for termo in termos:
+        candidato = (prompt + ", " + termo) if prompt else termo
         if len(candidato) > limite:
             break
         prompt = candidato
@@ -334,15 +336,12 @@ def imprimir_contagem(contagem, regras):
     if not regras:
         return
     if contagem:
-        print("\n  Correcoes de vocabulario aplicadas:")
+        print(t("termos_aplicadas"))
         for padrao, n in sorted(contagem.items(), key=lambda kv: -kv[1]):
-            alerta = "  <- muito alto, confira a regra" if n > 60 else ""
+            alerta = t("termos_muito_alto") if n > 60 else ""
             print(f"    {n:>4}x  {padrao}{alerta}")
 
     nunca = [orig for _, _, orig in regras if orig not in contagem]
     if nunca:
-        print(
-            f"  {len(nunca)} regra(s) sem uso nesta reuniao: "
-            + ", ".join(nunca[:6])
-            + ("..." if len(nunca) > 6 else "")
-        )
+        lista = ", ".join(nunca[:6]) + ("..." if len(nunca) > 6 else "")
+        print(t("termos_sem_uso", n=len(nunca), lista=lista))

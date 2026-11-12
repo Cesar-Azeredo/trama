@@ -14,9 +14,11 @@ import os
 import shutil
 import sys
 
+from trama.idioma import t
+
 REPOS = [
-    ("pyannote/speaker-diarization-community-1", "pipeline de diarizacao"),
-    ("pyannote/wespeaker-voxceleb-resnet34-LM", "modelo de embedding de voz"),
+    ("pyannote/speaker-diarization-community-1", "modelo_diarizacao"),
+    ("pyannote/wespeaker-voxceleb-resnet34-LM", "modelo_embedding"),
 ]
 
 PACOTES = [
@@ -31,65 +33,59 @@ ok_geral = True
 
 
 def ok(msg):
-    print(f"  \033[92mOK\033[0m      {msg}")
+    print(f"  \033[92m{t('rotulo_ok'):<7}\033[0m {msg}")
 
 
 def falha(msg, dica=""):
     global ok_geral
     ok_geral = False
-    print(f"  \033[91mFALHOU\033[0m  {msg}")
+    print(f"  \033[91m{t('rotulo_falhou'):<7}\033[0m {msg}")
     if dica:
         for linha in dica.strip().splitlines():
             print(f"          {linha}")
 
 
 def aviso(msg):
-    print(f"  \033[93mAVISO\033[0m   {msg}")
+    print(f"  \033[93m{t('rotulo_aviso'):<7}\033[0m {msg}")
 
 
 def _sistema():
-    print("\n--- Sistema ---")
+    print(t("secao_sistema"))
     versao = f"Python {sys.version_info.major}.{sys.version_info.minor}"
     if sys.version_info < (3, 12):
-        falha(versao, "O trama precisa de Python 3.12 ou mais novo.")
+        falha(versao, t("python_antigo"))
     else:
         ok(versao)
 
     if shutil.which("ffmpeg"):
-        ok("ffmpeg encontrado")
+        ok(t("ffmpeg_ok"))
     else:
-        falha("ffmpeg não encontrado", "brew install ffmpeg")
+        falha(t("ffmpeg_falta"), "brew install ffmpeg")
 
     if shutil.which("ffprobe"):
-        ok("ffprobe encontrado")
+        ok(t("ffprobe_ok"))
     else:
-        aviso("ffprobe ausente (o fase0 só perde a checagem de qualidade do áudio)")
+        aviso(t("ffprobe_falta"))
 
     if sys.prefix == sys.base_prefix:
-        aviso(
-            "Você não está num virtualenv. Recomendado: "
-            "python -m venv .venv && source .venv/bin/activate"
-        )
+        aviso(t("sem_venv"))
 
 
 def _pacotes():
-    print("\n--- Pacotes Python ---")
+    print(t("secao_pacotes"))
     for modulo, nome in PACOTES:
         try:
             m = importlib.import_module(modulo)
             ok(f"{nome} {getattr(m, '__version__', '?')}")
         except ImportError:
-            falha(f"{nome} não instalado", 'pip install -e ".[dev]"')
+            falha(t("nao_instalado", nome=nome), 'pip install -e ".[dev]"')
 
     try:
         import pyannote.audio as pa
 
         v = getattr(pa, "__version__", "0")
         if v != "?" and int(str(v).split(".")[0]) < 4:
-            falha(
-                f"pyannote.audio {v} é antigo",
-                "O community-1 exige a versão 4 ou superior.\npip install -U 'pyannote.audio>=4.0'",
-            )
+            falha(t("pyannote_antigo", versao=v), t("pyannote_dica"))
     except Exception:
         pass
 
@@ -98,26 +94,23 @@ def _pacotes():
     for mod, flag in [("mlx_whisper", "--asr mlx"), ("faster_whisper", "--asr faster")]:
         try:
             importlib.import_module(mod)
-            ok(f"{mod} disponível  (use {flag})")
+            ok(t("asr_ok", modulo=mod, flag=flag))
             tem_asr = True
         except ImportError:
             pass
     if not tem_asr:
-        aviso(
-            "Nenhum motor de transcrição instalado. "
-            "O fase0 funciona sem ele; o trama-processar não."
-        )
+        aviso(t("sem_asr"))
 
 
 def _apple_silicon():
-    print("\n--- Apple Silicon ---")
+    print(t("secao_apple"))
     try:
         import torch
 
         if getattr(torch.backends, "mps", None) and torch.backends.mps.is_available():
-            ok("MPS disponível (mas teste contra --device cpu antes de confiar)")
+            ok(t("mps_ok"))
         else:
-            aviso("MPS indisponível - vai rodar em CPU, o que costuma ser aceitável")
+            aviso(t("mps_falta"))
     except Exception:
         pass
 
@@ -138,35 +131,32 @@ def _token_do_cache():
 
 def _token():
     """Devolve o token do Hugging Face (ou None) e checa se ele autentica."""
-    print("\n--- Token Hugging Face ---")
-    token, origem = os.environ.get("HF_TOKEN"), "variável HF_TOKEN"
+    print(t("secao_token"))
+    token, origem = os.environ.get("HF_TOKEN"), t("token_da_variavel")
     if not token:
-        token, origem = _token_do_cache(), "cache do hf auth login"
+        token, origem = _token_do_cache(), t("token_do_cache")
 
     if not token:
-        falha("Nenhum token encontrado", "export HF_TOKEN=hf_xxxxx     (ou rode: hf auth login)")
+        falha(t("sem_token"), t("sem_token_dica"))
         return None
     if not token.startswith("hf_"):
-        aviso("O token não começa com 'hf_'. Confirme se copiou o valor certo.")
-    ok(f"Token presente ({origem}, termina em ...{token[-4:]})")
+        aviso(t("token_formato"))
+    ok(t("token_presente", origem=origem, fim=token[-4:]))
 
     try:
         from huggingface_hub import HfApi
 
         me = HfApi().whoami(token=token)
-        ok(f"Autenticado como '{me.get('name', '?')}'")
+        ok(t("autenticado", nome=me.get("name", "?")))
     except Exception as e:
-        falha(
-            f"Token inválido ou revogado ({type(e).__name__})",
-            "Crie outro em huggingface.co/settings/tokens",
-        )
+        falha(t("token_invalido", erro=type(e).__name__), t("token_novo"))
     return token
 
 
 def _acesso_aos_modelos(token):
-    print("\n--- Acesso aos modelos ---")
+    print(t("secao_modelos"))
     if not token:
-        aviso("Sem token, não dá para checar acesso aos modelos.")
+        aviso(t("sem_token_modelos"))
         return
     from huggingface_hub import HfApi
 
@@ -174,15 +164,11 @@ def _acesso_aos_modelos(token):
     for repo, desc in REPOS:
         try:
             api.model_info(repo, token=token)
-            ok(f"{repo}\n          ({desc})")
+            ok(f"{repo}\n          ({t(desc)})")
         except Exception as e:
             nome_erro = type(e).__name__
             if "Gated" in nome_erro or "403" in str(e):
-                falha(
-                    f"{repo} - acesso não liberado",
-                    f"Abra https://huggingface.co/{repo}\n"
-                    "logado na MESMA conta do token, e aceite os termos.",
-                )
+                falha(t("acesso_negado", repo=repo), t("acesso_dica", repo=repo))
             else:
                 falha(f"{repo} - {nome_erro}", str(e)[:160])
 
@@ -195,11 +181,11 @@ def main():
 
     print("\n" + "=" * 64)
     if ok_geral:
-        print("Ambiente pronto. Próximo passo:\n")
+        print(t("ambiente_pronto"))
         print("  ffmpeg -ss 600 -t 300 -i reuniao.m4a teste5min.m4a")
         print("  python ferramentas/fase0.py teste5min.m4a --esperado 4")
     else:
-        print("Resolva os itens marcados como FALHOU antes de continuar.")
+        print(t("resolva"))
     print()
     sys.exit(0 if ok_geral else 1)
 

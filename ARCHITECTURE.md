@@ -251,7 +251,7 @@ Memória mínima sugerida (16 GB) é estimativa, não medição.
 
 ### Testes
 
-21 suítes, 416 casos. Cada arquivo roda sozinho com `python` (imprime
+22 suítes, 423 casos. Cada arquivo roda sozinho com `python` (imprime
 PASSOU/FALHOU por caso e sai com código de erro), e o `pytest` descobre as
 mesmas funções `test_*` sem nenhuma mudança. As suítes do servidor dividem
 a infraestrutura em `tests/servidor_apoio.py`.
@@ -263,6 +263,7 @@ a infraestrutura em `tests/servidor_apoio.py`.
 | `test_demo.py` | 5 |
 | `test_gancho_commit_msg.py` | 5 |
 | `test_identidade.py` | 19 |
+| `test_idioma.py` | 6 |
 | `test_interacao.py` | 22 |
 | `test_migracoes.py` | 9 |
 | `test_paleta.py` | 19 |
@@ -271,7 +272,7 @@ a infraestrutura em `tests/servidor_apoio.py`.
 | `test_servidor_apagar.py` | 7 |
 | `test_servidor_pessoas.py` | 13 |
 | `test_servidor_origem.py` | 5 |
-| `test_servidor_processo.py` | 23 |
+| `test_servidor_processo.py` | 24 |
 | `test_servidor_reunioes.py` | 46 |
 | `test_servidor_revisao.py` | 17 |
 | `test_servidor_termos.py` | 33 |
@@ -611,6 +612,20 @@ dois lados. Nenhuma tela guarda mensagem como texto: o estado guarda uma
 com `useMensagem()`; as funções de `api/` lançam `ErroDaApi`, que carrega
 a `Mensagem` (`mensagemDe(e)` no `catch`). A transcrição baixada recebe `?idioma=` (`servidor/transcricao.py`,
 `TEXTOS`); a fala nunca é traduzida.
+
+A linha de comando também fala os dois idiomas (`trama/idioma.py`,
+catálogo em `trama/textos.py`, paridade em `tests/test_idioma.py`):
+progresso e relatório do pipeline, `trama-revisar` (inclusive o `[s/N]`,
+que vira `[y/N]`), `trama-verificar` e a ajuda do `trama-processar`. A
+escolha: `TRAMA_IDIOMA`; sem ela, o idioma do sistema (`LC_ALL`,
+`LC_MESSAGES`, `LANG`); português se começa com "pt", inglês em qualquer
+outro caso, a mesma regra da tela. Quando a tela dispara o
+processamento, manda o idioma da interface (`idioma` no corpo de
+`POST .../processar`), e o servidor o passa ao subprocesso como
+`TRAMA_IDIOMA`. Não muda o que o servidor lê: o progresso vem da linha
+`@progresso`, nunca da frase. O `--idioma` do `trama-processar` continua
+sendo o idioma da FALA, para o Whisper. Log do servidor fica em
+português (é para quem depura).
 
 ### Telas
 

@@ -17,6 +17,7 @@ from pathlib import Path
 import numpy as np
 
 from trama import migracoes
+from trama.idioma import t
 
 # torch e pyannote so sao carregados por quem calcula embedding
 # (get_inference/embed_segments), nunca no import deste modulo. No topo
@@ -330,12 +331,9 @@ def embed_segments(
     if not vecs:
         if primeiro_erro is not None:
             # Nunca falhe em silencio: mostre a causa real.
-            print(
-                f"      ! erro ao extrair embedding: "
-                f"{type(primeiro_erro).__name__}: {primeiro_erro}"
-            )
+            print(t("embedding_erro", erro=f"{type(primeiro_erro).__name__}: {primeiro_erro}"))
         elif not segs:
-            print(f"      ! nenhum trecho com duracao minima de {min_dur}s")
+            print(t("embedding_sem_trecho", min=min_dur))
         return None, 0.0
 
     mean = np.average(np.stack(vecs), axis=0, weights=np.asarray(weights))

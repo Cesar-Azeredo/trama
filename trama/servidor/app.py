@@ -136,6 +136,9 @@ class CorpoProcessar(BaseModel):
     # faixa de falantes (processamento.argumentos_de_falantes). Opcional:
     # corpo antigo, so com "pessoas", continua valido.
     talvez_calados: list[str] = []
+    # Idioma da interface: o do progresso no terminal e do .txt gravado em
+    # disco (TRAMA_IDIOMA no pipeline). Ausente: o idioma do sistema.
+    idioma: Literal["pt", "en"] | None = None
 
 
 @app.get("/api/reunioes/{id}/exclusao")
@@ -189,7 +192,9 @@ def processar_reuniao(id: str, corpo: CorpoProcessar):
         raise _erro(404, "sem_audio_para_processar")
 
     try:
-        processamento.iniciar(id, pasta, caminho_audio, corpo.pessoas, corpo.talvez_calados)
+        processamento.iniciar(
+            id, pasta, caminho_audio, corpo.pessoas, corpo.talvez_calados, corpo.idioma
+        )
     except processamento.JaEmProcessamento as exc:
         raise _erro(409, "ja_processando", id=str(exc))
 

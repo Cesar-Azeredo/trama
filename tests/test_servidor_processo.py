@@ -240,6 +240,10 @@ if os.environ.get("FAKE_RUN_ARGS"):
     import json
     with open(os.environ["FAKE_RUN_ARGS"], "a", encoding="utf-8") as f:
         f.write(json.dumps(sys.argv[1:], ensure_ascii=False) + "\\n")
+# Opcional: o TRAMA_IDIOMA que o pipeline recebeu, um por execucao.
+if os.environ.get("FAKE_RUN_IDIOMA"):
+    with open(os.environ["FAKE_RUN_IDIOMA"], "a", encoding="utf-8") as f:
+        f.write(os.environ.get("TRAMA_IDIOMA", "-") + "\\n")
 maquina = "--progresso-json" in sys.argv
 for i, (texto, detalhe) in enumerate(etapas, 1):
     print(f"{i}/5  {texto}...", flush=True)
@@ -612,6 +616,28 @@ def test_rota_processar_leva_talvez_calados_ao_pipeline_e_ao_tentar_de_novo():
     finally:
         del os.environ["FAKE_RUN_ARGS"]
         del os.environ["FAKE_RUN_CODIGO_SAIDA"]
+        _limpar_ambiente_processamento(raiz_falsa, reunioes.PASTA_AUDIOS)
+        shutil.rmtree(pasta, ignore_errors=True)
+
+
+def test_rota_processar_passa_o_idioma_da_interface_ao_pipeline():
+    pasta, cliente = _ambiente_temporario()
+    raiz_falsa = _preparar_raiz_falsa()
+    processamento.RAIZ = raiz_falsa
+    processamento._estado = None
+    registro = pasta / "idioma_do_run.txt"
+    os.environ["FAKE_RUN_IDIOMA"] = str(registro)
+    try:
+        _criar_reuniao_nao_processada(reunioes.PASTA_AUDIOS, "reuniao_a")
+        for corpo in ({"pessoas": [], "idioma": "en"}, {"pessoas": [], "idioma": "pt"}):
+            r = cliente.post("/api/reunioes/reuniao_a/processar", json=corpo)
+            assert r.status_code == 202, r.text
+            assert _esperar(lambda: processamento.estado_atual()["status"] != "rodando")
+        r = cliente.post("/api/reunioes/reuniao_a/processar", json={"pessoas": [], "idioma": "fr"})
+        assert r.status_code == 422, "so pt ou en"
+        assert registro.read_text(encoding="utf-8").split() == ["en", "pt"]
+    finally:
+        del os.environ["FAKE_RUN_IDIOMA"]
         _limpar_ambiente_processamento(raiz_falsa, reunioes.PASTA_AUDIOS)
         shutil.rmtree(pasta, ignore_errors=True)
 

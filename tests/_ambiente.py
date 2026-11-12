@@ -55,6 +55,10 @@ def variaveis_lidas_pelo_codigo():
 def isolar():
     for nome in variaveis_lidas_pelo_codigo() - PRESERVADAS:
         os.environ.pop(nome, None)
+    # Idioma das mensagens e do .txt (trama/idioma.py) fixo: sem isto, o
+    # resultado dependeria do LANG de quem roda. Os testes de idioma mudam
+    # isto localmente.
+    os.environ["TRAMA_IDIOMA"] = "pt"
     _pasta_temporaria_propria()
 
 

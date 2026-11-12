@@ -24,6 +24,7 @@ import uuid
 import numpy as np
 
 from trama import erros, interacao, nucleo, pipeline
+from trama.idioma import t
 
 DURACAO_MIN_TRECHO = 4.0  # segundos
 DURACAO_MAX_TRECHO = 15.0  # segundos
@@ -142,12 +143,7 @@ def garantir_reuniao_id(caminho, dados):
     novo = str(uuid.uuid4())
     dados["reuniao_id"] = novo
     nucleo.escrever_atomico(caminho, nucleo.json_para_disco(dados))
-    print(
-        f"  ! arquivo antigo sem identificador estavel de reuniao - "
-        f"atribuido agora ({novo[:8]}...). Revisoes deste arquivo passam "
-        "a ser idempotentes a partir desta execucao; o que ja foi "
-        "aprendido antes nao pode ser reconciliado retroativamente."
-    )
+    print(t("reuniao_id_novo", id=novo[:8]))
     return novo
 
 

@@ -12,6 +12,7 @@ import {
   type CodigoComParametros,
 } from "./cliente";
 import { mensagem } from "../i18n/mensagem";
+import { idiomaAtual } from "../i18n/idioma";
 
 /** "processando"/"interrompido" so existem por causa do marco 2 (upload +
  * processamento pelo servidor, ver ARCHITECTURE.md) - "interrompido" e o
@@ -398,6 +399,8 @@ export function iniciarProcessamento(
   return enviarJson(`/api/reunioes/${encodeURIComponent(id)}/processar`, {
     pessoas,
     talvez_calados: talvezCalados,
+    // O pipeline escreve o progresso e o .txt em disco no idioma da tela.
+    idioma: idiomaAtual(),
   });
 }
 

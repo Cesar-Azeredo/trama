@@ -217,7 +217,7 @@ def argumentos_de_falantes(pessoas, talvez_calados=()):
     return argumentos
 
 
-def iniciar(id, pasta, caminho_audio, pessoas, talvez_calados=()):
+def iniciar(id, pasta, caminho_audio, pessoas, talvez_calados=(), idioma=None):
     """
     Dispara o pipeline.py de verdade como subprocess. Levanta JaEmProcessamento
     se ja houver um trabalho "rodando" - checagem e escrita do estado sob
@@ -228,6 +228,10 @@ def iniciar(id, pasta, caminho_audio, pessoas, talvez_calados=()):
     MESMAS pessoas sem pedir de novo - sem isso, um retry perderia essa
     escolha silenciosamente. `talvez_calados` (quem "talvez nao tenha
     falado", argumentos_de_falantes) fica guardado pelo mesmo motivo.
+
+    `idioma` ("pt"/"en", o da interface): vai para o pipeline como
+    TRAMA_IDIOMA - progresso no terminal, .txt gravado em disco
+    (trama/idioma.py). None: o pipeline segue o idioma do sistema.
     """
     global _estado
 
@@ -252,9 +256,13 @@ def iniciar(id, pasta, caminho_audio, pessoas, talvez_calados=()):
         talvez_calados = [n for n in talvez_calados if n in pessoas]
         comando += argumentos_de_falantes(pessoas, talvez_calados)
 
+        ambiente = dict(os.environ)
+        if idioma in ("pt", "en"):
+            ambiente["TRAMA_IDIOMA"] = idioma
         processo = subprocess.Popen(
             comando,
             cwd=str(RAIZ),
+            env=ambiente,
             stdout=subprocess.PIPE,
             stderr=subprocess.STDOUT,
             text=True,

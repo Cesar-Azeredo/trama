@@ -23,6 +23,7 @@ from pathlib import Path
 import numpy as np
 
 from trama import edicao, erros, interacao, nucleo, temporarios, termos, trechos
+from trama.idioma import t
 
 DIAR_MODEL = os.environ.get("DIAR_MODEL", "pyannote/speaker-diarization-community-1")
 
@@ -199,7 +200,7 @@ def _similaridades(labels, nomes, embeddings, galeria):
 
 
 def _imprimir_similaridades(S, labels, nomes):
-    print("\n  Similaridade cluster x pessoa (cosseno):")
+    print(t("similaridade"))
     print("    " + "".join(f"{n[:10]:>12}" for n in nomes))
     for i, label in enumerate(labels):
         print(f"    {label:<8}" + "".join(f"{S[i, j]:>12.3f}" for j in range(len(nomes))))
@@ -657,21 +658,14 @@ def imprimir_dinamica(analise):
     # separador nenhum entre eles; um valor com N digitos ou mais some com
     # o espaco de sobra e gruda no campo seguinte ("823" para SOFREU=8,
     # APOIOS=23). Um separador literal nao depende de sobra de largura.
-    colunas = [
-        ("PESSOA", 14, "<"),
-        ("FALA", 8, ">"),
-        ("%", 6, ">"),
-        ("TURNOS", 7, ">"),
-        ("MEDIA", 7, ">"),
-        ("INTERR.", 8, ">"),
-        ("SOFREU", 7, ">"),
-        ("APOIOS", 7, ">"),
-    ]
+    titulos = t("colunas_dinamica").split("|")
+    larguras = [(14, "<"), (8, ">"), (6, ">"), (7, ">"), (7, ">"), (8, ">"), (7, ">"), (7, ">")]
+    colunas = [(titulo, larg, alin) for titulo, (larg, alin) in zip(titulos, larguras)]
 
     def linha(celulas):
         return "  ".join(f"{v:{alin}{larg}}" for v, (_, larg, alin) in zip(celulas, colunas))
 
-    print("\n  Dinamica da reuniao:")
+    print(t("dinamica"))
     print(f"    {linha([titulo for titulo, _, _ in colunas])}")
     for nome, s in sorted(din.items(), key=lambda kv: -kv[1]["fala_s"]):
         celulas = [
@@ -688,7 +682,7 @@ def imprimir_dinamica(analise):
 
     m = analise["matriz_interrupcoes"]
     if m:
-        print("\n  Quem interrompeu quem:")
+        print(t("quem_interrompeu"))
         for quem, alvos in sorted(m.items()):
             for alvo, n in sorted(alvos.items(), key=lambda kv: -kv[1]):
                 print(f"    {quem} -> {alvo}: {n}x")
@@ -696,10 +690,7 @@ def imprimir_dinamica(analise):
     disputas = [e for e in analise["eventos"] if e["tipo"] == "disputa"]
     if disputas:
         total = sum(e["sobreposicao_s"] for e in disputas)
-        print(
-            f"\n  {len(disputas)} trecho(s) de disputa ({total:.0f}s no total)"
-            " - e onde a transcricao fica menos confiavel:"
-        )
+        print(t("disputas", n=len(disputas), total=f"{total:.0f}"))
         for e in sorted(disputas, key=lambda x: -x["sobreposicao_s"])[:5]:
             print(
                 f"    {nucleo.hhmmss(e['tempo'])}  {e['entrante']} x "
@@ -936,10 +927,12 @@ def casar_clusters(turnos_novos, turnos_antigos):
 
     comum = {(n, a): _sobreposicao(novos[n], antigos[a]) for n in novos for a in antigos}
     casamento, usados = {}, set()
-    for (n, a), t in sorted(comum.items(), key=lambda kv: -kv[1]):
-        if n in casamento or a in usados or t <= 0:
+    for (n, a), comum_s in sorted(comum.items(), key=lambda kv: -kv[1]):
+        if n in casamento or a in usados or comum_s <= 0:
             continue
-        if t < FRACAO_MIN_CASAMENTO * dur(novos[n]) or t < FRACAO_MIN_CASAMENTO * dur(antigos[a]):
+        if comum_s < FRACAO_MIN_CASAMENTO * dur(novos[n]) or comum_s < FRACAO_MIN_CASAMENTO * dur(
+            antigos[a]
+        ):
             continue
 
         # Mistura = o cluster novo falando junto com OUTRO antigo enquanto o
@@ -1034,14 +1027,14 @@ def faixa_de_falantes(falantes, min_falantes, max_falantes, pessoas):
 
 def descrever_faixa(faixa):
     if "num_speakers" in faixa:
-        return f" - {faixa['num_speakers']} falantes"
+        return t("faixa_exata", n=faixa["num_speakers"])
     minimo, maximo = faixa.get("min_speakers"), faixa.get("max_speakers")
     if minimo and maximo:
-        return f" - entre {minimo} e {maximo} falantes"
+        return t("faixa_entre", min=minimo, max=maximo)
     if minimo:
-        return f" - pelo menos {minimo} falantes"
+        return t("faixa_min", min=minimo)
     if maximo:
-        return f" - até {maximo} falantes"
+        return t("faixa_max", max=maximo)
     return ""
 
 
@@ -1071,12 +1064,17 @@ def detalhe_da_faixa(faixa):
 
 
 def _imprimir_identificacao(mapa):
-    print("\n  Resultado da identificacao:")
+    print(t("identificacao"))
     for label, info in sorted(mapa.items()):
         print(
-            f"    {label:<8} -> {info['nome']:<18} "
-            f"sim={info['sim']:.3f}  margem={info['margem']:.3f}  "
-            f"fala={info['fala_s']:.0f}s"
+            t(
+                "linha_identificacao",
+                label=label,
+                nome=info["nome"],
+                sim=f"{info['sim']:.3f}",
+                margem=f"{info['margem']:.3f}",
+                fala=f"{info['fala_s']:.0f}",
+            )
         )
 
 
@@ -1085,7 +1083,7 @@ def _identificar_com_revisao_anterior(wav, diar, pessoas, device, dados_anterior
     revisao anterior. Devolve (mapa, remapa)."""
     galeria = nucleo.get_galeria(pessoas)
     if not galeria:
-        print("     (galeria vazia - saida sairá com SPEAKER_XX)")
+        print(t("galeria_vazia"))
     mapa = identificar(wav, diar, galeria, device)
     # Decisoes da revisao anterior (nome, confirmado, so nomear, ignorado)
     # casadas pelo TRECHO de audio, nao pelo nome sugerido - ver
@@ -1096,10 +1094,7 @@ def _identificar_com_revisao_anterior(wav, diar, pessoas, device, dados_anterior
     remapa = preservar_revisao(mapa, turnos_novos, dados_anteriores)
     if dados_anteriores and dados_anteriores.get("clusters"):
         herdados = sum(1 for i in mapa.values() if i.get("confirmado"))
-        print(
-            f"     revisao anterior: {herdados} de {len(mapa)} clusters "
-            f"herdaram a decisao; o resto fica a revisar"
-        )
+        print(t("revisao_herdada", herdados=herdados, total=len(mapa)))
     return mapa, remapa
 
 
@@ -1117,8 +1112,7 @@ def _transcrever_e_corrigir(
     detalhe = {"asr": asr, **({"termos": len(regras)} if regras else {})}
     _progresso(
         5,
-        f"\n5/5  Transcrevendo com {asr}"
-        f"{f' ({len(regras)} termos do dominio)' if regras else ''}...",
+        t("etapa_5", asr=asr, termos=t("etapa_5_termos", n=len(regras)) if regras else ""),
         **detalhe,
     )
     palavras = transcrever(wav, asr, modelo, idioma, prompt)
@@ -1140,18 +1134,10 @@ def _transcrever_e_corrigir(
     # uma fala corrigida viaja com ela (trechos.preservar).
     lacunas_sem_lugar = trechos.preservar(falas, lacunas, anteriores)
     if lacunas_sem_lugar:
-        print(
-            f"     ! {len(lacunas_sem_lugar)} texto(s) escrito(s) em lacuna sem "
-            "lacuna correspondente nesta transcricao - guardados em "
-            "lacunas_sem_lugar no .json"
-        )
+        print(t("lacunas_sem_lugar", n=len(lacunas_sem_lugar)))
     edicoes_sem_fala = edicao.preservar_edicoes(falas, lacunas, anteriores)
     if edicoes_sem_fala:
-        print(
-            f"     ! {len(edicoes_sem_fala)} correcao(oes) manual(is) sem fala "
-            "correspondente nesta transcricao - guardadas em "
-            "edicoes_sem_fala no .json"
-        )
+        print(t("edicoes_sem_fala", n=len(edicoes_sem_fala)))
     return falas, lacunas, edicoes_sem_fala, lacunas_sem_lugar
 
 
@@ -1217,24 +1203,20 @@ def _processar(
     saida = Path(out or Path(audio).with_suffix(""))
     dados_anteriores = carregar_saida_anterior(f"{saida}.json")
 
-    _progresso(1, "1/5  Convertendo audio para 16 kHz mono...")
+    _progresso(1, t("etapa_1"))
     wav = nucleo.to_wav16k(audio, str(Path(pasta_wav) / f"{Path(audio).stem}_16k.wav"))
 
     faixa = faixa_de_falantes(falantes, min_falantes, max_falantes, pessoas)
-    _progresso(
-        2,
-        f"2/5  Diarizando (quem falou quando){descrever_faixa(faixa)}...",
-        **detalhe_da_faixa(faixa),
-    )
+    _progresso(2, t("etapa_2", faixa=descrever_faixa(faixa)), **detalhe_da_faixa(faixa))
     diar, diar_exc = diarizar(wav, device, **faixa)
 
-    _progresso(3, "3/5  Identificando as pessoas pela voz...")
+    _progresso(3, t("etapa_3"))
     mapa, remapa = _identificar_com_revisao_anterior(wav, diar, pessoas, device, dados_anteriores)
     _imprimir_identificacao(mapa)
 
     # Analise de sobreposicao usa a diarizacao NAO-exclusiva: a exclusiva
     # apaga justamente a informacao de quem falou por cima de quem.
-    _progresso(4, "\n4/5  Analisando sobreposicao e interrupcoes...")
+    _progresso(4, t("etapa_4"))
     analise = interacao.analisar(diar, iter_turns, mapa)
     imprimir_dinamica(analise)
 

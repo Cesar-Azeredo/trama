@@ -17,6 +17,7 @@ import signal
 import sys
 
 from trama import pipeline, termos
+from trama.idioma import t
 
 
 def _sigterm_vira_saida(*_):
@@ -29,29 +30,29 @@ def _sigterm_vira_saida(*_):
 def _argumentos():
     ap = argparse.ArgumentParser(prog="trama-processar")
     ap.add_argument("audio")
-    ap.add_argument("--pessoas", help="Quem estava na sala: Joao,Maria,Pedro")
+    ap.add_argument("--pessoas", help=t("ajuda_pessoas"))
     # Para o servidor: progresso tambem em linhas "@progresso {json}"
     # (pipeline._progresso). Quem roda no terminal nao precisa.
     ap.add_argument("--progresso-json", action="store_true", help=argparse.SUPPRESS)
-    ap.add_argument("--falantes", type=int, help="Numero exato de falantes")
+    ap.add_argument("--falantes", type=int, help=t("ajuda_falantes"))
     ap.add_argument("--min-falantes", type=int)
     ap.add_argument("--max-falantes", type=int)
     ap.add_argument(
         "--device",
         default="cpu",
         choices=["cpu", "mps"],
-        help="No Mac, teste os dois: MPS nem sempre e mais rapido",
+        help=t("ajuda_device"),
     )
     ap.add_argument("--asr", default="mlx", choices=["mlx", "faster"])
     ap.add_argument("--modelo", default=pipeline.MODELO_PADRAO)
-    ap.add_argument("--idioma", default="pt")
+    ap.add_argument("--idioma", default="pt", help=t("ajuda_idioma_fala"))
     ap.add_argument(
         "--termos",
         default=termos.ARQUIVO_PADRAO,
-        help="Arquivo de vocabulario do dominio (errado => certo)",
+        help=t("ajuda_termos"),
     )
-    ap.add_argument("--sem-termos", action="store_true", help="Desliga a correcao de vocabulario")
-    ap.add_argument("--out", help="Prefixo dos arquivos de saida")
+    ap.add_argument("--sem-termos", action="store_true", help=t("ajuda_sem_termos"))
+    ap.add_argument("--out", help=t("ajuda_out"))
     return ap.parse_args()
 
 
@@ -74,8 +75,8 @@ def main():
         sem_termos=args.sem_termos,
         out=args.out,
     )
-    print(f"\nPronto:\n  {saida}.txt\n  {saida}.json")
-    print(f"\nAgora rode:  trama-revisar {saida}.json")
+    print(t("pronto", txt=f"{saida}.txt", json=f"{saida}.json"))
+    print(t("agora_rode", json=f"{saida}.json"))
 
 
 if __name__ == "__main__":

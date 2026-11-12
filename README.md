@@ -54,6 +54,8 @@ raised the risk, who interrupted whom.
   `Intl`, server errors sent as codes the interface translates, and the
   downloaded transcript in the interface language — what people said is
   never translated ([ADR 0026](docs/adr/0026-interface-em-portugues-e-ingles.md)).
+  The command line follows `TRAMA_IDIOMA` (or the system language), and a
+  meeting processed from the interface reports progress in its language.
 - **Company vocabulary without a dictionary.** Fix a misheard product name
   once, in the text, and Trama finds the other ways the transcriber wrote
   it across all meetings — using edit distance, a Portuguese phonetic key
