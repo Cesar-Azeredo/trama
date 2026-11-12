@@ -271,11 +271,16 @@ function MarcaEventos({
                 {rotulo(entrante)}
               </span>
             </span>
+            {/* A contagem nunca corta - e o dado; a palavra do tipo corta
+                com reticencias quando os dois nao cabem na margem
+                ("interrupção ·123", "acknowledgment ·12"). */}
             <span
               className={`evento-marca__tipo evento-marca__tipo--${tipo}`}
             >
-              {t.tipoEvento[tipo]}
-              {lista.length > 1 && ` ·${lista.length}`}
+              <span className="evento-marca__palavra">{t.tipoEvento[tipo]}</span>
+              {lista.length > 1 && (
+                <span className="evento-marca__contagem">·{lista.length}</span>
+              )}
             </span>
           </span>
         );

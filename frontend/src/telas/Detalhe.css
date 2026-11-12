@@ -528,7 +528,7 @@
 /* Nome maior que a margem corta com reticencias (nome completo no title
    da marca). min-width: 0 e o que deixa um item flex encolher abaixo da
    largura do proprio texto - sem isso o overflow nunca acontece e o
-   corte nao aparece. So o nome corta: o tipo e curto e sempre cabe. */
+   corte nao aparece. A linha do tipo segue a mesma regra (abaixo). */
 .evento-marca__nome--sem-pessoa {
   font-weight: 400;
   text-transform: none;
@@ -549,6 +549,28 @@
    da disputa pelo peso mas separada dela pela cor, que so a disputa tem
    (--alerta). Nenhuma cor nova: as tres ja passam 4.5:1 nos dois modos
    em qualquer tamanho - --tinta-tenue (3:1) nunca, o texto tem 9.5px. */
+/* Linha do tipo: a palavra corta, a contagem nao. "interrupção ·123"
+   (e "acknowledgment" em ingles) passam dos 92px da margem; antes esta
+   linha nao cortava nada e estourava. A contagem leva margem em vez de
+   espaco no texto: espaco no comeco de um item flex some. */
+.evento-marca__tipo {
+  max-width: 100%;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.evento-marca__palavra {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.evento-marca__contagem {
+  flex-shrink: 0;
+  margin-left: 0.3em;
+  font-variant-numeric: tabular-nums;
+}
+
 .evento-marca__tipo--apoio {
   color: var(--tinta-fraca);
   font-weight: 400;
