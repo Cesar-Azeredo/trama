@@ -34,7 +34,6 @@ import importlib.util
 import json
 import os
 import platform
-import re
 import signal
 import subprocess
 import sys
@@ -51,37 +50,34 @@ MODULO_PROCESSAR = "trama.cli.processar"
 
 NOME_MARCADOR = ".processando.json"
 
-_PADRAO_ETAPA = re.compile(r"^(\d)/5\s+(.+?)\.*$")
-
-# O que o pipeline acrescenta ao texto fixo de uma etapa (pipeline.py:
-# descrever_faixa na 2, motor e termos na 5) vira DADO, nunca frase: a tela
-# monta o texto no idioma dela (i18n/*/processamento.ts). O stdout e
-# portugues de linha de comando; so os numeros e o nome do motor saem dele.
-_FALANTES = re.compile(r" - (\d+) falantes\b")
-_ENTRE = re.compile(r" - entre (\d+) e (\d+) falantes\b")
-_PELO_MENOS = re.compile(r" - pelo menos (\d+) falantes\b")
-_ATE = re.compile(r" - até (\d+) falantes\b")
-_MOTOR = re.compile(r"\bcom (\w+)")
-_TERMOS = re.compile(r"\((\d+) termos do dominio\)")
+# O progresso vem das linhas "@progresso {json}" que o pipeline imprime com
+# --progresso-json (pipeline._progresso) - nunca da frase, que e do terminal
+# e muda de idioma. O detalhe e DADO (numeros e o nome do motor): a tela
+# monta o texto no idioma dela (i18n/*/processamento.ts).
+PREFIXO_PROGRESSO = "@progresso "
+TOTAL_ETAPAS = 5
+_DETALHE_INTEIRO = ("falantes", "min", "max", "termos")
 
 
-def detalhe_da_etapa(texto):
-    """{falantes | min, max | asr, termos} do texto de uma etapa; {} quando
-    a etapa nao tem nada alem do texto fixo."""
-    detalhe = {}
-    if m := _FALANTES.search(texto):
-        detalhe["falantes"] = int(m.group(1))
-    elif m := _ENTRE.search(texto):
-        detalhe["min"], detalhe["max"] = int(m.group(1)), int(m.group(2))
-    elif m := _PELO_MENOS.search(texto):
-        detalhe["min"] = int(m.group(1))
-    elif m := _ATE.search(texto):
-        detalhe["max"] = int(m.group(1))
-    if texto.startswith("Transcrevendo") and (m := _MOTOR.search(texto)):
-        detalhe["asr"] = m.group(1)
-        if t := _TERMOS.search(texto):
-            detalhe["termos"] = int(t.group(1))
-    return detalhe
+def ler_progresso(linha):
+    """(etapa, detalhe) de uma linha de progresso, ou None se a linha nao
+    e uma (frase, log, linha quebrada). So os campos conhecidos passam."""
+    if not linha.startswith(PREFIXO_PROGRESSO):
+        return None
+    try:
+        dados = json.loads(linha[len(PREFIXO_PROGRESSO) :])
+        etapa = dados["etapa"]
+        bruto = dados.get("detalhe") or {}
+    except (ValueError, KeyError, TypeError):
+        return None
+    if not isinstance(etapa, int) or not 1 <= etapa <= TOTAL_ETAPAS or not isinstance(bruto, dict):
+        return None
+    detalhe = {
+        k: bruto[k] for k in _DETALHE_INTEIRO if isinstance(bruto.get(k), int) and bruto[k] >= 0
+    }
+    if isinstance(bruto.get("asr"), str) and bruto["asr"].isalnum():
+        detalhe["asr"] = bruto["asr"]
+    return etapa, detalhe
 
 
 _trava = threading.Lock()
@@ -162,12 +158,11 @@ def _acompanhar(id, pasta, processo):
     global _estado
 
     for linha in processo.stdout:
-        m = _PADRAO_ETAPA.match(linha.strip())
-        if m:
+        lido = ler_progresso(linha.strip())
+        if lido:
             with _trava:
                 if _estado is not None and _estado["reuniao_id"] == id:
-                    _estado["etapa"] = int(m.group(1))
-                    _estado["detalhe"] = detalhe_da_etapa(m.group(2).strip())
+                    _estado["etapa"], _estado["detalhe"] = lido
 
     codigo = processo.wait()
 
@@ -252,6 +247,7 @@ def iniciar(id, pasta, caminho_audio, pessoas, talvez_calados=()):
             device,
             "--asr",
             asr,
+            "--progresso-json",
         ]
         talvez_calados = [n for n in talvez_calados if n in pessoas]
         comando += argumentos_de_falantes(pessoas, talvez_calados)

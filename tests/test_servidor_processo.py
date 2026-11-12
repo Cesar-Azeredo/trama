@@ -213,7 +213,8 @@ def test_servidor_porta_invalida_avisa_em_portugues():
 # Testar contra o pipeline.py real levaria minutos (diarizacao + Whisper) por
 # caso. Em vez disso, um "pipeline.py" de mentira e escrito numa RAIZ falsa
 # (processamento.RAIZ e trocado para la) - imprime as mesmas linhas
-# "N/5  texto..." que o real imprime, no mesmo formato, e decide o
+# "N/5  texto..." e "@progresso {json}" que o real imprime (a segunda so
+# com --progresso-json, como o real), e decide o
 # codigo de saida por variavel de ambiente. Isso exercita o subprocess,
 # a leitura de stdout e a maquina de estados de verdade - so o CONTEUDO
 # do pipeline e falso, a orquestracao nao.
@@ -223,12 +224,14 @@ import os
 import sys
 import time
 
+import json
+
 etapas = [
-    "Convertendo audio para 16 kHz mono",
-    "Diarizando (quem falou quando)",
-    "Identificando as pessoas pela voz",
-    "Analisando sobreposicao e interrupcoes",
-    "Transcrevendo com mlx",
+    ("Convertendo audio para 16 kHz mono", {}),
+    ("Diarizando (quem falou quando) - entre 2 e 3 falantes", {"min": 2, "max": 3}),
+    ("Identificando as pessoas pela voz", {}),
+    ("Analisando sobreposicao e interrupcoes", {}),
+    ("Transcrevendo com mlx", {"asr": "mlx"}),
 ]
 atraso = float(os.environ.get("FAKE_RUN_ATRASO_S", "0.02"))
 # Opcional: registra os argumentos de cada execucao (uma linha JSON por
@@ -237,8 +240,11 @@ if os.environ.get("FAKE_RUN_ARGS"):
     import json
     with open(os.environ["FAKE_RUN_ARGS"], "a", encoding="utf-8") as f:
         f.write(json.dumps(sys.argv[1:], ensure_ascii=False) + "\\n")
-for i, texto in enumerate(etapas, 1):
+maquina = "--progresso-json" in sys.argv
+for i, (texto, detalhe) in enumerate(etapas, 1):
     print(f"{i}/5  {texto}...", flush=True)
+    if maquina:
+        print("@progresso " + json.dumps({"etapa": i, "total": 5, "detalhe": detalhe}), flush=True)
     time.sleep(atraso)
 sys.exit(int(os.environ.get("FAKE_RUN_CODIGO_SAIDA", "0")))
 """
@@ -317,6 +323,8 @@ def test_iniciar_roda_de_verdade_e_atualiza_etapas_ate_concluir():
         final = processamento.estado_atual()
         assert final["status"] == "concluido"
         assert final["etapa"] == 5
+        # o detalhe da ultima etapa veio da linha de maquina, nao da frase
+        assert final["detalhe"] == {"asr": "mlx"}, final["detalhe"]
         assert not (pasta / processamento.NOME_MARCADOR).exists(), (
             "marcador tem que sumir quando o servidor VIU o fim"
         )
@@ -714,17 +722,52 @@ def test_servidor_sobe_sem_carregar_torch_nem_pyannote():
     assert r.stdout.strip() == "[]", r.stdout
 
 
-def test_detalhe_da_etapa_e_dado_nunca_frase():
-    """O texto que o pipeline acrescenta a uma etapa vira numeros e o nome
-    do motor; a tela monta a frase no idioma dela."""
-    d = processamento.detalhe_da_etapa
-    assert d("Diarizando (quem falou quando) - 3 falantes") == {"falantes": 3}
-    assert d("Diarizando (quem falou quando) - entre 4 e 5 falantes") == {"min": 4, "max": 5}
-    assert d("Diarizando (quem falou quando) - pelo menos 2 falantes") == {"min": 2}
-    assert d("Diarizando (quem falou quando) - até 6 falantes") == {"max": 6}
-    assert d("Transcrevendo com mlx (12 termos do dominio)") == {"asr": "mlx", "termos": 12}
-    assert d("Transcrevendo com faster") == {"asr": "faster"}
-    assert d("Convertendo audio para 16 kHz mono") == {}
+def test_progresso_vem_da_linha_de_maquina_nunca_da_frase():
+    """O servidor le "@progresso {json}"; a frase do terminal (que muda de
+    idioma) nao move a etapa. Detalhe so com os campos conhecidos."""
+    ler = processamento.ler_progresso
+    assert ler('@progresso {"etapa": 2, "total": 5, "detalhe": {"min": 4, "max": 5}}') == (
+        2,
+        {"min": 4, "max": 5},
+    )
+    assert ler('@progresso {"etapa": 5, "detalhe": {"asr": "mlx", "termos": 12}}') == (
+        5,
+        {"asr": "mlx", "termos": 12},
+    )
+    assert ler('@progresso {"etapa": 1, "detalhe": {}}') == (1, {})
+    assert ler("2/5  Diarizando (quem falou quando) - 3 falantes...") is None
+    assert ler("2/5  Diarizing (who spoke when) - 3 speakers...") is None
+    assert ler("@progresso {quebrado") is None
+    assert ler('@progresso {"etapa": 9}') is None
+    assert ler('@progresso {"etapa": "2"}') is None
+    assert ler(
+        '@progresso {"etapa": 2, "detalhe": {"falantes": 3, "x": 1, "asr": "a b", "min": -1}}'
+    ) == (2, {"falantes": 3})
+
+
+def test_pipeline_emite_a_linha_de_maquina_so_quando_pedido():
+    import contextlib
+    import io
+
+    from trama import pipeline
+
+    saida = io.StringIO()
+    with contextlib.redirect_stdout(saida):
+        pipeline._progresso(2, "2/5  Diarizando...", min=4, max=5)
+    assert saida.getvalue() == "2/5  Diarizando...\n", "terminal sem linha de maquina"
+    pipeline.PROGRESSO_MAQUINA = True
+    saida = io.StringIO()
+    try:
+        with contextlib.redirect_stdout(saida):
+            pipeline._progresso(
+                2,
+                "2/5  Diarizando...",
+                **pipeline.detalhe_da_faixa({"min_speakers": 4, "max_speakers": 5}),
+            )
+    finally:
+        pipeline.PROGRESSO_MAQUINA = False
+    frase, maquina = saida.getvalue().splitlines()
+    assert processamento.ler_progresso(maquina) == (2, {"min": 4, "max": 5}), maquina
 
 
 if __name__ == "__main__":

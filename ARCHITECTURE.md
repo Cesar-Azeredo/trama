@@ -251,7 +251,7 @@ Memória mínima sugerida (16 GB) é estimativa, não medição.
 
 ### Testes
 
-21 suítes, 415 casos. Cada arquivo roda sozinho com `python` (imprime
+21 suítes, 416 casos. Cada arquivo roda sozinho com `python` (imprime
 PASSOU/FALHOU por caso e sai com código de erro), e o `pytest` descobre as
 mesmas funções `test_*` sem nenhuma mudança. As suítes do servidor dividem
 a infraestrutura em `tests/servidor_apoio.py`.
@@ -271,7 +271,7 @@ a infraestrutura em `tests/servidor_apoio.py`.
 | `test_servidor_apagar.py` | 7 |
 | `test_servidor_pessoas.py` | 13 |
 | `test_servidor_origem.py` | 5 |
-| `test_servidor_processo.py` | 22 |
+| `test_servidor_processo.py` | 23 |
 | `test_servidor_reunioes.py` | 46 |
 | `test_servidor_revisao.py` | 17 |
 | `test_servidor_termos.py` | 33 |
@@ -398,10 +398,14 @@ novo upload.
 `GET /api/reunioes/{id}/progresso` é SSE: o estado do processamento
 vive no SERVIDOR (memória do processo), não na conexão, então reabrir a
 aba reconecta e recebe o estado atual imediatamente, sem perder
-contexto. A leitura do progresso do `pipeline.py` é o stdout mesmo — as
-linhas `"N/5  texto..."` que ele já imprime para quem roda pela CLI,
-lidas por uma única thread do servidor (nunca duas conexões lendo o
-mesmo pipe).
+contexto. O progresso sai do stdout do `pipeline.py`, lido por uma única
+thread do servidor (nunca duas conexões lendo o mesmo pipe). O servidor
+roda o pipeline com `--progresso-json`, e cada etapa imprime, além da
+frase "N/5  texto..." para quem lê o terminal, uma linha `@progresso
+{"etapa", "total", "detalhe"}` (`pipeline._progresso`). O servidor lê só
+essa (`processamento.ler_progresso`, que deixa passar só os campos
+conhecidos: `falantes`, `min`, `max`, `termos`, `asr`) — nunca a frase,
+que muda de idioma. A tela monta o texto da etapa no idioma dela.
 
 Sobrevivência a reinício do servidor: um marcador (`.processando.json`,
 na pasta da própria reunião) é gravado ao iniciar e apagado quando o

@@ -7,7 +7,9 @@ Uso:
         --pessoas Nome1,Nome2 --device mps --asr mlx
 
 O servidor roda este modulo como subprocess (python -m trama.cli.processar)
-e le o progresso das linhas "N/5  texto..." do stdout.
+com --progresso-json, e le o progresso das linhas "@progresso {json}" do
+stdout (pipeline._progresso) - nunca da frase "N/5  texto...", que e para
+quem le o terminal.
 """
 
 import argparse
@@ -28,6 +30,9 @@ def _argumentos():
     ap = argparse.ArgumentParser(prog="trama-processar")
     ap.add_argument("audio")
     ap.add_argument("--pessoas", help="Quem estava na sala: Joao,Maria,Pedro")
+    # Para o servidor: progresso tambem em linhas "@progresso {json}"
+    # (pipeline._progresso). Quem roda no terminal nao precisa.
+    ap.add_argument("--progresso-json", action="store_true", help=argparse.SUPPRESS)
     ap.add_argument("--falantes", type=int, help="Numero exato de falantes")
     ap.add_argument("--min-falantes", type=int)
     ap.add_argument("--max-falantes", type=int)
@@ -53,6 +58,7 @@ def _argumentos():
 def main():
     signal.signal(signal.SIGTERM, _sigterm_vira_saida)
     args = _argumentos()
+    pipeline.PROGRESSO_MAQUINA = args.progresso_json
     pessoas = [p.strip() for p in args.pessoas.split(",")] if args.pessoas else None
     saida = pipeline.processar(
         args.audio,

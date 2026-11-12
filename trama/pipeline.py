@@ -1047,6 +1047,28 @@ def descrever_faixa(faixa):
 
 MODELO_PADRAO = "mlx-community/whisper-large-v3-mlx"
 
+# Progresso para maquina (o servidor, servidor/processamento.py): com
+# PROGRESSO_MAQUINA ligado (--progresso-json na CLI), cada etapa imprime,
+# alem da frase para quem le o terminal, uma linha
+#   @progresso {"etapa": 2, "total": 5, "detalhe": {"min": 4, "max": 5}}
+# O servidor le so isto - nunca a frase, que muda de idioma.
+PREFIXO_PROGRESSO = "@progresso "
+TOTAL_ETAPAS = 5
+PROGRESSO_MAQUINA = False
+
+
+def _progresso(etapa, frase, **detalhe):
+    print(frase, flush=True)
+    if PROGRESSO_MAQUINA:
+        dados = {"etapa": etapa, "total": TOTAL_ETAPAS, "detalhe": detalhe}
+        print(PREFIXO_PROGRESSO + json.dumps(dados), flush=True)
+
+
+def detalhe_da_faixa(faixa):
+    """Os numeros de faixa_de_falantes como o progresso os manda."""
+    nomes = {"num_speakers": "falantes", "min_speakers": "min", "max_speakers": "max"}
+    return {nomes[k]: v for k, v in faixa.items() if k in nomes}
+
 
 def _imprimir_identificacao(mapa):
     print("\n  Resultado da identificacao:")
@@ -1092,9 +1114,12 @@ def _transcrever_e_corrigir(
     # repeticao em audio longo). O arquivo todo e coberto pela substituicao
     # deterministica logo apos o alinhamento.
     prompt = termos.prompt_whisper(regras) if regras else None
-    print(
+    detalhe = {"asr": asr, **({"termos": len(regras)} if regras else {})}
+    _progresso(
+        5,
         f"\n5/5  Transcrevendo com {asr}"
-        f"{f' ({len(regras)} termos do dominio)' if regras else ''}..."
+        f"{f' ({len(regras)} termos do dominio)' if regras else ''}...",
+        **detalhe,
     )
     palavras = transcrever(wav, asr, modelo, idioma, prompt)
     falas, lacunas = alinhar(palavras, diar_exc, mapa, turnos_ativos=analise["turnos_brutos"])
@@ -1185,26 +1210,31 @@ def _processar(
 ):
     """Pipeline inteiro de uma reuniao: audio -> <saida>.txt e <saida>.json.
 
-    Imprime o progresso em "N/5  texto..." - o servidor le essas linhas do
-    stdout do subprocess (servidor/processamento.py). Devolve o prefixo de
-    saida (Path, sem extensao)."""
+    Imprime o progresso em "N/5  texto..." para o terminal e, com
+    PROGRESSO_MAQUINA, em "@progresso {json}" para o servidor
+    (servidor/processamento.py). Devolve o prefixo de saida (Path, sem
+    extensao)."""
     saida = Path(out or Path(audio).with_suffix(""))
     dados_anteriores = carregar_saida_anterior(f"{saida}.json")
 
-    print("1/5  Convertendo audio para 16 kHz mono...")
+    _progresso(1, "1/5  Convertendo audio para 16 kHz mono...")
     wav = nucleo.to_wav16k(audio, str(Path(pasta_wav) / f"{Path(audio).stem}_16k.wav"))
 
     faixa = faixa_de_falantes(falantes, min_falantes, max_falantes, pessoas)
-    print(f"2/5  Diarizando (quem falou quando){descrever_faixa(faixa)}...")
+    _progresso(
+        2,
+        f"2/5  Diarizando (quem falou quando){descrever_faixa(faixa)}...",
+        **detalhe_da_faixa(faixa),
+    )
     diar, diar_exc = diarizar(wav, device, **faixa)
 
-    print("3/5  Identificando as pessoas pela voz...")
+    _progresso(3, "3/5  Identificando as pessoas pela voz...")
     mapa, remapa = _identificar_com_revisao_anterior(wav, diar, pessoas, device, dados_anteriores)
     _imprimir_identificacao(mapa)
 
     # Analise de sobreposicao usa a diarizacao NAO-exclusiva: a exclusiva
     # apaga justamente a informacao de quem falou por cima de quem.
-    print("\n4/5  Analisando sobreposicao e interrupcoes...")
+    _progresso(4, "\n4/5  Analisando sobreposicao e interrupcoes...")
     analise = interacao.analisar(diar, iter_turns, mapa)
     imprimir_dinamica(analise)
 
