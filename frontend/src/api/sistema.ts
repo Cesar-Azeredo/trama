@@ -18,7 +18,7 @@ export interface Sistema {
   pasta_audios: string;
   banco_vozes: string;
   licencas: Licenca[];
-  /** REC_MEET_DEMO=1: reunioes ficticias de audios-demo/<idioma>, sem audio. */
+  /** TRAMA_DEMO=1: reunioes ficticias de audios-demo/<idioma>, sem audio. */
   demonstracao: boolean;
 }
 

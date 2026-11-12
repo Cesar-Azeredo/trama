@@ -14,11 +14,11 @@ identidade.
 Três regras aceitas colidem com a solução padrão de celular, que é uma
 barra de abas fixa embaixo:
 
-1. ADR 0012 — nenhuma superfície do rec-meet ganha `backdrop-filter`,
+1. ADR 0012 — nenhuma superfície do Trama ganha `backdrop-filter`,
    blur ou translucidez.
-2. `identidade-rec-meet/SKILL.md`, Composição — "navegação de seção é
+2. `identidade-trama/SKILL.md`, Composição — "navegação de seção é
    texto, nunca aba com fundo".
-3. `identidade-rec-meet/SKILL.md`, Proibido — "ícone decorativo".
+3. `identidade-trama/SKILL.md`, Proibido — "ícone decorativo".
 
 Isto é só layout responsivo. O app continua rodando no Mac com o
 servidor em `127.0.0.1` (CLAUDE.md, regra 2); abrir pelo celular de

@@ -1104,7 +1104,7 @@ def test_run_em_laco_while_read_recebe_o_nome_inteiro_de_cada_reuniao():
     """
     import tempfile
 
-    pasta = Path(tempfile.mkdtemp(prefix="rec-meet-test-laco-"))
+    pasta = Path(tempfile.mkdtemp(prefix="trama-test-laco-"))
     try:
         (pasta / "bin").mkdir()
         falso = pasta / "bin" / "ffmpeg"
@@ -1161,7 +1161,7 @@ def test_data_da_gravacao_le_o_creation_time_em_utc_ou_cai_no_arquivo():
     import os
     import tempfile
 
-    pasta = Path(tempfile.mkdtemp(prefix="rec-meet-test-data-"))
+    pasta = Path(tempfile.mkdtemp(prefix="trama-test-data-"))
     try:
         com, sem = pasta / "com.m4a", pasta / "sem.m4a"
         _m4a(com, "2026-07-02T11:49:13.000000Z")
@@ -1181,7 +1181,7 @@ def test_preservar_metadados_mantem_titulo_e_data_ao_reprocessar():
     import json
     import tempfile
 
-    pasta = Path(tempfile.mkdtemp(prefix="rec-meet-test-meta-"))
+    pasta = Path(tempfile.mkdtemp(prefix="trama-test-meta-"))
     try:
         audio = pasta / "reuniao_01.m4a"
         _m4a(audio, "2026-08-12T11:37:44.000000Z")
@@ -1234,7 +1234,7 @@ def test_run_main_cinco_pessoas_com_faixa_deixa_a_diarizacao_escolher():
     """
     import tempfile
 
-    pasta = Path(tempfile.mkdtemp(prefix="rec-meet-test-faixa-"))
+    pasta = Path(tempfile.mkdtemp(prefix="trama-test-faixa-"))
     turnos = [(0.0, 10.0, "SPEAKER_00")]
     mapa = {
         "SPEAKER_00": {"nome": "Celso", "sim": 0.9, "margem": 0.5, "fala_s": 10.0, "scores": {}}
@@ -1344,7 +1344,7 @@ def _rodar_run_main(audio, db, turnos, mapa, palavras, termos_arquivo=None, ao_t
 def _cenario_de_correcao():
     import tempfile
 
-    pasta = Path(tempfile.mkdtemp(prefix="rec-meet-test-correcao-"))
+    pasta = Path(tempfile.mkdtemp(prefix="trama-test-correcao-"))
     audio = pasta / "reuniao_01.m4a"
     _m4a(audio)
 
@@ -1472,7 +1472,7 @@ def test_reprocessar_reuniao_com_titulo_mantem_titulo_data_id_e_revisao():
     import json
     import tempfile
 
-    pasta = Path(tempfile.mkdtemp(prefix="rec-meet-test-reprocessar-"))
+    pasta = Path(tempfile.mkdtemp(prefix="trama-test-reprocessar-"))
     try:
         audio = pasta / "reuniao_01.m4a"
         _m4a(audio, "2026-07-02T11:49:13.000000Z")
@@ -1556,7 +1556,7 @@ def test_titulo_editado_durante_o_reprocessamento_nao_e_sobrescrito():
     import json
     import tempfile
 
-    pasta = Path(tempfile.mkdtemp(prefix="rec-meet-test-reprocessar-"))
+    pasta = Path(tempfile.mkdtemp(prefix="trama-test-reprocessar-"))
     try:
         audio = pasta / "reuniao_01.m4a"
         _m4a(audio, "2026-07-02T11:49:13.000000Z")

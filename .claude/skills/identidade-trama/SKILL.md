@@ -1,9 +1,9 @@
 ---
-name: identidade-rec-meet
-description: Identidade visual do rec-meet (marca Trama) — paleta Trama em modo claro e escuro, tipografia, espaçamento, elementos de assinatura e a lista do que é proibido. Use ao criar ou revisar qualquer tela, componente ou estilo do frontend. Cobre superfície e composição; movimento, gesto e resposta ficam com a skill apple-design.
+name: identidade-trama
+description: Identidade visual do Trama — paleta Trama em modo claro e escuro, tipografia, espaçamento, elementos de assinatura e a lista do que é proibido. Use ao criar ou revisar qualquer tela, componente ou estilo do frontend. Cobre superfície e composição; movimento, gesto e resposta ficam com a skill apple-design.
 ---
 
-# Identidade visual do rec-meet
+# Identidade visual do Trama
 
 > **Marca Trama (ADR 0023).** O produto se chama Trama no que o usuário
 > lê; o modo escuro inteiro é **derivado, a validar com o designer**.
@@ -15,9 +15,8 @@ description: Identidade visual do rec-meet (marca Trama) — paleta Trama em mod
 >   voz e nunca linha ou texto.
 > - **Nenhum texto da interface promete ata** (ADR 0002). A "memória
 >   entre reuniões" da marca é a galeria de vozes e os termos da empresa.
-> - **Identificador interno não muda de nome:** chaves `rec-meet:*` do
->   `localStorage`, o nome desta skill, `REC_MEET_*`. Só o texto que o
->   usuário lê é "Trama".
+> - **Trama em todo lugar** (ADR 0027): texto da interface, pacote,
+>   variáveis `TRAMA_*`, chaves `trama:*` do `localStorage`, esta skill.
 > - O kit da marca mora em `docs/marca/`. No git só entram o guia de uso
 >   e os SVGs mestres (`kit/01-mestres/`); o resto fica fora pelo `.gitignore`.
 

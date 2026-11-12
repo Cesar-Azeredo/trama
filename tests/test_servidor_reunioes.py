@@ -981,7 +981,7 @@ def test_sistema_devolve_versao_dispositivo_caminhos_e_licencas():
 
 
 def test_demonstracao_avisa_sem_audio_em_vez_de_procurar_arquivo():
-    """REC_MEET_DEMO=1: /api/sistema diz que e demonstracao, e a rota de
+    """TRAMA_DEMO=1: /api/sistema diz que e demonstracao, e a rota de
     audio responde a frase da tela (em portugues) sem tocar disco - as
     reunioes de demonstracao nao tem audio."""
     pasta, cliente = _ambiente_temporario()

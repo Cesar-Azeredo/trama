@@ -2,7 +2,7 @@
 Isola as suites das variaveis de ambiente de quem roda os testes.
 
 O codigo le limiares de calibracao (SIM_MIN, MIN_SOBREPOSICAO,
-GAP_MESCLAGEM...) e caminhos (VOZES_DB, REC_MEET_AUDIOS) do ambiente NA
+GAP_MESCLAGEM...) e caminhos (VOZES_DB, TRAMA_AUDIOS) do ambiente NA
 HORA DO IMPORT. Um shell com qualquer uma delas exportada - o README
 convida a calibrar assim, e o ambiente de desenvolvimento ja roda com
 SIM_MIN=0.60 exportado - fazia a suite testar outro numero que nao o

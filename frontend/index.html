@@ -10,7 +10,10 @@
       // pisca claro por um instante. Mesma logica de src/tema/useTema.ts.
       (function () {
         try {
-          var salvo = localStorage.getItem("rec-meet:tema");
+          // A chave antiga so existe ate a primeira abertura depois da
+          // troca de nome (src/armazenamento/migrarChaves.ts).
+          var salvo =
+            localStorage.getItem("trama:tema") || localStorage.getItem("rec-meet:tema");
           var tema =
             salvo === "claro" || salvo === "escuro"
               ? salvo

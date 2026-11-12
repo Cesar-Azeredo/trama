@@ -16,7 +16,7 @@ GANCHO = RAIZ / "ganchos" / "commit-msg"
 
 
 def _aplicar(mensagem):
-    with tempfile.TemporaryDirectory(prefix="rec-meet-test-gancho-") as pasta:
+    with tempfile.TemporaryDirectory(prefix="trama-test-gancho-") as pasta:
         arquivo = Path(pasta) / "COMMIT_EDITMSG"
         arquivo.write_text(mensagem, encoding="utf-8")
         subprocess.run([str(GANCHO), str(arquivo)], check=True)

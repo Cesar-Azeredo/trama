@@ -5,9 +5,11 @@ projeto (em inglês): [README](../README.md). Arquitetura:
 [ARCHITECTURE.md](../ARCHITECTURE.md).
 
 O aplicativo se chama **Trama** (marca em ADR 0023): e o nome que aparece
-na interface, no titulo da pagina e nas mensagens do servidor. `rec-meet`
-continua como nome interno - das variaveis `REC_MEET_*` e das chaves do
-navegador.
+na interface, no titulo da pagina, nas mensagens do servidor, nas
+variaveis de ambiente (`TRAMA_*`) e nas chaves do navegador. Quem usava o
+nome antigo (`rec-meet`) nao perde tema, idioma nem perfil: as
+preferencias salvas sao copiadas para o nome novo na primeira abertura.
+As variaveis `REC_MEET_*` nao sao mais lidas - troque por `TRAMA_*`.
 
 Kit da marca (guia de uso e SVGs mestres): [`docs/marca/`](marca/kit/guia-de-uso.md).
 
@@ -233,7 +235,7 @@ Nem toda reuniao tem todos os arquivos (por exemplo, `fase0/` so existe se
 | `SIM_MIN`              | `0.60` (calibrado neste ambiente, ver abaixo) | Limiar de similaridade para aceitar um nome         |
 | `MARGEM_MIN`           | `0.06`                                       | Margem minima entre 1o e 2o colocado                |
 | `VOZES_DB`             | `vozes.db`                                   | Caminho do banco SQLite com os perfis de voz        |
-| `REC_MEET_PORTA`       | `8000`                                       | Porta do servidor local (o endereco e sempre `127.0.0.1`) |
+| `TRAMA_PORTA`       | `8000`                                       | Porta do servidor local (o endereco e sempre `127.0.0.1`) |
 | `MIN_SOBREPOSICAO`     | `0.80`                                       | Duracao minima de sobreposicao para contar disputa  |
 | `GAP_MESCLAGEM`        | `0.5`                                        | Pausa maxima para juntar dois segmentos do mesmo falante num turno |
 

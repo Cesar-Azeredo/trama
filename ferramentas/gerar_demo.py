@@ -20,8 +20,8 @@ Uso (a partir da raiz):
     python ferramentas/gerar_demo.py
 
 Depois:
-    REC_MEET_DEMO=1 REC_MEET_AUDIOS=audios-demo/en \\
-    VOZES_DB=audios-demo/en/vozes-demo.db REC_MEET_TERMOS=termos.exemplo.en.txt \\
+    TRAMA_DEMO=1 TRAMA_AUDIOS=audios-demo/en \\
+    VOZES_DB=audios-demo/en/vozes-demo.db TRAMA_TERMOS=termos.exemplo.en.txt \\
     trama-servidor
 (ou pt no lugar de en, e termos.exemplo.txt).
 """

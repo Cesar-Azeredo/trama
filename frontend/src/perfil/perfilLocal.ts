@@ -12,7 +12,7 @@ export interface PerfilLocal {
   pessoa: string | null;
 }
 
-const CHAVE = "rec-meet:perfil";
+const CHAVE = "trama:perfil";
 const VAZIO: PerfilLocal = { nome: "", pessoa: null };
 
 function ler(): PerfilLocal {

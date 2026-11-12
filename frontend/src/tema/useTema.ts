@@ -16,7 +16,7 @@ import { useSyncExternalStore } from "react";
 export type Tema = "claro" | "escuro";
 export type PreferenciaTema = Tema | "sistema";
 
-const CHAVE_LOCALSTORAGE = "rec-meet:tema";
+const CHAVE_LOCALSTORAGE = "trama:tema";
 const CONSULTA = "(prefers-color-scheme: dark)";
 
 function lerPreferenciaSalva(): PreferenciaTema {

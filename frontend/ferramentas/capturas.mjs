@@ -65,11 +65,11 @@ async function esperar(url, tentativas = 100) {
 function ambienteDo(conjunto) {
   return {
     ...process.env,
-    REC_MEET_DEMO: "1",
-    REC_MEET_AUDIOS: resolve(RAIZ, "audios-demo", conjunto.idioma),
+    TRAMA_DEMO: "1",
+    TRAMA_AUDIOS: resolve(RAIZ, "audios-demo", conjunto.idioma),
     VOZES_DB: resolve(RAIZ, "audios-demo", conjunto.idioma, "vozes-demo.db"),
-    REC_MEET_TERMOS: resolve(RAIZ, conjunto.termos),
-    REC_MEET_PORTA: PORTA_API,
+    TRAMA_TERMOS: resolve(RAIZ, conjunto.termos),
+    TRAMA_PORTA: PORTA_API,
   };
 }
 
@@ -84,7 +84,7 @@ async function capturar(navegador, conjunto) {
       locale: conjunto.idioma === "pt" ? "pt-BR" : "en-US",
     });
     await contexto.addInitScript((idioma) => {
-      localStorage.setItem("rec-meet:idioma", idioma);
+      localStorage.setItem("trama:idioma", idioma);
     }, conjunto.idioma);
     const pagina = await contexto.newPage();
     for (const tela of TELAS) {
@@ -99,7 +99,7 @@ async function capturar(navegador, conjunto) {
 
 const vite = subir("npx", ["vite", "--host", "127.0.0.1", "--port", PORTA_WEB, "--strictPort"], {
   cwd: FRONTEND,
-  env: { ...process.env, REC_MEET_PORTA: PORTA_API },
+  env: { ...process.env, TRAMA_PORTA: PORTA_API },
 });
 let servidor = null;
 try {

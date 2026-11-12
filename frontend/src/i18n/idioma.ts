@@ -21,7 +21,7 @@ export const IDIOMAS: Idioma[] = ["pt", "en"];
 export const NOME_DO_IDIOMA: Record<Idioma, string> = { pt: "Português", en: "English" };
 
 const LOCALE: Record<Idioma, string> = { pt: "pt-BR", en: "en-US" };
-const CHAVE_LOCALSTORAGE = "rec-meet:idioma";
+const CHAVE_LOCALSTORAGE = "trama:idioma";
 
 export function idiomaDoNavegador(linguagem: string | undefined): Idioma {
   return (linguagem ?? "").toLowerCase().startsWith("pt") ? "pt" : "en";

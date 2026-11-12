@@ -268,13 +268,14 @@ def test_favicon_e_o_simbolo_nas_cores_da_marca():
 
 
 _NOME_ANTIGO = re.compile(r"rec[-·_ ]?meet", re.I)
-# Identificadores internos ficam (ADR 0023): chaves do localStorage.
-_INTERNO = re.compile(r"""["']rec-meet:[a-z-]+["']""")
+# A unica mencao que fica no codigo da interface: a chave antiga do
+# localStorage, lida uma vez para migrar (ADR 0027, migrarChaves.ts).
+_INTERNO = re.compile(r"""["']rec-meet:[a-z-]*["']""")
 
 
 def test_nenhum_texto_da_interface_usa_o_nome_antigo():
-    """O usuario ve "Trama". Comentario e chave do localStorage nao sao
-    texto de tela - trocar a chave apagaria o tema e o perfil salvos."""
+    """O usuario ve "Trama". Comentario e a chave antiga do localStorage
+    (lida para migrar) nao sao texto de tela."""
     achados = []
     for p in _arquivos_de_interface():
         texto = _INTERNO.sub(" ", _sem_comentarios(p.read_text(encoding="utf-8")))
@@ -282,6 +283,26 @@ def test_nenhum_texto_da_interface_usa_o_nome_antigo():
             if _NOME_ANTIGO.search(linha):
                 achados.append(f"{p.relative_to(RAIZ)}:{n}: {linha.strip()[:60]}")
     assert not achados, f"nome antigo na interface: {achados}"
+
+
+def test_chave_antiga_do_localstorage_so_na_migracao():
+    """ADR 0027: as chaves sao trama:*. A antiga rec-meet:* so pode ser
+    lida para migrar - em migrarChaves.ts (e no teste dele) e no index.html,
+    que pinta o tema antes de qualquer modulo rodar."""
+    permitidos = {
+        FRONTEND / "index.html",
+        FRONTEND / "src" / "armazenamento" / "migrarChaves.ts",
+        FRONTEND / "src" / "armazenamento" / "migrarChaves.test.ts",
+    }
+    fora = [
+        str(p.relative_to(RAIZ))
+        for p in _arquivos_de_interface()
+        if p not in permitidos and _INTERNO.search(_sem_comentarios(p.read_text("utf-8")))
+    ]
+    assert not fora, f"chave rec-meet:* fora da migracao: {fora}"
+    for nome in ("useTema.ts", "idioma.ts", "perfilLocal.ts"):
+        (arquivo,) = (FRONTEND / "src").rglob(nome)
+        assert '"trama:' in arquivo.read_text("utf-8"), nome
 
 
 def test_titulo_da_pagina_e_trama():

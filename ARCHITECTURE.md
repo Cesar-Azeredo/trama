@@ -4,9 +4,10 @@ Como o sistema é hoje. Estado em 20 de setembro de 2026.
 Por que é assim: `docs/adr/`. Como rodar: `docs/uso.md` (visão geral em
 inglês: `README.md`).
 
-O produto se chama **Trama** no que o usuário vê (ADR 0023); `rec-meet`
-segue como identificador interno (repositório, `REC_MEET_*`, chaves
-`rec-meet:*` do `localStorage`, nome da skill de identidade).
+O produto se chama **Trama** (ADR 0023), também por dentro: pacote
+`trama`, variáveis `TRAMA_*`, chaves `trama:*` do `localStorage`, skill
+`identidade-trama` (ADR 0027). As chaves antigas `rec-meet:*` são copiadas
+para as novas na primeira abertura (`armazenamento/migrarChaves.ts`).
 
 Este arquivo descreve o que existe. Quando o código mudar, ele muda junto —
 um item aqui que não corresponde ao código é bug de documentação.
@@ -260,7 +261,7 @@ a infraestrutura em `tests/servidor_apoio.py`.
 
 Toda suíte chama `tests/_ambiente.py` antes de importar o projeto: tira do
 ambiente as variáveis que o código lê (limiares, `VOZES_DB`,
-`REC_MEET_*`), para o resultado nunca depender do shell de quem roda.
+`TRAMA_*`), para o resultado nunca depender do shell de quem roda.
 Teste que sobe o servidor de verdade usa porta efêmera, nunca a 8000.
 
 `test_pipeline`, `test_interacao` e `test_review` importam numpy/torch —
@@ -469,7 +470,7 @@ tudo mais abrirem numa coluna estreita centralizada mesmo num monitor
 grande.
 
 Cabeçalho é sempre 100% da largura da janela. Conteúdo usa uma de duas
-medidas (`tokens.css`, documentado em `identidade-rec-meet/SKILL.md`):
+medidas (`tokens.css`, documentado em `identidade-trama/SKILL.md`):
 
 Acima de 1440px de janela, as telas de dados viram container fluido
 (margem de 48px, teto de 1680px) e ganham colunas — ADR 0015: dinâmica

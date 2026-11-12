@@ -58,7 +58,7 @@ def _ambiente_temporario():
     antes desta suite existir (a rota /api/pessoas migrou o vozes.db real
     porque nucleo.DB_PATH nao tinha sido isolado).
     """
-    pasta = Path(tempfile.mkdtemp(prefix="rec-meet-test-servidor-"))
+    pasta = Path(tempfile.mkdtemp(prefix="trama-test-servidor-"))
     reunioes.PASTA_AUDIOS = pasta / "audios"
     reunioes.PASTA_AUDIOS.mkdir()
     nucleo.DB_PATH = pasta / "vozes_teste.db"

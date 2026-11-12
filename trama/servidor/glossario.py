@@ -34,7 +34,7 @@ from trama import nucleo
 from trama.erros import ErroDeUsuario
 
 RAIZ = Path(__file__).resolve().parents[2]
-CAMINHO = Path(os.environ.get("REC_MEET_TERMOS", str(RAIZ / "termos.txt")))
+CAMINHO = Path(os.environ.get("TRAMA_TERMOS", str(RAIZ / "termos.txt")))
 
 MAX_ITENS = 2000
 MAX_LEN = 200

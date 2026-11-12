@@ -1,5 +1,5 @@
 /*
-  Paleta Trama (.claude/skills/identidade-rec-meet/SKILL.md, ADR 0023).
+  Paleta Trama (.claude/skills/identidade-trama/SKILL.md, ADR 0023).
   Normativo, nao sugestao (ADR 0005). Nunca hex solto no componente.
 
   Papeis de cor (ADR 0023):
@@ -55,7 +55,7 @@
   --opacidade-destaque: 40%;
   --destaque-fundo: color-mix(in srgb, var(--destaque) var(--opacidade-destaque), var(--fundo));
 
-  /* Cores de voz: ver identidade-rec-meet/SKILL.md ("Cores de falante") e
+  /* Cores de voz: ver identidade-trama/SKILL.md ("Cores de falante") e
      tests/test_paleta.py, que trava a distancia minima entre elas e a
      dos tres papeis acima. */
   --voz-1: #835e62;
@@ -71,7 +71,7 @@
   --fonte-interface: "Figtree", sans-serif;
   --fonte-numeros: "IBM Plex Mono", monospace;
 
-  /* Larguras (identidade-rec-meet/SKILL.md, Composicao; ADR 0015).
+  /* Larguras (identidade-trama/SKILL.md, Composicao; ADR 0015).
      --medida-leitura e a do TEXTO CORRIDO (o transcript) e nunca muda com
      a janela - texto longo em linha larga nao se le. --medida-conteudo e
      o teto das telas de lista e formulario entre 720px e 1440px de

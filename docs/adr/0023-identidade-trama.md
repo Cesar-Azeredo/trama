@@ -41,6 +41,8 @@ continua.
    internos ficam como estão: repositório, pacote, chaves `rec-meet:*` do
    `localStorage`, nome da skill `identidade-rec-meet`, variáveis
    `REC_MEET_*`. Se o nome precisar mudar, só os textos visíveis mudam.
+   *(Revisto no ADR 0027: os identificadores internos também viraram
+   Trama.)*
 2. **Fontes.** Figtree (SIL OFL) na interface, no lugar da IBM Plex Sans.
    Literata no transcript e IBM Plex Mono nos números continuam: a marca
    não fala desses dois papéis. Toda fonte empacotada leva o `OFL.txt`
@@ -122,5 +124,5 @@ modos parecerem dois produtos.
   latinos como os que o próprio Google Fonts distribui com o nome, e a
   Plex Mono continua no app.
 - Tokens, fontes e proibições continuam normativos em
-  `.claude/skills/identidade-rec-meet/SKILL.md`, reescrita junto com o
+  `.claude/skills/identidade-trama/SKILL.md`, reescrita junto com o
   código de cada etapa.

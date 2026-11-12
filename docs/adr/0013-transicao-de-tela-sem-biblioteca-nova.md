@@ -35,7 +35,7 @@ Mecanismo (`tema/transicaoDeRota.ts`, `estilos/transicoes.css`):
   um elemento que também rola deixava a transição pendurada, e rolar o
   `<main>` (que tem `max-width` por tela) prendia o rolamento numa coluna
   no centro da janela. `.cabecalho` recebe seu próprio nome e nunca anima — a
-  casca fica parada, só o conteúdo se move (identidade-rec-meet/SKILL.md:
+  casca fica parada, só o conteúdo se move (identidade-trama/SKILL.md:
   "a interface deve quase desaparecer"). Sem isso, o comportamento padrão
   da API anima a página inteira como uma captura só, arrastando a nav
   junto a cada clique.

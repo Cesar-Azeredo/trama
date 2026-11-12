@@ -37,7 +37,7 @@ def _cliente_na_copia(idioma="pt"):
 
     import trama.servidor.app as app_mod
 
-    pasta = Path(tempfile.mkdtemp(prefix="rec-meet-test-demo-"))
+    pasta = Path(tempfile.mkdtemp(prefix="trama-test-demo-"))
     copia = pasta / "audios-demo"
     shutil.copytree(DEMO / idioma, copia)
     reunioes.PASTA_AUDIOS = copia

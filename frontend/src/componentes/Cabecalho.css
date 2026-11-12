@@ -1,5 +1,5 @@
 /* Casca do app - sempre 100% da largura (nunca --medida-conteudo nem
-   --medida-leitura, ver tokens.css e identidade-rec-meet/SKILL.md). Isso
+   --medida-leitura, ver tokens.css e identidade-trama/SKILL.md). Isso
    e o que separa cabecalho/nav de ser "conteudo". */
 .cabecalho {
   flex-shrink: 0;

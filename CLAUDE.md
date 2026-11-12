@@ -50,7 +50,7 @@ O valor está em **quem falou o quê**. Não em gravar, não em resumir.
   para "sem acento no conteúdo da string" - já vazou pra tela por engano
   (mensagem de erro do servidor sem acento nenhum, replicando o nome do
   identificador em vez do texto que o usuário deveria ler).
-- Visual: siga `.claude/skills/identidade-rec-meet/SKILL.md`. Não é
+- Visual: siga `.claude/skills/identidade-trama/SKILL.md`. Não é
   sugestão. Movimento e resposta: skill `apple-design`.
 - Um comportamento por vez. Mudança grande vira várias pequenas, cada uma
   validada antes da próxima.
@@ -69,7 +69,7 @@ npx skills add https://github.com/emilkowalski/skills --skill apple-design
 
 Antes de criar ou revisar qualquer tela, componente ou interação, confirme
 que `.claude/skills/apple-design/SKILL.md` existe e é legível. Se não
-existir, avise - a referência em `identidade-rec-meet/SKILL.md` já ficou
+existir, avise - a referência em `identidade-trama/SKILL.md` já ficou
 apontando para uma pasta inexistente por dois marcos inteiros sem que
 ninguém notasse.
 
@@ -92,8 +92,8 @@ trama-servidor            # --dev recarrega quando um .py muda
 # demonstração: reuniões e vozes fictícias, sem áudio, em dois conjuntos
 # (audios-demo/pt e audios-demo/en, mesmo desenho)
 python ferramentas/gerar_demo.py    # regera os dois (roteiro_demo.py, roteiro_demo_en.py)
-REC_MEET_DEMO=1 REC_MEET_AUDIOS=audios-demo/pt VOZES_DB=audios-demo/pt/vozes-demo.db \
-  REC_MEET_TERMOS=termos.exemplo.txt trama-servidor
+TRAMA_DEMO=1 TRAMA_AUDIOS=audios-demo/pt VOZES_DB=audios-demo/pt/vozes-demo.db \
+  TRAMA_TERMOS=termos.exemplo.txt trama-servidor
 # em inglês: audios-demo/en e termos.exemplo.en.txt
 
 # testes: cada suíte roda sozinha, ou todas com pytest

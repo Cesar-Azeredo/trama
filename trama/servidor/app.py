@@ -667,17 +667,17 @@ def main():
 
     # HOST nunca vem de fora (CLAUDE.md, regra 2: so 127.0.0.1). A PORTA
     # pode: os testes que sobem o processo de verdade precisam de uma
-    # porta efemera, senao so passam quando nenhum rec-meet real esta
+    # porta efemera, senao so passam quando nenhum Trama real esta
     # rodando na 8000 - o que nunca e o caso de quem esta usando o app.
     HOST = "127.0.0.1"
-    porta_env = os.environ.get("REC_MEET_PORTA", "8000")
+    porta_env = os.environ.get("TRAMA_PORTA", "8000")
     try:
         PORTA = int(porta_env)
         if not 1 <= PORTA <= 65535:
             raise ValueError
     except ValueError:
         print(
-            f"REC_MEET_PORTA inválida: '{porta_env}'. Use um número "
+            f"TRAMA_PORTA inválida: '{porta_env}'. Use um número "
             "entre 1 e 65535, ou remova a variável para usar a 8000."
         )
         raise SystemExit(1)

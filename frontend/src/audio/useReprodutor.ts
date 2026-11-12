@@ -8,7 +8,7 @@ import { avisar } from "../util/avisos";
  * para o anterior, em vez de sobrepor audios. Clicar de novo no mesmo
  * trecho pausa.
  *
- * Em modo demonstracao (REC_MEET_DEMO=1) nao ha audio: o clique avisa
+ * Em modo demonstracao (TRAMA_DEMO=1) nao ha audio: o clique avisa
  * "Áudio não disponível na demonstração." em vez de tentar tocar. Se o
  * clique chegar antes de /api/sistema responder, o audio falha (404) e o
  * aviso sai pelo erro.

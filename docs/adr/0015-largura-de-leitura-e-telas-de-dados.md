@@ -11,7 +11,7 @@ monitor largo, o conteúdo ficava numa coluna estreita no centro e sobrava
 espaço vazio dos dois lados. No Detalhe, o resumo da dinâmica ficava
 empilhado em cima do transcript e empurrava a leitura para baixo da dobra.
 
-A regra "duas larguras, nunca uma terceira" (`identidade-rec-meet/SKILL.md`)
+A regra "duas larguras, nunca uma terceira" (`identidade-trama/SKILL.md`)
 misturava duas coisas diferentes:
 
 - a **medida de leitura**, que é uma propriedade do texto corrido (linha

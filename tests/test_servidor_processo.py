@@ -40,7 +40,7 @@ def _porta_efemera():
     """
     Porta livre escolhida pelo SO (bind na 0). Os testes que sobem
     'trama-servidor' de verdade nunca usam a 8000 fixa: com o
-    rec-meet real rodando (o uso normal de quem desenvolve), a 8000 esta
+    Trama real rodando (o uso normal de quem desenvolve), a 8000 esta
     ocupada - um teste falhava por isso, e o outro podia passar FALSO,
     respondido pelo servidor real em vez do processo sob teste.
 
@@ -72,14 +72,14 @@ def test_servidor_roda_como_script_a_partir_da_raiz_sem_pythonpath():
     leitura - o processo real nao tem os stubs de torch/pyannote desta
     suite, entao ele importa o nucleo.py de verdade.
     """
-    pasta = Path(tempfile.mkdtemp(prefix="rec-meet-test-subprocess-"))
+    pasta = Path(tempfile.mkdtemp(prefix="trama-test-subprocess-"))
     (pasta / "audios").mkdir()
     porta = _porta_efemera()
     ambiente = {
         **os.environ,
-        "REC_MEET_AUDIOS": str(pasta / "audios"),
+        "TRAMA_AUDIOS": str(pasta / "audios"),
         "VOZES_DB": str(pasta / "vozes_teste.db"),
-        "REC_MEET_PORTA": str(porta),
+        "TRAMA_PORTA": str(porta),
     }
     processo = subprocess.Popen(
         [sys.executable, "trama/servidor/app.py"],
@@ -141,11 +141,11 @@ def test_servidor_porta_ocupada_avisa_em_portugues_e_nao_em_ingles():
     test_servidor_roda_como_script_a_partir_da_raiz_sem_pythonpath, que
     documenta a mesma cautela).
     """
-    pasta = Path(tempfile.mkdtemp(prefix="rec-meet-test-porta-ocupada-"))
+    pasta = Path(tempfile.mkdtemp(prefix="trama-test-porta-ocupada-"))
     (pasta / "audios").mkdir()
     ambiente = {
         **os.environ,
-        "REC_MEET_AUDIOS": str(pasta / "audios"),
+        "TRAMA_AUDIOS": str(pasta / "audios"),
         "VOZES_DB": str(pasta / "vozes_teste.db"),
     }
     # Porta efemera (bind na 0), nunca a 8000 fixa - ver _porta_efemera.
@@ -154,7 +154,7 @@ def test_servidor_porta_ocupada_avisa_em_portugues_e_nao_em_ingles():
     ocupante.bind(("127.0.0.1", 0))
     ocupante.listen(1)
     porta = ocupante.getsockname()[1]
-    ambiente["REC_MEET_PORTA"] = str(porta)
+    ambiente["TRAMA_PORTA"] = str(porta)
     try:
         processo = subprocess.run(
             [sys.executable, "trama/servidor/app.py"],
@@ -177,19 +177,19 @@ def test_servidor_porta_ocupada_avisa_em_portugues_e_nao_em_ingles():
 
 def test_servidor_porta_invalida_avisa_em_portugues():
     """
-    REC_MEET_PORTA existe para os testes usarem porta efemera; um valor
+    TRAMA_PORTA existe para os testes usarem porta efemera; um valor
     errado nela (digitado a mao) tem que sair com mensagem em portugues,
     nunca o ValueError cru do int() nem o OverflowError do bind.
     """
-    pasta = Path(tempfile.mkdtemp(prefix="rec-meet-test-porta-invalida-"))
+    pasta = Path(tempfile.mkdtemp(prefix="trama-test-porta-invalida-"))
     (pasta / "audios").mkdir()
     try:
         for valor in ("abc", "0", "70000"):
             ambiente = {
                 **os.environ,
-                "REC_MEET_AUDIOS": str(pasta / "audios"),
+                "TRAMA_AUDIOS": str(pasta / "audios"),
                 "VOZES_DB": str(pasta / "vozes_teste.db"),
-                "REC_MEET_PORTA": valor,
+                "TRAMA_PORTA": valor,
             }
             processo = subprocess.run(
                 [sys.executable, "trama/servidor/app.py"],
@@ -200,7 +200,7 @@ def test_servidor_porta_invalida_avisa_em_portugues():
                 timeout=15,
             )
             assert processo.returncode != 0, processo.stdout
-            assert "REC_MEET_PORTA inválida" in processo.stdout, processo.stdout + processo.stderr
+            assert "TRAMA_PORTA inválida" in processo.stdout, processo.stdout + processo.stderr
             assert "Traceback" not in processo.stderr, processo.stderr
     finally:
         shutil.rmtree(pasta, ignore_errors=True)
@@ -247,7 +247,7 @@ sys.exit(int(os.environ.get("FAKE_RUN_CODIGO_SAIDA", "0")))
 def _preparar_raiz_falsa():
     """Cria uma RAIZ com um pipeline.py falso e devolve o caminho - o chamador
     troca processamento.RAIZ por ele e restaura no finally."""
-    raiz_falsa = Path(tempfile.mkdtemp(prefix="rec-meet-test-raiz-"))
+    raiz_falsa = Path(tempfile.mkdtemp(prefix="trama-test-raiz-"))
     # O servidor roda "python -m <processamento.MODULO_PROCESSAR>" com
     # cwd na RAIZ: o falso mora no mesmo caminho de modulo, com os
     # __init__.py de cada nivel do pacote.
@@ -281,7 +281,7 @@ def _ambiente_processamento():
     raiz_falsa = _preparar_raiz_falsa()
     processamento.RAIZ = raiz_falsa
     processamento._estado = None
-    pasta_audios = Path(tempfile.mkdtemp(prefix="rec-meet-test-audios-"))
+    pasta_audios = Path(tempfile.mkdtemp(prefix="trama-test-audios-"))
     return raiz_falsa, pasta_audios
 
 

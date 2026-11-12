@@ -5,7 +5,7 @@
 
 ## Contexto
 
-`identidade-rec-meet/SKILL.md` delega explicitamente "movimento, gesto e
+`identidade-trama/SKILL.md` delega explicitamente "movimento, gesto e
 resposta" para a skill `apple-design` desde que foi escrita (ADR 0005). Só
 que essa skill ficou **ausente do repositório durante os marcos 1 e 2
 inteiros** — a referência apontava para uma pasta que não existia, e
@@ -26,7 +26,7 @@ diferentes:
    para modais.
 
 O item 2 colide de frente com regras já aceitas do produto: `identidade-
-rec-meet/SKILL.md` proíbe sombra em qualquer forma, proíbe superfície
+trama/SKILL.md` proíbe sombra em qualquer forma, proíbe superfície
 flutuante chamando atenção pra si, e resolve hierarquia por peso e posição,
 não por camada ("se a solução foi envolver em um cartão, provavelmente
 falta espaço" — regra de composição da skill). ADR 0005 já havia rejeitado
@@ -35,7 +35,7 @@ o oposto do que o produto precisa comunicar a um cliente corporativo.
 
 ## Decisão
 
-Da skill `apple-design`, o rec-meet adota **só a parte de resposta e
+Da skill `apple-design`, o Trama adota **só a parte de resposta e
 movimento** (seções 1–11 e 14 da skill, na numeração de hoje): feedback
 instantâneo no toque, springs interrompíveis para qualquer coisa
 arrastável ou clicável, transição entre telas com caminho espacial
@@ -68,7 +68,7 @@ do evento.
 - Transição entre telas, arrastar (se um dia existir, ex. reordenar
   Glossário), e feedback de toque usam spring com os parâmetros da tabela
   da skill (`damping`/`response`), nunca `@keyframes` de duração fixa.
-- Nenhuma superfície nova do rec-meet ganha `backdrop-filter`, blur,
+- Nenhuma superfície nova do Trama ganha `backdrop-filter`, blur,
   translucidez em camada ou sombra. Se aparecer num PR futuro citando
   "a skill apple-design manda", a resposta é este ADR: manda só a parte
   de movimento.

@@ -33,7 +33,7 @@ from trama.migracoes._util import EstadoBancoInconsistente  # noqa: E402
 
 
 def _banco_temporario():
-    return Path(tempfile.mkdtemp(prefix="rec-meet-test-migracoes-"))
+    return Path(tempfile.mkdtemp(prefix="trama-test-migracoes-"))
 
 
 def _tabelas(con):

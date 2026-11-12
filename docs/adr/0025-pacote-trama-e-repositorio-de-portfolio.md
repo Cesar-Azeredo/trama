@@ -31,7 +31,7 @@ termos e falas de reuniões reais.
 - **Demonstração sintética**: `audios-demo/` com três reuniões fictícias e
   um `vozes-demo.db`, gerados por `ferramentas/gerar_demo.py` passando
   pelas funções reais do pipeline e da revisão. Sem áudio: em modo
-  demonstração (`REC_MEET_DEMO=1`) o app avisa "Áudio não disponível na
+  demonstração (`TRAMA_DEMO=1`) o app avisa "Áudio não disponível na
   demonstração".
 - Nomes, termos e falas reais nos documentos e testes trocados por
   fictícios que preservam o que cada exemplo demonstra (distância de

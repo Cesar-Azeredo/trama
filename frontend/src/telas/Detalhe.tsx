@@ -61,7 +61,7 @@ function formatarTimestamp(segundos: number): string {
 
 // ---- preferencia de mostrar interacoes (localStorage, junto do tema) -----
 
-const CHAVE_MOSTRAR_EVENTOS = "rec-meet:mostrar-eventos";
+const CHAVE_MOSTRAR_EVENTOS = "trama:mostrar-eventos";
 
 function lerPreferenciaMostrarEventos(): boolean {
   try {

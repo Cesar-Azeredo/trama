@@ -242,8 +242,8 @@ pip install -e ".[dev]"
 (cd frontend && npm ci)
 
 # terminal 1 - API in demo mode, on 127.0.0.1:8000
-REC_MEET_DEMO=1 REC_MEET_AUDIOS=audios-demo/en \
-VOZES_DB=audios-demo/en/vozes-demo.db REC_MEET_TERMOS=termos.exemplo.en.txt \
+TRAMA_DEMO=1 TRAMA_AUDIOS=audios-demo/en \
+VOZES_DB=audios-demo/en/vozes-demo.db TRAMA_TERMOS=termos.exemplo.en.txt \
 trama-servidor
 
 # terminal 2 - the interface

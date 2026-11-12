@@ -1,1 +1,1 @@
-"""servidor - API FastAPI local do rec-meet. Ver ADR 0004."""
+"""servidor - API FastAPI local do Trama. Ver ADR 0004."""

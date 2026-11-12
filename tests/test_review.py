@@ -64,7 +64,7 @@ from trama.cli import revisar  # noqa: E402
 def _banco_temporario():
     """Aponta nucleo.DB_PATH para um sqlite descartavel. Retorna a pasta (para
     limpeza) - NUNCA toca no vozes.db real."""
-    pasta = Path(tempfile.mkdtemp(prefix="rec-meet-test-"))
+    pasta = Path(tempfile.mkdtemp(prefix="trama-test-"))
     nucleo.DB_PATH = pasta / "vozes_teste.db"
     return pasta
 

@@ -39,7 +39,7 @@ from trama import edicao, erros, nucleo, pipeline
 from trama.erros import ErroDeUsuario
 from trama.servidor import processamento
 
-PASTA_AUDIOS = Path(os.environ.get("REC_MEET_AUDIOS", "audios"))
+PASTA_AUDIOS = Path(os.environ.get("TRAMA_AUDIOS", "audios"))
 
 PADRAO_ID = re.compile(r"^[a-z0-9_-]+$")
 

@@ -1,3 +1,6 @@
+// Primeiro: copia as chaves antigas do localStorage antes de qualquer
+// modulo ler as preferencias (ver o proprio arquivo).
+import './armazenamento/migrarChaves'
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import './estilos/base.css'

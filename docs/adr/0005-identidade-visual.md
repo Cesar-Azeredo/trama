@@ -15,7 +15,7 @@ justamente onde a venda depende de parecer sério.
 A metáfora é página de transcrição editorial: entrevista de revista, script
 de peça. O transcript é o produto; a interface some em volta dele.
 
-Tokens, fontes e a lista do que é proibido: `.claude/skills/identidade-rec-meet/SKILL.md`.
+Tokens, fontes e a lista do que é proibido: `.claude/skills/identidade-trama/SKILL.md`.
 Movimento, resposta e gesto: skill `apple-design`.
 
 ## Alternativas descartadas
