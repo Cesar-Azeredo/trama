@@ -87,12 +87,22 @@ cd frontend && npm run dev
 
 - **Todas as suítes verdes, sempre. Nunca commit com teste vermelho** —
   nem "falha que não é minha": pare e avise.
+- **O commit depende do resultado.** Verificação e `git commit` no MESMO
+  comando, encadeados por `&&` — nunca em sequência solta, nunca com
+  `| tail`, `; echo` ou qualquer coisa que engula o código de saída. Foi
+  assim que um commit saiu com "424/425": o laço só imprimia o total e o
+  commit vinha depois, sem depender dele. O comando, inteiro:
   ```bash
-  for f in tests/test_*.py; do python "$f" | tail -1; done
-  ruff check . && ruff format --check .
-  (cd frontend && npx oxlint && npm test && npm run build)
-  (cd frontend && npm run e2e)   # ponta a ponta, dados de demonstracao (~3 s)
+  python tests/rodar.py \
+    && ruff check . && ruff format --check . \
+    && (cd frontend && npx oxlint && npm test && npm run build && npm run e2e) \
+    && git add -A && git commit -m "..." \
+    && git push
   ```
+  `tests/rodar.py` roda cada suíte no seu processo e lista o nome e o erro
+  de todo teste que falhar (ou o fim da saída, se a suíte cair sem
+  relatório) — nunca só o total. `npm run e2e` é o ponta a ponta com os
+  dados de demonstração (~3 s).
 - Mudou comportamento: teste novo. Mudou arquitetura: `ARCHITECTURE.md`.
   Decisão com alternativa descartada: ADR. Mudou o que o usuário roda ou
   vê: `docs/uso.md` (e `README.md`, se muda a visão geral).

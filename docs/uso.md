@@ -355,7 +355,7 @@ python tests/test_interacao.py
 Rodar todas:
 
 ```bash
-for f in tests/test_*.py; do python "$f"; done
+python tests/rodar.py   # cada suite no seu processo; lista nome e erro de toda falha
 ```
 
 Teste de ponta a ponta no navegador, so com os dados de demonstracao

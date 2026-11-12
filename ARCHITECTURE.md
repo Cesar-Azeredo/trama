@@ -254,7 +254,10 @@ Memória mínima sugerida (16 GB) é estimativa, não medição.
 22 suítes, 425 casos. Cada arquivo roda sozinho com `python` (imprime
 PASSOU/FALHOU por caso e sai com código de erro), e o `pytest` descobre as
 mesmas funções `test_*` sem nenhuma mudança. As suítes do servidor dividem
-a infraestrutura em `tests/servidor_apoio.py`.
+a infraestrutura em `tests/servidor_apoio.py`. `tests/rodar.py` roda todas, cada uma no seu processo, e
+lista o nome e o erro de todo teste que falhar (ou o fim da saída, se a
+suíte cair sem relatório); sai com 1 em qualquer falha — é o comando que o
+commit encadeia com `&&` (CLAUDE.md) e o que a CI roda.
 
 | Suíte | Casos |
 |---|---|

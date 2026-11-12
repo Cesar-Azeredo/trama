@@ -35,12 +35,8 @@ jobs:
           ruff check .
           ruff format --check .
       - name: Suites (cada arquivo sozinho, como no dia a dia)
-        run: |
-          falhou=0
-          for f in tests/test_*.py; do
-            if python "$f" > saida.txt 2>&1; then tail -1 saida.txt; else cat saida.txt; falhou=1; fi
-          done
-          exit $falhou
+        # Lista o nome e o erro de todo teste que falhar, nunca so o total.
+        run: python tests/rodar.py
       - name: Suites com pytest
         run: pytest -q
 
