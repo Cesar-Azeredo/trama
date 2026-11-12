@@ -261,6 +261,10 @@ def test_favicon_e_o_simbolo_nas_cores_da_marca():
     assert "Gradient" not in svg, "gradiente no favicon (proibido na skill)"
     cores = {c.lower() for c in re.findall(r'fill="(#[0-9a-fA-F]{6})"', svg)}
     assert cores and cores <= CORES_DA_MARCA, cores
+    # icone de app do kit: fundo Verde proprio, simbolo em Linho - funciona
+    # em aba clara e escura (o simbolo solto em Verde sumia na escura)
+    assert re.search(r'<rect[^>]*fill="#0E5A4A"', svg, re.I), "favicon sem o fundo Verde"
+    assert "#f4f0e6" in cores, "simbolo do favicon nao esta em Linho"
 
 
 _NOME_ANTIGO = re.compile(r"rec[-·_ ]?meet", re.I)

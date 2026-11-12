@@ -309,8 +309,10 @@ palavra "trama" desenhada à mão, na versão horizontal, inline em
   mais fino). Nunca `--acento`, nunca cor de voz, nunca Fio.
 - **Nunca** digitar "Trama" no lugar do desenho, esticar, girar,
   espelhar, aplicar sombra, contorno ou gradiente.
-- **Favicon:** o `favicon.svg` do kit (símbolo pequeno, Verde), sem
-  alteração.
+- **Favicon:** o ícone de app do kit (`02-simbolo/trama-simbolo-app-icon.svg`),
+  sem alteração: fundo Verde arredondado com o símbolo em Linho. Com fundo
+  próprio, aparece igual em aba clara e escura - o símbolo solto em Verde
+  sumia na aba escura.
 
 A marca não carrega mais as cores das vozes: a barra de tempo de fala e
 a fita continuam sendo os elementos de assinatura que mostram dado.
