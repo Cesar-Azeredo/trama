@@ -60,3 +60,35 @@ jobs:
       - run: npx oxlint
       - run: npm test
       - run: npm run build
+
+  # Ponta a ponta num Chromium sem janela, so com os dados de demonstracao
+  # (frontend/e2e/ponta-a-ponta.mjs): navegacao, revisao e apagar reuniao,
+  # pelo proxy do Vite - qualquer 403/5xx reprova. O servidor sobe sem
+  # torch nem pyannote (so os importa ao processar audio), entao o job
+  # instala so o que ele precisa, e roda em paralelo aos outros dois.
+  ponta-a-ponta:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: pyproject.toml
+      - name: Dependencias do servidor (sem torch)
+        run: |
+          python -m pip install --upgrade pip
+          pip install numpy fastapi "uvicorn[standard]" python-multipart
+          pip install --no-deps -e .
+      - uses: actions/setup-node@v5
+        with:
+          node-version: "24"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm ci
+        working-directory: frontend
+      - name: Chromium do Playwright
+        run: npx playwright install --with-deps chromium
+        working-directory: frontend
+      - run: npm run e2e
+        working-directory: frontend

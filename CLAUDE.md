@@ -91,6 +91,7 @@ cd frontend && npm run dev
   for f in tests/test_*.py; do python "$f" | tail -1; done
   ruff check . && ruff format --check .
   (cd frontend && npx oxlint && npm test && npm run build)
+  (cd frontend && npm run e2e)   # ponta a ponta, dados de demonstracao (~3 s)
   ```
 - Mudou comportamento: teste novo. Mudou arquitetura: `ARCHITECTURE.md`.
   Decisão com alternativa descartada: ADR. Mudou o que o usuário roda ou

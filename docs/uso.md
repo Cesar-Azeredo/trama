@@ -358,6 +358,14 @@ Rodar todas:
 for f in tests/test_*.py; do python "$f"; done
 ```
 
+Teste de ponta a ponta no navegador, so com os dados de demonstracao
+(copia temporaria; nunca toca `audios/` nem o `vozes.db`):
+
+```bash
+cd frontend && npx playwright install chromium   # uma vez
+npm run e2e
+```
+
 `tests/test_pipeline.py`, `tests/test_interacao.py` e `tests/test_review.py`
 importam `numpy`/`torch` - rode dentro do venv do projeto se estiver fora
 dele.

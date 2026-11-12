@@ -11,7 +11,8 @@
     "test": "vitest run",
     "cobertura": "vitest run --coverage",
     "capturas": "node ferramentas/capturas.mjs",
-    "textos": "node ferramentas/listar-textos.mjs"
+    "textos": "node ferramentas/listar-textos.mjs",
+    "e2e": "node e2e/ponta-a-ponta.mjs"
   },
   "dependencies": {
     "react": "^19.2.8",

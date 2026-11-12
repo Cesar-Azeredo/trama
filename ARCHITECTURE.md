@@ -292,6 +292,19 @@ Teste que sobe o servidor de verdade usa porta efêmera, nunca a 8000.
 `test_pipeline`, `test_interacao` e `test_review` importam numpy/torch —
 rode dentro do venv.
 
+**Ponta a ponta** (`frontend/e2e/ponta-a-ponta.mjs`, `npm run e2e`): num
+Chromium sem janela, com uma cópia temporária dos dados de demonstração
+em português, servidor e Vite em portas próprias (8795/5195, ou
+`TRAMA_E2E_PORTA_API`/`TRAMA_E2E_PORTA_WEB`). Três passos: navegação entre
+as seções; a revisão inteira da `reuniao_03` (vozes, termos — ignora um —,
+trechos — escreve na lacuna, "não dá para entender" na fala — e a lacuna
+escrita no Detalhe); apagar a `reuniao_02`, conferindo que a confirmação
+mostra a voz que sai do banco e que a pasta some do disco. Toda resposta
+403 ou 5xx, erro de console ou da página reprova: é a conferência viva do
+Host/Origin pelo proxy do Vite (ADR 0030). Cerca de 3 s localmente. Na CI,
+job próprio (`ponta-a-ponta`), em paralelo, sem torch: o servidor só
+importa torch/pyannote ao processar áudio.
+
 ---
 
 ## Aplicativo (a construir)
