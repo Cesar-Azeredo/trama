@@ -79,6 +79,19 @@
   font-size: 13px;
 }
 
+/* Celular: na linha propria (o cabecalho quebra, acima), as acoes encolhem
+   e quebram. Com flex-shrink: 0 a linha ficava da largura do conteudo, e
+   com quatro links o ultimo ("Apagar reunião") saia da tela, escondido
+   pelo overflow-x: clip do #root - sem rolagem lateral, mas fora de
+   alcance. Depois da regra base de proposito: mesma especificidade, quem
+   vem depois vale. */
+@media (max-width: 719.98px) {
+  .tela-detalhe__revisao {
+    flex-shrink: 1;
+    min-width: 0;
+  }
+}
+
 .tela-detalhe__estado-revisada {
   color: var(--tinta-fraca);
 }
