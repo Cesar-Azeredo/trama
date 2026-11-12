@@ -67,8 +67,13 @@ dela.
     rebinding) faz pedidos que o navegador trata como da mesma origem, e
     aí lê e apaga.
 
-  A proteção que cabe nesta decisão é conferir a origem, não autenticar:
-  aceitar só `Host` igual a `127.0.0.1` ou `localhost` na porta do
-  servidor (fecha o rebinding) e, nos pedidos que mudam algo, recusar
-  `Origin` de outro site (fecha o upload). Fica registrada como
-  pendência, não como feita.
+  A proteção que cabe nesta decisão é conferir a origem, não autenticar.
+  **Feita em 2026-11-12** (`trama/servidor/origem.py`, um middleware antes
+  de toda rota): `Host` tem de ser `127.0.0.1` ou `localhost` na porta do
+  servidor (`TRAMA_PORTA`), o que fecha o rebinding; `Origin`, quando vem,
+  tem de ser `http://127.0.0.1` ou `http://localhost` na porta do
+  frontend (`TRAMA_PORTA_FRONTEND`, padrão 5173) ou na do próprio
+  servidor, o que fecha o upload. O resto leva 403 com código
+  (`host_recusado`, `origem_recusada`), sem tocar disco nem banco. O Vite
+  passou a exigir a porta dele (`strictPort`): subir noutra porta
+  silenciosamente faria toda chamada levar 403.

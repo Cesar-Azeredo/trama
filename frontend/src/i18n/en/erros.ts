@@ -47,6 +47,10 @@ export const erros: Catalogo["erros"] = {
     falha_gravar_trecho: () => "Could not save. Nothing changed — try again.",
     reuniao_processando: () =>
       "This meeting is being processed right now. Cancel the processing or wait for it to finish before deleting.",
+    host_recusado: () =>
+      "The server refused the request: it only answers 127.0.0.1 or localhost, on its own port. Open Trama at its usual address.",
+    origem_recusada: () =>
+      "The server refused the request: it came from a page that isn't Trama. Open Trama at its usual address (port 5173, or the one set in TRAMA_PORTA_FRONTEND).",
     falha_apagar_reuniao: () =>
       "Could not delete the meeting. Try again — it is safe to repeat.",
     pessoa_nao_encontrada: () => "This person is not in the gallery.",

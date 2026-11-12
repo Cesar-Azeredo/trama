@@ -44,7 +44,7 @@ def _cliente_na_copia(idioma="pt"):
     nucleo.DB_PATH = copia / "vozes-demo.db"
     glossario.CAMINHO = pasta / "termos.txt"
     shutil.copy(RAIZ / CONJUNTOS[idioma][0], glossario.CAMINHO)
-    return pasta, TestClient(app_mod.app)
+    return pasta, TestClient(app_mod.app, base_url="http://127.0.0.1:8000")
 
 
 def test_demo_lista_tres_reunioes_ficticias():

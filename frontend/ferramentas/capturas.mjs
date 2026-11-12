@@ -70,6 +70,7 @@ function ambienteDo(conjunto) {
     VOZES_DB: resolve(RAIZ, "audios-demo", conjunto.idioma, "vozes-demo.db"),
     TRAMA_TERMOS: resolve(RAIZ, conjunto.termos),
     TRAMA_PORTA: PORTA_API,
+    TRAMA_PORTA_FRONTEND: PORTA_WEB,
   };
 }
 

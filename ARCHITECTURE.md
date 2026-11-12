@@ -248,7 +248,7 @@ Memória mínima sugerida (16 GB) é estimativa, não medição.
 
 ### Testes
 
-19 suítes, 405 casos. Cada arquivo roda sozinho com `python` (imprime
+20 suítes, 410 casos. Cada arquivo roda sozinho com `python` (imprime
 PASSOU/FALHOU por caso e sai com código de erro), e o `pytest` descobre as
 mesmas funções `test_*` sem nenhuma mudança. As suítes do servidor dividem
 a infraestrutura em `tests/servidor_apoio.py`.
@@ -267,6 +267,7 @@ a infraestrutura em `tests/servidor_apoio.py`.
 | `test_review.py` | 24 |
 | `test_servidor_apagar.py` | 7 |
 | `test_servidor_pessoas.py` | 13 |
+| `test_servidor_origem.py` | 5 |
 | `test_servidor_processo.py` | 22 |
 | `test_servidor_reunioes.py` | 46 |
 | `test_servidor_revisao.py` | 17 |
@@ -304,9 +305,13 @@ Python novo nem em TypeScript. Ver ADR 0004.
 
 Sem autenticação, rate limit nem multiusuário (ADR 0030): uma pessoa, uma
 máquina, a fronteira é a conta do sistema operacional mais o bind em
-`127.0.0.1`. Pendência registrada lá: o servidor ainda não confere os
-cabeçalhos `Host` e `Origin` (DNS rebinding; upload enviado por outro
-site aberto no mesmo navegador).
+`127.0.0.1`. Para que só o próprio app fale com o servidor,
+`servidor/origem.py` confere toda requisição antes da rota: `Host`
+`127.0.0.1`/`localhost` na porta do servidor (DNS rebinding) e `Origin`
+ausente ou dessas duas máquinas na porta do frontend
+(`TRAMA_PORTA_FRONTEND`, padrão 5173) ou do servidor (upload enviado por
+outro site aberto no mesmo navegador). Fora disso, 403 com código. O Vite
+roda com `strictPort` nessa porta.
 
 ### Rotas previstas
 

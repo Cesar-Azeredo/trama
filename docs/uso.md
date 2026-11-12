@@ -163,8 +163,10 @@ npm install   # so na primeira vez
 npm run dev
 ```
 
-Escuta em **http://localhost:5173** (a porta padrao do Vite - se estiver
-ocupada, ele avisa e sobe noutra). Abra essa URL no navegador; o Vite
+Escuta em **http://localhost:5173**. Se a porta estiver ocupada, o Vite
+para com erro em vez de subir noutra: o servidor so aceita pedidos vindos
+desta porta (ADR 0030). Para usar outra, defina `TRAMA_PORTA_FRONTEND` nas
+duas abas (servidor e frontend) com o mesmo numero. Abra essa URL no navegador; o Vite
 encaminha as chamadas `/api/...` para a aba 1 (`vite.config.ts`), entao
 nao precisa abrir a porta 8000 diretamente.
 
@@ -260,6 +262,7 @@ Nem toda reuniao tem todos os arquivos (por exemplo, `fase0/` so existe se
 | `MARGEM_MIN`           | `0.06`                                       | Margem minima entre 1o e 2o colocado                |
 | `VOZES_DB`             | `vozes.db`                                   | Caminho do banco SQLite com os perfis de voz        |
 | `TRAMA_PORTA`       | `8000`                                       | Porta do servidor local (o endereco e sempre `127.0.0.1`) |
+| `TRAMA_PORTA_FRONTEND` | `5173`                                   | Porta do frontend (Vite); o servidor so aceita pedidos vindos dela |
 | `MIN_SOBREPOSICAO`     | `0.80`                                       | Duracao minima de sobreposicao para contar disputa  |
 | `GAP_MESCLAGEM`        | `0.5`                                        | Pausa maxima para juntar dois segmentos do mesmo falante num turno |
 
@@ -318,7 +321,7 @@ para isso.
 
 ## Testes
 
-`tests/` tem 19 suites, 405 testes no total. Cada arquivo roda com `python`, imprime PASSOU/FALHOU por caso e
+`tests/` tem 20 suites, 410 testes no total. Cada arquivo roda com `python`, imprime PASSOU/FALHOU por caso e
 sai com codigo de erro se algo falhar. As suites ignoram as variaveis de
 ambiente de calibracao do seu shell (`SIM_MIN`, `MIN_SOBREPOSICAO`...):
 testam sempre o padrao do codigo.
@@ -331,7 +334,7 @@ testam sempre o padrao do codigo.
 | `tests/test_ata.py`       | verificacao de citacoes da ata (`ata.py`)                           | 29 |
 | `tests/test_review.py`    | ledger de contribuicoes de voz, idempotencia e migracao (`nucleo.py`/`revisao.py`) | 24 |
 | `tests/test_migracoes.py` | migracoes versionadas do `vozes.db` (`trama/migracoes/`)                  | 9 |
-| `tests/test_servidor_*.py` | rotas da API em oito suites por area: reunioes, pessoas, transcricao, revisao, processo, termos, trechos para conferir, apagar reuniao (`trama/servidor/`) | 163 |
+| `tests/test_servidor_*.py` | rotas da API em nove suites por area: reunioes, pessoas, transcricao, revisao, processo, termos, trechos para conferir, apagar reuniao, origem (`trama/servidor/`) | 168 |
 | `tests/test_codigos_de_erro.py` | todo codigo de erro do servidor tem texto nos dois catalogos (pt e en) | 4 |
 | `tests/test_demo.py` | os dados de demonstracao (`audios-demo/`) | 5 |
 | `tests/test_gancho_commit_msg.py` | o gancho `ganchos/commit-msg` tira coautor e assinatura | 5 |

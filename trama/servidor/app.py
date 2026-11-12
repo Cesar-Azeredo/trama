@@ -29,8 +29,8 @@ import json
 from contextlib import asynccontextmanager
 from typing import Literal
 
-from fastapi import FastAPI, File, HTTPException, Response, UploadFile
-from fastapi.responses import StreamingResponse
+from fastapi import FastAPI, File, HTTPException, Request, Response, UploadFile
+from fastapi.responses import JSONResponse, StreamingResponse
 from pydantic import BaseModel
 
 from trama import edicao, nucleo, trechos
@@ -39,6 +39,7 @@ from trama.servidor import (
     conferir,
     correcao,
     glossario,
+    origem,
     pessoas,
     processamento,
     reunioes,
@@ -63,6 +64,21 @@ async def _ciclo_de_vida(app):
 
 # "Trama" e o nome que o usuario ve (ADR 0023) - aparece no /docs local.
 app = FastAPI(title="Trama", lifespan=_ciclo_de_vida)
+
+
+@app.middleware("http")
+async def _so_o_proprio_app(request: Request, chamar):
+    """Host e Origin conferidos antes de qualquer rota (servidor/origem.py,
+    ADR 0030). Recusa com 403 e codigo, sem tocar disco nem banco."""
+    motivo = origem.motivo_de_recusa(request.headers.get("host"), request.headers.get("origin"))
+    if motivo == "host_recusado":
+        recusa = _erro(403, "host_recusado")
+    elif motivo == "origem_recusada":
+        recusa = _erro(403, "origem_recusada")
+    else:
+        return await chamar(request)
+    return JSONResponse({"detail": recusa.detail}, status_code=recusa.status_code)
+
 
 # A revisao toca trechos de poucos segundos por cluster, nunca a reuniao
 # inteira. Sem teto, inicio=0&fim=99999 faz o ffmpeg materializar a
@@ -773,6 +789,7 @@ def main():
     # porta efemera, senao so passam quando nenhum Trama real esta
     # rodando na 8000 - o que nunca e o caso de quem esta usando o app.
     HOST = "127.0.0.1"
+    # A mesma variavel que servidor/origem.py usa para conferir o Host.
     porta_env = os.environ.get("TRAMA_PORTA", "8000")
     try:
         PORTA = int(porta_env)

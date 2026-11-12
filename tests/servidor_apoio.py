@@ -65,7 +65,9 @@ def _ambiente_temporario():
     # termos.txt tambem: o PUT /api/termos escreve de verdade, e o real e o
     # que o pipeline.py le em toda transcricao.
     glossario.CAMINHO = pasta / "termos.txt"
-    cliente = TestClient(app_mod.app)
+    # O Host que o navegador manda para o servidor de verdade - o padrao
+    # do TestClient ("testserver") e recusado (servidor/origem.py).
+    cliente = TestClient(app_mod.app, base_url="http://127.0.0.1:8000")
     return pasta, cliente
 
 

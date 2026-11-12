@@ -53,6 +53,10 @@ export const erros = {
     falha_gravar_trecho: () => "Não foi possível gravar. Nada mudou - tente de novo.",
     reuniao_processando: () =>
       "Esta reunião está sendo processada agora. Cancele o processamento ou espere terminar antes de apagar.",
+    host_recusado: () =>
+      "O servidor recusou o pedido: ele só atende o endereço 127.0.0.1 ou localhost, na porta dele. Abra o Trama pelo endereço de sempre.",
+    origem_recusada: () =>
+      "O servidor recusou o pedido: ele veio de uma página que não é o Trama. Abra o Trama pelo endereço de sempre (porta 5173, ou a definida em TRAMA_PORTA_FRONTEND).",
     falha_apagar_reuniao: () =>
       "Não foi possível apagar a reunião. Tente de novo - a operação é segura para repetir.",
     pessoa_nao_encontrada: () => "Esta pessoa não está na galeria.",

@@ -62,7 +62,8 @@ não em resumir.
 
 Variáveis de ambiente: `TRAMA_AUDIOS` (pasta das reuniões, padrão
 `audios`), `VOZES_DB` (banco de vozes), `TRAMA_TERMOS` (glossário, padrão
-`termos.txt`), `TRAMA_PORTA` (padrão 8000), `TRAMA_DEMO=1` (modo
+`termos.txt`), `TRAMA_PORTA` (padrão 8000), `TRAMA_PORTA_FRONTEND` (porta
+do Vite, padrão 5173; o servidor só aceita Origin dela), `TRAMA_DEMO=1` (modo
 demonstração, sem áudio), `HF_TOKEN` (modelos do pyannote).
 
 ## Como rodar
